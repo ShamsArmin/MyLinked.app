@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { monitor } from "./monitoring";
 import { securityMiddleware } from "./security-middleware";
+import { runMigrations } from "./db";
 // Temporarily disabled problematic imports
 // import { initializeEmailTemplates } from "./init-email-templates";
 // import { initAIEmailTemplates } from "./ai-email-templates";
@@ -83,6 +84,11 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  let applied = 0;
+  if (process.env.RUN_MIGRATIONS_ON_START === '1') {
+    applied = await runMigrations();
+    console.log(`db bootstrap: applied ${applied} migration(s)`);
+  }
   const server = await registerRoutes(app);
 
   // Add custom domain route handler AFTER API routes are registered

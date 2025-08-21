@@ -1,5 +1,6 @@
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
+import { migrate } from 'drizzle-orm/neon-serverless/migrator';
 import ws from "ws";
 import * as schema from "../shared/schema";
 
@@ -79,3 +80,22 @@ async function testConnection(retries = 3) {
 }
 
 testConnection();
+
+export async function runMigrations() {
+  try {
+    let before = 0;
+    try {
+      const res = await pool.query('select count(*) from "__drizzle_migrations"');
+      before = parseInt(res.rows[0]?.count ?? '0');
+    } catch {
+      before = 0;
+    }
+    await migrate(db, { migrationsFolder: './migrations' });
+    const afterRes = await pool.query('select count(*) from "__drizzle_migrations"');
+    const after = parseInt(afterRes.rows[0]?.count ?? '0');
+    return after - before;
+  } catch (err) {
+    console.error('Migration error:', err);
+    return 0;
+  }
+}
