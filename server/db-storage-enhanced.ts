@@ -1,4 +1,4 @@
-import { db } from './db';
+import { db, dbEnabled, setDbEnabled } from './db';
 import { 
   users, links, profileViews, follows, socialPosts, socialConnections,
   spotlightProjects, spotlightContributors, spotlightTags,
@@ -1336,13 +1336,23 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   async logSystemEvent(level: string, message: string, source: string, userId?: number, metadata?: any): Promise<void> {
-    await db.insert(systemLogs).values({
-      level: level as 'info' | 'warning' | 'error',
-      message,
-      source,
-      userId,
-      metadata
-    });
+    if (!dbEnabled) {
+      return;
+    }
+    try {
+      await db.insert(systemLogs).values({
+        level: level as 'info' | 'warning' | 'error',
+        message,
+        source,
+        userId,
+        metadata
+      });
+    } catch (error) {
+      console.error('Failed to log system event:', error);
+      if ((error as any)?.message?.includes('endpoint has been disabled')) {
+        setDbEnabled(false);
+      }
+    }
   }
 
   // Notification methods for dashboard

@@ -3,6 +3,24 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "../shared/schema";
 
+// Flag indicating if the database is available. This helps other modules
+// short-circuit database operations when the Neon endpoint is disabled.
+export let dbEnabled = true;
+
+function isEndpointDisabledError(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'message' in err &&
+    typeof (err as any).message === 'string' &&
+    (err as any).message.includes('endpoint has been disabled')
+  );
+}
+
+export function setDbEnabled(value: boolean) {
+  dbEnabled = value;
+}
+
 // Configure Neon Database to use WebSockets (needed for serverless environments)
 neonConfig.webSocketConstructor = ws;
 
@@ -31,6 +49,9 @@ export const db = drizzle({ client: pool, schema });
 // Add connection error handling
 pool.on('error', (err) => {
   console.error('Database pool error:', err);
+  if (isEndpointDisabledError(err)) {
+    dbEnabled = false;
+  }
 });
 
 // Test database connection with retry logic
@@ -43,6 +64,10 @@ async function testConnection(retries = 3) {
       return true;
     } catch (err) {
       console.error(`Database connection attempt ${i + 1} failed:`, err);
+      if (isEndpointDisabledError(err)) {
+        dbEnabled = false;
+        return false;
+      }
       if (i === retries - 1) {
         console.error("All database connection attempts failed");
         return false;
