@@ -7,6 +7,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as UserType } from "../shared/schema";
 import createMemoryStore from "memorystore";
+import { dbEnabled } from "./db";
 
 // Extend the Express namespace for TypeScript
 declare global {
@@ -75,6 +76,9 @@ export function setupAuth(app: Express) {
   // Configure local strategy
   passport.use(
     new LocalStrategy(async (username, password, done) => {
+      if (!dbEnabled) {
+        return done({ type: 'dbUnavailable' });
+      }
       try {
         console.log('Login attempt for username:', username);
         const user = await storage.getUserByUsername(username);
@@ -87,7 +91,7 @@ export function setupAuth(app: Express) {
         console.log('Stored password hash:', user.password);
         const isPasswordValid = await storage.comparePasswords(password, user.password);
         console.log('Password valid:', isPasswordValid);
-        
+
         if (!isPasswordValid) {
           console.log('Password verification failed for user:', username);
           return done(null, false, { message: "Invalid username or password" });
@@ -95,8 +99,11 @@ export function setupAuth(app: Express) {
 
         console.log('Login successful for user:', username);
         return done(null, user as any);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Login error:', error);
+        if (error?.message?.includes('does not exist')) {
+          return done({ type: 'dbUnavailable' });
+        }
         return done(error);
       }
     })
@@ -119,6 +126,9 @@ export function setupAuth(app: Express) {
 
   // Authentication routes
   app.post("/api/register", async (req, res, next) => {
+    if (!dbEnabled) {
+      return res.status(503).json({ message: "Database temporarily unavailable" });
+    }
     try {
       const { username, password, name, email, bio } = req.body;
 
@@ -142,7 +152,10 @@ export function setupAuth(app: Express) {
         if (err) return next(err);
         return res.status(201).json({ message: "User registered successfully", user });
       });
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.message?.includes('does not exist')) {
+        return res.status(503).json({ message: "Database temporarily unavailable" });
+      }
       next(error);
     }
   });
@@ -153,6 +166,9 @@ export function setupAuth(app: Express) {
     passport.authenticate("local", (err: any, user: any, info: any) => {
       console.log('Passport authenticate callback:', { err, user: !!user, info });
       if (err) {
+        if (err.type === 'dbUnavailable') {
+          return res.status(503).json({ message: "Database temporarily unavailable" });
+        }
         console.error('Authentication error:', err);
         return next(err);
       }

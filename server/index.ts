@@ -3,6 +3,8 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { monitor } from "./monitoring";
 import { securityMiddleware } from "./security-middleware";
+import { migrate } from "drizzle-orm/neon-serverless/migrator";
+import { db, pool } from "./db";
 // Temporarily disabled problematic imports
 // import { initializeEmailTemplates } from "./init-email-templates";
 // import { initAIEmailTemplates } from "./ai-email-templates";
@@ -83,6 +85,18 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  if (process.env.RUN_MIGRATIONS_ON_START === "1") {
+    try {
+      const before = await pool.query('SELECT COUNT(*) AS count FROM "__drizzle_migrations"');
+      await migrate(db, { migrationsFolder: "./migrations" });
+      const after = await pool.query('SELECT COUNT(*) AS count FROM "__drizzle_migrations"');
+      const applied = Number(after.rows[0].count) - Number(before.rows[0].count);
+      console.log(`db bootstrap: applied ${applied} migration(s)`);
+    } catch (err) {
+      console.error('db bootstrap failed:', err);
+    }
+  }
+
   const server = await registerRoutes(app);
 
   // Add custom domain route handler AFTER API routes are registered
