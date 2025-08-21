@@ -7,6 +7,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as UserType } from "../shared/schema";
 import createMemoryStore from "memorystore";
+import { dbEnabled } from "./db";
 
 // Extend the Express namespace for TypeScript
 declare global {
@@ -24,6 +25,13 @@ declare global {
 }
 
 const scryptAsync = promisify(scrypt);
+
+function isDbError(err: any): boolean {
+  return (
+    err?.code === 'ECONNREFUSED' ||
+    /does not exist/i.test(err?.message || '')
+  );
+}
 
 export async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
@@ -76,6 +84,7 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        username = username.trim();
         console.log('Login attempt for username:', username);
         const user = await storage.getUserByUsername(username);
         if (!user) {
@@ -119,16 +128,27 @@ export function setupAuth(app: Express) {
 
   // Authentication routes
   app.post("/api/register", async (req, res, next) => {
+    if (!dbEnabled) {
+      return res.status(503).json({ message: "Database temporarily unavailable" });
+    }
     try {
-      const { username, password, name, email, bio } = req.body;
+      const username = (req.body.username || "").trim();
+      const password = req.body.password;
+      const name = req.body.name;
+      const email = req.body.email ? String(req.body.email).trim().toLowerCase() : undefined;
+      const bio = req.body.bio;
 
-      // Check if user already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
-        return res.status(400).json({ message: "Username already taken" });
+        return res.status(409).json({ message: "Username already taken" });
+      }
+      if (email) {
+        const existingEmail = await storage.getUserByEmail(email);
+        if (existingEmail) {
+          return res.status(409).json({ message: "Email already registered" });
+        }
       }
 
-      // Create user (storage will handle password hashing)
       const user = await storage.createUser({
         username,
         password,
@@ -137,23 +157,32 @@ export function setupAuth(app: Express) {
         bio,
       });
 
-      // Log user in
       req.login(user as any, (err) => {
         if (err) return next(err);
         return res.status(201).json({ message: "User registered successfully", user });
       });
     } catch (error) {
+      if (isDbError(error)) {
+        return res.status(503).json({ message: "Database temporarily unavailable" });
+      }
       next(error);
     }
   });
 
   // Login route using Passport.js local strategy
   app.post("/api/login", (req, res, next) => {
+    if (!dbEnabled) {
+      return res.status(503).json({ message: "Database temporarily unavailable" });
+    }
+    req.body.username = req.body.username ? String(req.body.username).trim() : req.body.username;
     console.log('Login route called with body:', req.body);
     passport.authenticate("local", (err: any, user: any, info: any) => {
       console.log('Passport authenticate callback:', { err, user: !!user, info });
       if (err) {
         console.error('Authentication error:', err);
+        if (isDbError(err)) {
+          return res.status(503).json({ message: "Database temporarily unavailable" });
+        }
         return next(err);
       }
       if (!user) {
@@ -166,9 +195,9 @@ export function setupAuth(app: Express) {
           return next(err);
         }
         console.log('Login successful for user:', user.username);
-        return res.json({ 
-          message: "Login successful", 
-          user: user 
+        return res.json({
+          message: "Login successful",
+          user: user
         });
       });
     })(req, res, next);

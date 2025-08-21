@@ -97,6 +97,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Domain health check endpoint
   app.get("/health", domainHealthCheck);
 
+  // Database diagnostics endpoint
+  app.get("/api/db/diag", async (_req, res) => {
+    const host = (() => {
+      try {
+        const u = new URL(process.env.DATABASE_URL || "");
+        return u.host;
+      } catch {
+        return "";
+      }
+    })();
+    try {
+      const client = await pool.connect();
+      const info = await client.query('select current_database() as db, current_schema() as schema');
+      const dbName = info.rows[0]?.db;
+      const schemaName = info.rows[0]?.schema;
+      const tableRes = await client.query(
+        `SELECT table_name FROM information_schema.tables WHERE table_schema = $1 AND table_name IN ('users','system_logs')`,
+        [schemaName]
+      );
+      const tables = tableRes.rows.map((r: any) => r.table_name);
+      const hasUsers = tables.includes('users');
+      const hasSystemLogs = tables.includes('system_logs');
+      const requiredCols: Record<string, string[]> = {
+        users: ['id','username','password','name','email','bio','profile_image','created_at','updated_at'],
+        system_logs: ['id','level','message','source','user_id','metadata','created_at']
+      };
+      const missingColumns: { table: string; columns: string[] }[] = [];
+      for (const [table, cols] of Object.entries(requiredCols)) {
+        if (!tables.includes(table)) {
+          missingColumns.push({ table, columns: cols });
+          continue;
+        }
+        const colRes = await client.query(
+          `SELECT column_name FROM information_schema.columns WHERE table_schema=$1 AND table_name=$2`,
+          [schemaName, table]
+        );
+        const dbCols = colRes.rows.map((r: any) => r.column_name);
+        const missing = cols.filter(c => !dbCols.includes(c));
+        if (missing.length) missingColumns.push({ table, columns: missing });
+      }
+      client.release();
+      res.json({
+        connected: true,
+        db: dbName,
+        schema: schemaName,
+        hasUsers,
+        hasSystemLogs,
+        missingColumns,
+        host
+      });
+    } catch (err) {
+      res.status(500).json({
+        connected: false,
+        db: null,
+        schema: null,
+        hasUsers: false,
+        hasSystemLogs: false,
+        missingColumns: [],
+        host
+      });
+    }
+  });
+
   // Set up authentication
   setupAuth(app);
 
