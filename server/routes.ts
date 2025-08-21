@@ -97,6 +97,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Domain health check endpoint
   app.get("/health", domainHealthCheck);
 
+  // Database diagnostics
+  app.get("/api/db/diag", async (_req, res) => {
+    const required: Record<string, string[]> = {
+      users: [
+        'id','username','password','name','email','bio','profile_image','profession','industry_id','location','tags','social_score','is_admin','role','department','position','is_active','is_collaborative','last_login_at','created_at','updated_at'
+      ],
+      system_logs: ['id','level','message','source','user_id','metadata','created_at'],
+      sessions: ['sid','sess','expire'],
+      oauth_states: ['id','state','user_id','platform','code_verifier','created_at','expires_at'],
+      password_reset_tokens: ['id','email','token','expires_at','used','created_at']
+    };
+
+    const mask = (url: string) => {
+      try {
+        const u = new URL(url);
+        if (u.username) u.username = '***';
+        if (u.password) u.password = '***';
+        return u.toString();
+      } catch {
+        return undefined;
+      }
+    };
+
+    const info: any = {
+      connected: false,
+      db: process.env.DATABASE_URL ? mask(process.env.DATABASE_URL) : undefined,
+      schema: 'public',
+      requiredTables: Object.keys(required),
+      missingColumns: {}
+    };
+
+    try {
+      const client = await pool.connect();
+      info.connected = true;
+      for (const [table, cols] of Object.entries(required)) {
+        const { rows } = await client.query(
+          `SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1`,
+          [table]
+        );
+        const existing = rows.map((r: any) => r.column_name);
+        const missing = cols.filter(c => !existing.includes(c));
+        if (missing.length) info.missingColumns[table] = missing;
+      }
+      client.release();
+    } catch {
+      // ignore errors, connection info will show as not connected
+    }
+
+    res.json(info);
+  });
+
   // Set up authentication
   setupAuth(app);
 
