@@ -5,9 +5,11 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User as UserType } from "../shared/schema";
+import { User as UserType, users } from "../shared/schema";
 import createMemoryStore from "memorystore";
-import { isDbAvailable } from "./db";
+import { isDbAvailable, db } from "./db";
+import { sql } from "drizzle-orm";
+import { getUserColumnSet } from "./user-columns";
 
 // Extend the Express namespace for TypeScript
 declare global {
@@ -132,24 +134,48 @@ export function setupAuth(app: Express) {
       return res.status(503).json({ message: "Database temporarily unavailable" });
     }
     try {
-      const { username, password, name, email, bio } = req.body;
+      const { password, confirmPassword, passwordConfirmation, ...rest } = req.body;
+
+      // Password is required for registration
+      if (!rest.username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
 
       // Check if user already exists
-      const existingUser = await storage.getUserByUsername(username);
+      const existingUser = await storage.getUserByUsername(rest.username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already taken" });
       }
 
-      // Create user (storage will handle password hashing)
-      const user = await storage.createUser({
-        username,
-        password,
-        name,
-        email,
-        bio,
-      });
+      const columnSet = await getUserColumnSet(db);
+      const dbFields: Record<string, any> = {};
+      const extraFields: Record<string, any> = {};
 
-      // Log user in
+      for (const [key, value] of Object.entries(rest)) {
+        if (columnSet.has(key)) {
+          dbFields[key] = value;
+        } else {
+          extraFields[key] = value;
+        }
+      }
+
+      dbFields.password = await hashPassword(password);
+
+      let [user] = await db.insert(users).values(dbFields as any).returning();
+
+      if (Object.keys(extraFields).length > 0 && columnSet.has('settings')) {
+        const json = JSON.stringify(extraFields);
+        const { rows } = await db.execute(
+          sql`UPDATE users SET settings = COALESCE(settings,'{}'::jsonb) || ${json}::jsonb WHERE id = ${user.id} RETURNING settings`
+        );
+        if (rows.length > 0) {
+          (user as any).settings = rows[0].settings;
+        }
+        if (process.env.LOG_AUTH === '1') {
+          console.debug('register extraFields keys', Object.keys(extraFields));
+        }
+      }
+
       req.login(user as any, (err) => {
         if (err) return next(err);
         return res.status(201).json({ message: "User registered successfully", user });

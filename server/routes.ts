@@ -22,6 +22,7 @@ import {
   updateCollaborationRequestSchema,
 } from "../shared/schema";
 import { db, pool, dbGuard } from "./db";
+import { getUserColumnSet } from "./user-columns";
 import { and, eq, gt, desc } from "drizzle-orm";
 import {
   suggestLinkPriority,
@@ -135,6 +136,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch {}
 
     res.json(info);
+  });
+
+  app.get('/api/db/diag/columns', async (_req, res) => {
+    try {
+      const cols = await getUserColumnSet(db);
+      res.json({ columns: Array.from(cols) });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to fetch columns' });
+    }
   });
 
   // Set up authentication
