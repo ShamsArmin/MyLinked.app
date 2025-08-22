@@ -8,7 +8,7 @@ import { storage } from "./storage";
 import { User as UserType, users } from "../shared/schema";
 import createMemoryStore from "memorystore";
 import { isDbAvailable, db } from "./db";
-import { sql, eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { getUserColumnSet } from "./user-columns";
 
 // Extend the Express namespace for TypeScript
@@ -135,7 +135,7 @@ export function setupAuth(app: Express) {
     }
     try {
       if (process.env.LOG_AUTH === '1') {
-        const { password, confirmPassword, ...rest } = req.body ?? {};
+        const { password, confirmPassword, passwordConfirmation, passwordConfirm, ...rest } = req.body ?? {};
         console.log('Register keys:', Object.keys(rest));
       }
 
@@ -164,20 +164,22 @@ export function setupAuth(app: Express) {
         }
       }
 
-      dbFields.password = password;
+      if (process.env.LOG_AUTH === '1') {
+        console.log('Extra keys:', Object.keys(extraFields));
+      }
 
-      // Create user (storage will handle password hashing)
-      let user = await storage.createUser(dbFields as any);
+      dbFields.password = await hashPassword(password);
 
-      // Store any extra fields in settings JSONB
+      let [user] = await db.insert(users).values(dbFields as any).returning();
+
       if (Object.keys(extraFields).length > 0 && columnSet.has('settings')) {
-        await db
-          .update(users)
-          .set({
-            settings: sql`COALESCE(${users.settings}, '{}'::jsonb) || ${JSON.stringify(extraFields)}::jsonb`,
-          })
-          .where(eq(users.id, user.id));
-        user = (await storage.getUser(user.id))!;
+        const json = JSON.stringify(extraFields);
+        const { rows } = await db.execute(
+          sql`UPDATE users SET settings = COALESCE(settings,'{}'::jsonb) || ${json}::jsonb WHERE id = ${user.id} RETURNING settings`
+        );
+        if (rows.length > 0) {
+          (user as any).settings = rows[0].settings;
+        }
       }
 
       req.login(user as any, (err) => {
