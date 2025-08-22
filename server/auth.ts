@@ -134,20 +134,24 @@ export function setupAuth(app: Express) {
       return res.status(503).json({ message: "Database temporarily unavailable" });
     }
     try {
-      if (process.env.LOG_AUTH === '1') {
-        const { password, confirmPassword, passwordConfirmation, passwordConfirm, ...rest } = req.body ?? {};
-        console.log('Register keys:', Object.keys(rest));
-      }
+      const body = req.body ?? {};
+      const {
+        password,
+        confirmPassword,
+        passwordConfirmation,
+        passwordConfirm,
+        ...rest
+      } = body;
 
-      const { password, confirmPassword, passwordConfirmation, passwordConfirm, ...rest } = req.body;
+      const userRecord = { name: rest.username, ...rest } as Record<string, any>;
 
       // Password is required for registration
-      if (!rest.username || !password) {
+      if (!userRecord.username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
       }
 
       // Check if user already exists
-      const existingUser = await storage.getUserByUsername(rest.username);
+      const existingUser = await storage.getUserByUsername(userRecord.username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already taken" });
       }
@@ -156,7 +160,7 @@ export function setupAuth(app: Express) {
       const dbFields: Record<string, any> = {};
       const extraFields: Record<string, any> = {};
 
-      for (const [key, value] of Object.entries(rest)) {
+      for (const [key, value] of Object.entries(userRecord)) {
         if (columnSet.has(key)) {
           dbFields[key] = value;
         } else {
@@ -165,7 +169,8 @@ export function setupAuth(app: Express) {
       }
 
       if (process.env.LOG_AUTH === '1') {
-        console.log('Extra keys:', Object.keys(extraFields));
+        console.log('Register insert columns:', Object.keys(dbFields));
+        console.log('Register extra keys→settings:', Object.keys(extraFields));
       }
 
       dbFields.password = await hashPassword(password);
