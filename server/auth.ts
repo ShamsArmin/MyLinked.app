@@ -8,7 +8,7 @@ import { storage } from "./storage";
 import { User as UserType, users } from "../shared/schema";
 import createMemoryStore from "memorystore";
 import { isDbAvailable, db } from "./db";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import { getUserColumnSet } from "./user-columns";
 
 // Extend the Express namespace for TypeScript
@@ -134,7 +134,7 @@ export function setupAuth(app: Express) {
       return res.status(503).json({ message: "Database temporarily unavailable" });
     }
     try {
-      const { password, confirmPassword, passwordConfirmation, ...rest } = req.body;
+      const { password, confirmPassword, passwordConfirmation, passwordConfirm, ...rest } = req.body;
 
       // Password is required for registration
       if (!rest.username || !password) {
@@ -159,21 +159,26 @@ export function setupAuth(app: Express) {
         }
       }
 
-      dbFields.password = await hashPassword(password);
+      dbFields.password = password;
 
-      let [user] = await db.insert(users).values(dbFields as any).returning();
+      if (process.env.LOG_AUTH === '1') {
+        const loggedKeys = Object.keys(req.body).filter(k => !k.toLowerCase().includes('password'));
+        console.log('Register keys', loggedKeys);
+        console.log('Extra keys', Object.keys(extraFields));
+      }
 
+      // Create user (storage will handle password hashing)
+      let user = await storage.createUser(dbFields as any);
+
+      // Store any extra fields in settings JSONB
       if (Object.keys(extraFields).length > 0 && columnSet.has('settings')) {
-        const json = JSON.stringify(extraFields);
-        const { rows } = await db.execute(
-          sql`UPDATE users SET settings = COALESCE(settings,'{}'::jsonb) || ${json}::jsonb WHERE id = ${user.id} RETURNING settings`
-        );
-        if (rows.length > 0) {
-          (user as any).settings = rows[0].settings;
-        }
-        if (process.env.LOG_AUTH === '1') {
-          console.debug('register extraFields keys', Object.keys(extraFields));
-        }
+        await db
+          .update(users)
+          .set({
+            settings: sql`COALESCE(${users.settings}, '{}'::jsonb) || ${JSON.stringify(extraFields)}::jsonb`,
+          })
+          .where(eq(users.id, user.id));
+        user = (await storage.getUser(user.id))!;
       }
 
       req.login(user as any, (err) => {
