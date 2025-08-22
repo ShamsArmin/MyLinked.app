@@ -134,6 +134,11 @@ export function setupAuth(app: Express) {
       return res.status(503).json({ message: "Database temporarily unavailable" });
     }
     try {
+      if (process.env.LOG_AUTH === '1') {
+        const { password, confirmPassword, ...rest } = req.body ?? {};
+        console.log('Register keys:', Object.keys(rest));
+      }
+
       const { password, confirmPassword, passwordConfirmation, passwordConfirm, ...rest } = req.body;
 
       // Password is required for registration
@@ -160,12 +165,6 @@ export function setupAuth(app: Express) {
       }
 
       dbFields.password = password;
-
-      if (process.env.LOG_AUTH === '1') {
-        const loggedKeys = Object.keys(req.body).filter(k => !k.toLowerCase().includes('password'));
-        console.log('Register keys', loggedKeys);
-        console.log('Extra keys', Object.keys(extraFields));
-      }
 
       // Create user (storage will handle password hashing)
       let user = await storage.createUser(dbFields as any);
