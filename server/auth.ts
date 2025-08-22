@@ -76,7 +76,7 @@ export function setupAuth(app: Express) {
   // Configure local strategy
   passport.use(
     new LocalStrategy(async (username, password, done) => {
-      if (!isDbAvailable()) {
+      if (!(await isDbAvailable())) {
         return done({ type: 'dbUnavailable' });
       }
       try {
@@ -100,10 +100,12 @@ export function setupAuth(app: Express) {
         console.log('Login successful for user:', username);
         return done(null, user as any);
       } catch (error: any) {
-        console.error('Login error:', error);
-        if (error?.message?.includes('does not exist')) {
-          return done({ type: 'dbUnavailable' });
-        }
+        console.error('Login error:', {
+          code: error?.code,
+          column: error?.column,
+          table: error?.table,
+          message: error?.message,
+        });
         return done(error);
       }
     })
@@ -126,7 +128,7 @@ export function setupAuth(app: Express) {
 
   // Authentication routes
   app.post("/api/register", async (req, res, next) => {
-    if (!isDbAvailable()) {
+    if (!(await isDbAvailable())) {
       return res.status(503).json({ message: "Database temporarily unavailable" });
     }
     try {
@@ -153,10 +155,13 @@ export function setupAuth(app: Express) {
         return res.status(201).json({ message: "User registered successfully", user });
       });
     } catch (error: any) {
-      if (error?.message?.includes('does not exist')) {
-        return res.status(503).json({ message: "Database temporarily unavailable" });
-      }
-      next(error);
+      console.error('Register error:', {
+        code: error?.code,
+        column: error?.column,
+        table: error?.table,
+        message: error?.message,
+      });
+      return res.status(500).json({ message: 'Database error' });
     }
   });
 

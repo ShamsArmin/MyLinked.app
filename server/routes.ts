@@ -115,7 +115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       schema: undefined as string | undefined,
       tables: [] as string[],
       hostMasked: mask(process.env.DATABASE_URL),
-      guard: { bypass: dbGuard.bypass, reason: dbGuard.reason },
+      guard: { bypass: dbGuard.bypass, reason: dbGuard.reason, cachedDown: dbGuard.cachedDown },
     };
 
     try {
