@@ -68,6 +68,7 @@ export const users = pgTable("users", {
   hireDate: timestamp("hire_date"),
   lastLoginAt: timestamp("last_login_at"),
   isActive: boolean("is_active").default(true),
+  settings: jsonb("settings"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

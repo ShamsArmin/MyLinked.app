@@ -1,5 +1,6 @@
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
+import { sql } from 'drizzle-orm';
 import ws from 'ws';
 import * as schema from '../shared/schema';
 
@@ -107,3 +108,19 @@ async function testConnection(retries = 3) {
 
 // Start initial connection test
 void testConnection();
+
+// Cache user column names for ~60s to avoid repeated metadata queries
+let userColumnCache: { time: number; set: Set<string> } | undefined;
+
+export async function getUserColumnSet(database: typeof db): Promise<Set<string>> {
+  const now = Date.now();
+  if (userColumnCache && now - userColumnCache.time < 60_000) {
+    return userColumnCache.set;
+  }
+  const result = await database.execute(
+    sql`SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='users';`
+  );
+  const set = new Set(result.rows.map((r: any) => r.column_name));
+  userColumnCache = { time: now, set };
+  return set;
+}
