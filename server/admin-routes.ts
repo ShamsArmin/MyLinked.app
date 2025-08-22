@@ -2,7 +2,7 @@ import { Router } from "express";
 import { storage } from "./storage";
 import { isAuthenticated } from "./auth";
 import { Request, Response, NextFunction } from "express";
-import { db, dbEnabled, setDbEnabled } from "./db";
+import { db, isDbAvailable, setDbEnabled } from "./db";
 import { users, featureToggles, systemLogs, socialConnections, links, profileViews } from "../shared/schema";
 import { eq, desc, count, sql, and, gte, isNotNull } from "drizzle-orm";
 
@@ -545,7 +545,7 @@ adminRouter.get("/users/:userId/export", async (req: Request, res: Response) => 
 
 // Helper function to log system events
 export async function logSystemEvent(level: 'info' | 'warning' | 'error', message: string, source: string, userId?: number, metadata?: any) {
-  if (!dbEnabled) {
+  if (!isDbAvailable()) {
     return;
   }
   try {
@@ -559,7 +559,8 @@ export async function logSystemEvent(level: 'info' | 'warning' | 'error', messag
   } catch (error) {
     console.error("Failed to log system event:", error);
     if ((error as any)?.message?.includes('endpoint has been disabled')) {
-      setDbEnabled(false);
+      const err: any = error;
+      setDbEnabled(false, err.message, err.code);
     }
   }
 }

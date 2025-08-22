@@ -1,4 +1,4 @@
-import { db, dbEnabled, setDbEnabled } from './db';
+import { db, isDbAvailable, setDbEnabled } from './db';
 import { 
   users, links, profileViews, follows, socialPosts, socialConnections,
   spotlightProjects, spotlightContributors, spotlightTags,
@@ -1336,7 +1336,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   async logSystemEvent(level: string, message: string, source: string, userId?: number, metadata?: any): Promise<void> {
-    if (!dbEnabled) {
+    if (!isDbAvailable()) {
       return;
     }
     try {
@@ -1350,7 +1350,8 @@ export class EnhancedDatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Failed to log system event:', error);
       if ((error as any)?.message?.includes('endpoint has been disabled')) {
-        setDbEnabled(false);
+        const err: any = error;
+        setDbEnabled(false, err.message, err.code);
       }
     }
   }

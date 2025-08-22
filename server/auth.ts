@@ -7,7 +7,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as UserType } from "../shared/schema";
 import createMemoryStore from "memorystore";
-import { dbEnabled } from "./db";
+import { isDbAvailable } from "./db";
 
 // Extend the Express namespace for TypeScript
 declare global {
@@ -76,7 +76,7 @@ export function setupAuth(app: Express) {
   // Configure local strategy
   passport.use(
     new LocalStrategy(async (username, password, done) => {
-      if (!dbEnabled) {
+      if (!isDbAvailable()) {
         return done({ type: 'dbUnavailable' });
       }
       try {
@@ -126,7 +126,7 @@ export function setupAuth(app: Express) {
 
   // Authentication routes
   app.post("/api/register", async (req, res, next) => {
-    if (!dbEnabled) {
+    if (!isDbAvailable()) {
       return res.status(503).json({ message: "Database temporarily unavailable" });
     }
     try {
