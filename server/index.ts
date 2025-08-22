@@ -112,10 +112,9 @@ app.use((req, res, next) => {
   next();
 });
 
+
 (async () => {
-  if (process.env.RUN_MIGRATIONS_ON_START === "0") {
-    console.log('db bootstrap: skipped (bypass)');
-  } else {
+  if (process.env.RUN_MIGRATIONS_ON_START === "1") {
     let applied = 0;
     let skipped = 0;
     try {
@@ -135,6 +134,8 @@ app.use((req, res, next) => {
     } catch (err) {
       console.error('db bootstrap failed:', err);
     }
+  } else {
+    console.log('db bootstrap: skipped');
   }
 
   const server = await registerRoutes(app);

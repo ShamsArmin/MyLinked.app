@@ -1,7 +1,7 @@
 import { pgTable, text, serial, timestamp, integer, json, boolean, varchar, jsonb, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // Sessions table for authentication
 export const sessions = pgTable("sessions", {
@@ -68,6 +68,7 @@ export const users = pgTable("users", {
   hireDate: timestamp("hire_date"),
   lastLoginAt: timestamp("last_login_at"),
   isActive: boolean("is_active").default(true),
+  settings: jsonb("settings").default(sql`'{}'::jsonb`),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
