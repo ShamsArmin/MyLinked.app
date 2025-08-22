@@ -5,9 +5,10 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User as UserType } from "../shared/schema";
+import { User as UserType, users } from "../shared/schema";
 import createMemoryStore from "memorystore";
-import { isDbAvailable } from "./db";
+import { db, isDbAvailable, getUserColumnSet } from "./db";
+import { sql, eq } from "drizzle-orm";
 
 // Extend the Express namespace for TypeScript
 declare global {
@@ -130,22 +131,45 @@ export function setupAuth(app: Express) {
       return res.status(503).json({ message: "Database temporarily unavailable" });
     }
     try {
-      const { username, password, name, email, bio } = req.body;
+      const columnSet = await getUserColumnSet(db);
+
+      const dbFields: Record<string, any> = {};
+      const extraFields: Record<string, any> = {};
+
+      for (const [key, value] of Object.entries(req.body)) {
+        if (key === 'passwordConfirm') continue;
+        if (columnSet.has(key)) {
+          dbFields[key] = value;
+        } else if (key !== 'password') {
+          extraFields[key] = value;
+        }
+      }
+
+      if (process.env.LOG_AUTH === '1') {
+        const loggedKeys = Object.keys(req.body).filter(k => !k.toLowerCase().includes('password'));
+        console.log('Register keys', loggedKeys);
+        console.log('Extra keys', Object.keys(extraFields));
+      }
 
       // Check if user already exists
-      const existingUser = await storage.getUserByUsername(username);
+      const existingUser = await storage.getUserByUsername(dbFields.username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already taken" });
       }
 
       // Create user (storage will handle password hashing)
-      const user = await storage.createUser({
-        username,
-        password,
-        name,
-        email,
-        bio,
-      });
+      let user = await storage.createUser(dbFields as any);
+
+      // Store any extra fields in settings JSONB
+      if (Object.keys(extraFields).length > 0) {
+        await db
+          .update(users)
+          .set({
+            settings: sql`COALESCE(${users.settings}, '{}'::jsonb) || ${JSON.stringify(extraFields)}::jsonb`,
+          })
+          .where(eq(users.id, user.id));
+        user = (await storage.getUser(user.id))!;
+      }
 
       // Log user in
       req.login(user as any, (err) => {
