@@ -133,6 +133,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       info.schema = meta[0]?.schema;
       const { rows: tbl } = await pool.query("select table_name from information_schema.tables where table_schema='public'");
       info.tables = tbl.map((r: any) => r.table_name);
+
+      const expected: Record<string, string[]> = {
+        users: [
+          'id','username','password','name','email','bio','profile_image','profile_background','font','theme','view_mode','dark_mode','welcome_message','social_score','show_social_score','is_collaborative','collaborators','pitch_mode','pitch_mode_type','pitch_description','pitch_focus_areas','profession','industry_id','location','interests','tags','is_admin','role','permissions','department','position','salary','hire_date','last_login_at','is_active','settings','created_at','updated_at'
+        ],
+        system_logs: ['id','level','message','source','user_id','metadata','created_at'],
+        links: ['id','user_id','platform','title','url','description','color','clicks','views','featured','order','ai_score','last_clicked_at','created_at','updated_at'],
+        collaboration_requests: ['id','sender_id','receiver_id','name','email','phone','field_of_work','message','status','created_at','updated_at'],
+        referral_links: ['id','user_id','title','url','description','image','link_type','reference_user_id','reference_company','clicks','created_at','updated_at'],
+        industries: ['id','name','icon','created_at'],
+        profile_views: ['id','user_id','viewed_at','referrer','user_agent','ip_address'],
+        follows: ['id','follower_id','following_id','created_at'],
+        spotlight_projects: ['id','user_id','title','url','description','thumbnail','is_pinned','created_at','updated_at','view_count','click_count'],
+      };
+
+      const { rows: colRows } = await pool.query("select table_name, column_name from information_schema.columns where table_schema='public'");
+      const map = new Map<string, Set<string>>();
+      for (const r of colRows) {
+        if (!map.has(r.table_name)) map.set(r.table_name, new Set());
+        map.get(r.table_name)!.add(r.column_name);
+      }
+      const missing: Record<string, string[]> = {};
+      for (const [table, cols] of Object.entries(expected)) {
+        const existing = map.get(table) || new Set<string>();
+        const miss = cols.filter(c => !existing.has(c));
+        if (miss.length) missing[table] = miss;
+      }
+      info.schemaOk = Object.keys(missing).length === 0;
+      if (!info.schemaOk) info.missing = missing;
     } catch {}
 
     res.json(info);
