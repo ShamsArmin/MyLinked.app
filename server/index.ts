@@ -85,13 +85,25 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  if (process.env.RUN_MIGRATIONS_ON_START === "1") {
+  if (process.env.RUN_MIGRATIONS_ON_START === "0") {
+    console.log('db bootstrap: skipped (bypass)');
+  } else {
+    let applied = 0;
+    let skipped = 0;
     try {
       const before = await pool.query('SELECT COUNT(*) AS count FROM "__drizzle_migrations"');
-      await migrate(db, { migrationsFolder: "./migrations" });
+      try {
+        await migrate(db, { migrationsFolder: "./migrations" });
+      } catch (err: any) {
+        if (err?.code === '42P07' || err?.code === '42710') {
+          skipped++;
+        } else {
+          throw err;
+        }
+      }
       const after = await pool.query('SELECT COUNT(*) AS count FROM "__drizzle_migrations"');
-      const applied = Number(after.rows[0].count) - Number(before.rows[0].count);
-      console.log(`db bootstrap: applied ${applied} migration(s)`);
+      applied = Number(after.rows[0].count) - Number(before.rows[0].count);
+      console.log(`db bootstrap: ok (applied ${applied}, skipped ${skipped})`);
     } catch (err) {
       console.error('db bootstrap failed:', err);
     }

@@ -21,7 +21,7 @@ import {
   insertCollaborationRequestSchema,
   updateCollaborationRequestSchema,
 } from "../shared/schema";
-import { db } from "./db";
+import { db, pool, dbGuard } from "./db";
 import { and, eq, gt, desc } from "drizzle-orm";
 import {
   suggestLinkPriority,
@@ -47,7 +47,6 @@ import { professionalAdminRouter } from "./professional-admin-routes";
 import { monitoringRouter } from "./monitoring-routes";
 import { securityRouter } from "./security-routes";
 import bcrypt from "bcrypt";
-import { pool } from "./db";
 import { handleCustomDomain, domainHealthCheck } from "./domain-middleware";
 import emailRouter from "./email-routes";
 import supportRouter from "./support-routes";
@@ -98,21 +97,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/health", domainHealthCheck);
 
   // Database diagnostics
-  app.get("/api/db/diag", async (_req, res) => {
-    const required: Record<string, string[]> = {
-      users: [
-        'id','username','password','name','email','bio','profile_image','profession','industry_id','location','tags','social_score','is_admin','role','department','position','is_active','is_collaborative','last_login_at','created_at','updated_at'
-      ],
-      system_logs: ['id','level','message','source','user_id','metadata','created_at'],
-      sessions: ['sid','sess','expire'],
-      oauth_states: ['id','state','user_id','platform','code_verifier','created_at','expires_at'],
-      password_reset_tokens: ['id','email','token','expires_at','used','created_at']
-    };
-
-    const mask = (url: string) => {
+  app.get('/api/db/diag', async (_req, res) => {
+    const mask = (url?: string) => {
+      if (!url) return undefined;
       try {
         const u = new URL(url);
-        if (u.username) u.username = '***';
         if (u.password) u.password = '***';
         return u.toString();
       } catch {
@@ -122,28 +111,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     const info: any = {
       connected: false,
-      db: process.env.DATABASE_URL ? mask(process.env.DATABASE_URL) : undefined,
-      schema: 'public',
-      requiredTables: Object.keys(required),
-      missingColumns: {}
+      db: undefined as string | undefined,
+      schema: undefined as string | undefined,
+      tables: [] as string[],
+      hostMasked: mask(process.env.DATABASE_URL),
+      guard: { bypass: dbGuard.bypass, reason: dbGuard.reason },
     };
 
     try {
-      const client = await pool.connect();
+      await Promise.race([
+        pool.query('SELECT 1'),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000)),
+      ]);
       info.connected = true;
-      for (const [table, cols] of Object.entries(required)) {
-        const { rows } = await client.query(
-          `SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1`,
-          [table]
-        );
-        const existing = rows.map((r: any) => r.column_name);
-        const missing = cols.filter(c => !existing.includes(c));
-        if (missing.length) info.missingColumns[table] = missing;
-      }
-      client.release();
-    } catch {
-      // ignore errors, connection info will show as not connected
-    }
+    } catch {}
+
+    try {
+      const { rows: meta } = await pool.query('select current_database() as db, current_schema() as schema');
+      info.db = meta[0]?.db;
+      info.schema = meta[0]?.schema;
+      const { rows: tbl } = await pool.query("select table_name from information_schema.tables where table_schema='public'");
+      info.tables = tbl.map((r: any) => r.table_name);
+    } catch {}
 
     res.json(info);
   });
