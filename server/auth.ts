@@ -1,12 +1,11 @@
 import { Express, Request, Response, NextFunction } from "express";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import session from "express-session";
+import "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as UserType, users } from "../shared/schema";
-import createMemoryStore from "memorystore";
 import { isDbAvailable, db } from "./db";
 import { sql } from "drizzle-orm";
 import { getUserColumnSet } from "./user-columns";
@@ -43,35 +42,6 @@ export async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  // Configure session with fallback to memory store if database fails
-  const MemoryStore = createMemoryStore(session);
-  let sessionStore;
-  
-  try {
-    // Try to use database session store
-    sessionStore = storage.sessionStore;
-  } catch (error) {
-    console.warn('Database session store failed, using memory store:', error);
-    sessionStore = new MemoryStore({
-      checkPeriod: 86400000, // prune expired entries every 24h
-    });
-  }
-
-  const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "mylinked-secret-key",
-    resave: false,
-    saveUninitialized: false,
-    store: sessionStore,
-    cookie: {
-      httpOnly: true,
-      secure: false, // Set to false for development
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    },
-    name: 'mylinked.session'
-  };
-
-  app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
 

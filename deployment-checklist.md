@@ -7,7 +7,7 @@
 - [ ] All dependencies installed (`package.json` up to date)
 - [ ] Build process works: `npm run build`
 - [ ] Server starts properly: `npm start`
-- [ ] Environment variables configured
+- [ ] Environment variables configured (e.g., `SESSION_SECRET`)
 
 ### ✅ Domain Strategy Decision
 Choose ONE:

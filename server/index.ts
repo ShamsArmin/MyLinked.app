@@ -1,4 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
+import pgSession from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { monitor } from "./monitoring";
@@ -53,6 +55,32 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+if (process.env.NODE_ENV === 'production') {
+  const PgSession = pgSession(session);
+  app.use(
+    session({
+      store: new PgSession({ conString: process.env.DATABASE_URL }),
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+      },
+    })
+  );
+} else {
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || 'mylinked-secret-key',
+      resave: false,
+      saveUninitialized: false,
+    })
+  );
+}
 
 app.use((req, res, next) => {
   const start = Date.now();
