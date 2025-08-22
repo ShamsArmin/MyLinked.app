@@ -1336,7 +1336,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   async logSystemEvent(level: string, message: string, source: string, userId?: number, metadata?: any): Promise<void> {
-    if (!isDbAvailable()) {
+    if (!(await isDbAvailable())) {
       return;
     }
     try {

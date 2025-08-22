@@ -545,7 +545,7 @@ adminRouter.get("/users/:userId/export", async (req: Request, res: Response) => 
 
 // Helper function to log system events
 export async function logSystemEvent(level: 'info' | 'warning' | 'error', message: string, source: string, userId?: number, metadata?: any) {
-  if (!isDbAvailable()) {
+  if (!(await isDbAvailable())) {
     return;
   }
   try {

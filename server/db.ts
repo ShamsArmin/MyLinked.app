@@ -9,9 +9,10 @@ export const dbGuard = {
   reason: undefined as string | undefined,
   code: undefined as string | undefined,
   lastLog: 0,
+  cachedDown: false,
 };
 
-let dbEnabled = true;
+let dbDownUntil = 0;
 
 function isEndpointDisabledError(err: unknown): boolean {
   return (
@@ -24,27 +25,47 @@ function isEndpointDisabledError(err: unknown): boolean {
 }
 
 export function setDbEnabled(value: boolean, reason?: string, code?: string) {
-  dbEnabled = value;
-  if (!value) {
+  if (value) {
+    dbDownUntil = 0;
+    dbGuard.reason = undefined;
+    dbGuard.code = undefined;
+    dbGuard.cachedDown = false;
+  } else {
+    dbDownUntil = Date.now() + 10_000; // short negative cache
     dbGuard.reason = reason;
     dbGuard.code = code;
+    dbGuard.cachedDown = true;
   }
 }
 
-export function isDbAvailable(): boolean {
-  const available = dbEnabled || dbGuard.bypass;
-  if (!dbEnabled) {
-    const now = Date.now();
-    if (now - dbGuard.lastLog > 60_000) {
-      const msg = dbGuard.bypass ? 'db guard bypass' : 'db guard block';
-      console.warn(msg, {
-        reason: dbGuard.reason,
-        code: dbGuard.code,
-      });
-      dbGuard.lastLog = now;
-    }
+export async function isDbAvailable(): Promise<boolean> {
+  if (dbGuard.bypass) return true;
+
+  const now = Date.now();
+  if (now < dbDownUntil) {
+    dbGuard.cachedDown = true;
+    return false;
   }
-  return available;
+
+  try {
+    await Promise.race([
+      pool.query('SELECT 1'),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 2000),
+      ),
+    ]);
+    setDbEnabled(true);
+    return true;
+  } catch (err: any) {
+    setDbEnabled(false, err?.message, err?.code);
+    const logNow = Date.now();
+    if (logNow - dbGuard.lastLog > 60_000) {
+      const msg = dbGuard.bypass ? 'db guard bypass' : 'db guard block';
+      console.warn(msg, { reason: dbGuard.reason, code: dbGuard.code });
+      dbGuard.lastLog = logNow;
+    }
+    return false;
+  }
 }
 
 // Configure Neon Database to use WebSockets (needed for serverless environments)
