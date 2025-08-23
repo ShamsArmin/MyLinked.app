@@ -8,7 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { usePlatformIcons } from "@/hooks/use-platform-icons";
 import { InsertLink } from "@shared/schema";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
+import {
+  createLink,
+  invalidateLinks,
+} from "@/lib/links-api";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
@@ -66,11 +70,9 @@ const AddLinkDialog: React.FC<AddLinkDialogProps> = ({
   }, [platform]);
   
   const addLinkMutation = useMutation({
-    mutationFn: async (linkData: InsertLink) => {
-      return await apiRequest("POST", "/api/links", linkData);
-    },
+    mutationFn: (linkData: InsertLink) => createLink(linkData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/links"] });
+      invalidateLinks();
       onOpenChange(false);
       toast({
         title: "Link added",
@@ -87,12 +89,11 @@ const AddLinkDialog: React.FC<AddLinkDialogProps> = ({
   });
   
   const updateLinkMutation = useMutation({
-    mutationFn: async (data: { id: number, updates: Partial<InsertLink> }) => {
-      const res = await apiRequest("PATCH", `/api/links/${data.id}`, data.updates);
-      return await res.json();
+    mutationFn: async (data: { id: number; updates: Partial<InsertLink> }) => {
+      return await apiRequest("PATCH", `/api/links/${data.id}`, data.updates);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/links"] });
+      invalidateLinks();
       onOpenChange(false);
       toast({
         title: "Link updated",

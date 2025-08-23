@@ -2,7 +2,11 @@ import React from "react";
 import { Link } from "@shared/schema";
 import { usePlatformIcons } from "@/hooks/use-platform-icons";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import {
+  deleteLink,
+  removeLinkOptimistic,
+  invalidateLinks,
+} from "@/lib/links-api";
 import { useToast } from "@/hooks/use-toast";
 
 type LinkItemProps = {
@@ -18,11 +22,12 @@ const LinkItem: React.FC<LinkItemProps> = ({ link, onEdit }) => {
   const Icon = platform.icon;
   
   const deleteLinkMutation = useMutation({
-    mutationFn: async () => {
-      await apiRequest("DELETE", `/api/links/${link.id}`);
+    mutationFn: (id: number) => deleteLink(id),
+    onMutate: () => {
+      removeLinkOptimistic(link.id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/links"] });
+      invalidateLinks();
       toast({
         title: "Link deleted",
         description: "Your link has been deleted successfully.",
@@ -34,12 +39,13 @@ const LinkItem: React.FC<LinkItemProps> = ({ link, onEdit }) => {
         description: error.message,
         variant: "destructive",
       });
+      invalidateLinks();
     },
   });
   
   const handleDelete = () => {
     if (window.confirm("Are you sure you want to delete this link?")) {
-      deleteLinkMutation.mutate();
+      deleteLinkMutation.mutate(link.id);
     }
   };
   
