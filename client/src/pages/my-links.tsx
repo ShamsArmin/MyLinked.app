@@ -129,8 +129,7 @@ export default function MyLinksPage() {
   // Create link mutation
   const createLinkMutation = useMutation({
     mutationFn: async (data: LinkFormValues) => {
-      const res = await apiRequest('POST', '/api/links', data);
-      return await res.json();
+      return await apiRequest('POST', '/api/links', data);
     },
     onSuccess: () => {
       toast({

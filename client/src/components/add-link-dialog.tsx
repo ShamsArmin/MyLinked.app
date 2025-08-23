@@ -67,8 +67,7 @@ const AddLinkDialog: React.FC<AddLinkDialogProps> = ({
   
   const addLinkMutation = useMutation({
     mutationFn: async (linkData: InsertLink) => {
-      const res = await apiRequest("POST", "/api/links", linkData);
-      return await res.json();
+      return await apiRequest("POST", "/api/links", linkData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/links"] });
