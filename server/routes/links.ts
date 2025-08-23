@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { isAuthenticated } from "../auth";
-import { storage } from "../storage";
+import { storage } from "../db-storage-enhanced";
 import { z } from "zod";
 
 export const linksRouter = Router();
@@ -17,10 +17,7 @@ const createLinkSchema = z.object({
 // GET current user's links with legacy self-heal
 linksRouter.get("/", isAuthenticated, async (req, res) => {
   try {
-    const userId = Number((req as any).user.id);
-
-    await storage.backfillLinksForUser(userId);
-
+    const userId = String((req as any).user.id);
     const list = await storage.getLinks(userId);
     return res.json(list);
   } catch (e) {
@@ -32,14 +29,9 @@ linksRouter.get("/", isAuthenticated, async (req, res) => {
 // CREATE a new link enforcing ownership
 linksRouter.post("/", isAuthenticated, async (req, res) => {
   try {
-    const userId = Number((req as any).user.id);
+    const userId = String((req as any).user.id);
     const data = createLinkSchema.parse(req.body);
-
-    const created = await storage.createLink(userId, {
-      ...data,
-      userId,
-    } as any);
-
+    const created = await storage.createLink(userId, data);
     return res.status(201).json(created);
   } catch (e: any) {
     if (e?.issues) {
@@ -55,7 +47,7 @@ linksRouter.post("/", isAuthenticated, async (req, res) => {
 // DELETE a link with safe legacy handling
 linksRouter.delete("/:id", isAuthenticated, async (req, res) => {
   try {
-    const userId = Number((req as any).user.id);
+    const userId = String((req as any).user.id);
     const id = Number(req.params.id);
     if (!Number.isInteger(id)) {
       return res.status(400).json({ message: "Invalid link id" });
@@ -66,7 +58,7 @@ linksRouter.delete("/:id", isAuthenticated, async (req, res) => {
       return res.status(404).json({ message: "Link not found" });
     }
 
-    if (link.userId != null && Number(link.userId) !== userId) {
+    if (String(link.userId) !== userId) {
       return res
         .status(403)
         .json({ message: "Not authorized to delete this link" });

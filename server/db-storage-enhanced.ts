@@ -7,7 +7,7 @@ import {
   userReports, passwordResetTokens, collaborationRequests,
   collaborationRequestsNotifications,
   type User, type InsertUser, type UpdateUser,
-  type Link, type InsertLink, type UpdateLink,
+  type Link, type UpdateLink,
   type SocialPost, type InsertSocialPost,
   type SocialConnection, type InsertSocialConnection,
   type Follow, type InsertFollow,
@@ -41,7 +41,7 @@ import connectPg from "connect-pg-simple";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { IStorage } from "./storage";
+import type { IStorage } from "./storage";
 
 const scryptAsync = promisify(scrypt);
 
@@ -357,7 +357,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Link methods
-  async getLinks(userId: number): Promise<Link[]> {
+  async getLinks(userId: string): Promise<Link[]> {
     return db
       .select()
       .from(links)
@@ -375,14 +375,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Backfill links that have null owner to the provided user
-  async backfillLinksForUser(userId: number): Promise<void> {
-    await db
-      .update(links)
-      .set({ userId })
-      .where(and(isNull(links.userId)));
-  }
-
-  async createLink(userId: number, linkData: InsertLink): Promise<Link> {
+  async createLink(userId: string, linkData: any): Promise<Link> {
     // Get the count of existing links to set the order
     const [result] = await db
       .select({ count: count() })
@@ -394,8 +387,13 @@ export class EnhancedDatabaseStorage implements IStorage {
     const [link] = await db
       .insert(links)
       .values({
-        ...linkData,
         userId,
+        platform: linkData.platform,
+        title: linkData.title,
+        url: linkData.url,
+        description: linkData.description ?? null,
+        color: linkData.color ?? null,
+        featured: !!linkData.featured,
         order,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -416,7 +414,7 @@ export class EnhancedDatabaseStorage implements IStorage {
     return link;
   }
 
-  async deleteLink(id: number, userId?: number): Promise<boolean> {
+  async deleteLink(id: number, userId?: string): Promise<boolean> {
     if (userId) {
       const result = await db
         .delete(links)
@@ -429,12 +427,10 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Delete link enforcing ownership but allowing legacy null owners
-  async deleteLinkOwned(id: number, userId: number): Promise<boolean> {
+  async deleteLinkOwned(id: number, userId: string): Promise<boolean> {
     const res = await db
       .delete(links)
-      .where(
-        and(eq(links.id, id), or(isNull(links.userId), eq(links.userId, userId)))
-      );
+      .where(and(eq(links.id, id), eq(links.userId, userId)));
     const rowCount = (res as any)?.rowCount ?? (Array.isArray(res) ? res.length : 0);
     return rowCount > 0;
   }
@@ -1978,3 +1974,5 @@ export class EnhancedDatabaseStorage implements IStorage {
     return result.count;
   }
 }
+
+export const storage = new EnhancedDatabaseStorage();

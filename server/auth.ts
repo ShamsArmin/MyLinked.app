@@ -239,7 +239,7 @@ export function isAuthenticated(req: Request, res: Response, next: NextFunction)
 // Middleware to check if user is the owner of a resource
 export function isOwner(paramName: string) {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (req.isAuthenticated() && req.user && req.user.id === parseInt(req.params[paramName])) {
+    if (req.isAuthenticated() && req.user && String(req.user.id) === req.params[paramName]) {
       return next();
     }
     return res.status(403).json({ message: "Forbidden" });

@@ -27,7 +27,6 @@ import {
   type SupportMessage, type InsertSupportMessage, type UpdateSupportMessage
 } from "../shared/support-schema";
 import session from "express-session";
-import { EnhancedDatabaseStorage } from "./db-storage-enhanced";
 
 // Define the storage interface with all CRUD methods
 export interface IStorage {
@@ -53,13 +52,12 @@ export interface IStorage {
   resetPassword(token: string, newPassword: string): Promise<User | undefined>;
   
   // Links
-  getLinks(userId: number): Promise<Link[]>;
+  getLinks(userId: string): Promise<Link[]>;
   getLinkById(id: number): Promise<Link | undefined>;
-  backfillLinksForUser(userId: number): Promise<void>;
-  createLink(userId: number, link: InsertLink): Promise<Link>;
+  createLink(userId: string, link: InsertLink): Promise<Link>;
   updateLink(id: number, updates: UpdateLink): Promise<Link | undefined>;
-  deleteLink(id: number, userId?: number): Promise<boolean>;
-  deleteLinkOwned(id: number, userId: number): Promise<boolean>;
+  deleteLink(id: number, userId?: string): Promise<boolean>;
+  deleteLinkOwned(id: number, userId: string): Promise<boolean>;
   incrementLinkClicks(id: number): Promise<Link | undefined>;
   incrementLinkViews(id: number): Promise<Link | undefined>;
   updateLinkAiScore(id: number, score: number): Promise<Link | undefined>;
@@ -186,5 +184,5 @@ export interface IStorage {
   sessionStore: any; // Using 'any' to avoid type issues with express-session
 }
 
-// Export an enhanced database storage instance with new features
-export const storage = new EnhancedDatabaseStorage();
+// Re-export storage instance from enhanced storage implementation
+export { storage } from "./db-storage-enhanced";
