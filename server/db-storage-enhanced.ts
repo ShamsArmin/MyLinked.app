@@ -36,7 +36,7 @@ import {
   supportMessages,
   type SupportMessage, type InsertSupportMessage, type UpdateSupportMessage
 } from "../shared/support-schema";
-import { eq, and, not, sql, desc, or, ilike, isNotNull, count, notInArray } from "drizzle-orm";
+import { eq, and, not, sql, desc, or, ilike, isNotNull, isNull, count, notInArray } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
@@ -374,6 +374,14 @@ export class EnhancedDatabaseStorage implements IStorage {
     return rows?.[0] || undefined;
   }
 
+  // Backfill links that have null owner to the provided user
+  async backfillLinksForUser(userId: number): Promise<void> {
+    await db
+      .update(links)
+      .set({ userId })
+      .where(and(isNull(links.userId)));
+  }
+
   async createLink(userId: number, linkData: InsertLink): Promise<Link> {
     // Get the count of existing links to set the order
     const [result] = await db
@@ -389,7 +397,8 @@ export class EnhancedDatabaseStorage implements IStorage {
         ...linkData,
         userId,
         order,
-        updatedAt: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date(),
       })
       .returning();
     return link;
@@ -417,6 +426,17 @@ export class EnhancedDatabaseStorage implements IStorage {
       const result = await db.delete(links).where(eq(links.id, id));
       return result?.rowCount ? result.rowCount > 0 : (result as any)?.length > 0;
     }
+  }
+
+  // Delete link enforcing ownership but allowing legacy null owners
+  async deleteLinkOwned(id: number, userId: number): Promise<boolean> {
+    const res = await db
+      .delete(links)
+      .where(
+        and(eq(links.id, id), or(isNull(links.userId), eq(links.userId, userId)))
+      );
+    const rowCount = (res as any)?.rowCount ?? (Array.isArray(res) ? res.length : 0);
+    return rowCount > 0;
   }
 
   async incrementLinkClicks(id: number): Promise<Link | undefined> {

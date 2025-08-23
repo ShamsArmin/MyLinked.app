@@ -5,10 +5,22 @@ import { z } from "zod";
 
 export const linksRouter = Router();
 
-// GET current user's links
+const createLinkSchema = z.object({
+  platform: z.string().min(1),
+  title: z.string().min(1),
+  url: z.string().min(1),
+  description: z.string().optional(),
+  color: z.string().optional(),
+  featured: z.boolean().optional(),
+});
+
+// GET current user's links with legacy self-heal
 linksRouter.get("/", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = Number((req as any).user.id);
+
+    await storage.backfillLinksForUser(userId);
+
     const list = await storage.getLinks(userId);
     return res.json(list);
   } catch (e) {
@@ -17,27 +29,50 @@ linksRouter.get("/", isAuthenticated, async (req, res) => {
   }
 });
 
-// DELETE a link (must belong to current user)
+// CREATE a new link enforcing ownership
+linksRouter.post("/", isAuthenticated, async (req, res) => {
+  try {
+    const userId = Number((req as any).user.id);
+    const data = createLinkSchema.parse(req.body);
+
+    const created = await storage.createLink(userId, {
+      ...data,
+      userId,
+    } as any);
+
+    return res.status(201).json(created);
+  } catch (e: any) {
+    if (e?.issues) {
+      return res
+        .status(400)
+        .json({ message: "Invalid payload", errors: e.issues });
+    }
+    console.error("POST /api/links error:", e);
+    return res.status(500).json({ message: "Failed to create link" });
+  }
+});
+
+// DELETE a link with safe legacy handling
 linksRouter.delete("/:id", isAuthenticated, async (req, res) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = Number((req as any).user.id);
     const id = Number(req.params.id);
     if (!Number.isInteger(id)) {
       return res.status(400).json({ message: "Invalid link id" });
     }
 
-    // Fetch link to verify ownership
     const link = await storage.getLinkById(id);
     if (!link) {
       return res.status(404).json({ message: "Link not found" });
     }
-    if (link.userId !== userId) {
-      console.warn("DELETE /api/links unauthorized", { userId, linkOwner: link.userId, id });
-      return res.status(403).json({ message: "Not authorized to delete this link" });
+
+    if (link.userId != null && Number(link.userId) !== userId) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this link" });
     }
 
-    // Delete with user filter to be safe
-    const ok = await storage.deleteLink(id, userId);
+    const ok = await storage.deleteLinkOwned(id, userId);
     if (!ok) {
       return res.status(500).json({ message: "Delete failed" });
     }
