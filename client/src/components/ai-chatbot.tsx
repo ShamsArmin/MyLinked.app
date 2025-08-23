@@ -158,6 +158,7 @@ export function AIChatbot() {
           message: userInput,
           context: "social_media_platform",
         }),
+        credentials: "include",
       });
 
       if (!response.ok) {

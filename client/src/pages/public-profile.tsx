@@ -90,7 +90,9 @@ export default function PublicProfile() {
   const { data, isLoading, error } = useQuery<PublicProfileData>({
     queryKey: ["/api/profile", username],
     queryFn: async () => {
-      const response = await fetch(`/api/profile/${username}`);
+      const response = await fetch(`/api/profile/${username}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Profile not found');
       }
@@ -101,7 +103,10 @@ export default function PublicProfile() {
 
   const handleLinkClick = async (linkId: number, url: string) => {
     try {
-      await fetch(`/api/links/${linkId}/click`, { method: 'POST' });
+      await fetch(`/api/links/${linkId}/click`, {
+        method: 'POST',
+        credentials: 'include',
+      });
       window.open(url, '_blank');
     } catch (error) {
       console.error('Failed to record click:', error);

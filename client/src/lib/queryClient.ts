@@ -14,12 +14,12 @@ export async function apiRequest(
 ): Promise<Response> {
   const res = await fetch(url, {
     method,
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
-      "Cache-Control": "no-cache"
+      "Cache-Control": "no-cache",
     },
+    credentials: "include", // send session cookie cross-origin
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
   });
 
   if (res.status === 401) {

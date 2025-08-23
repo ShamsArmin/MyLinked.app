@@ -46,7 +46,9 @@ export default function ResetPasswordPage() {
     queryKey: ["verify-reset-token", token],
     queryFn: async () => {
       if (!token) throw new Error("No reset token provided");
-      const response = await fetch(`/api/verify-reset-token/${token}`);
+      const response = await fetch(`/api/verify-reset-token/${token}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Invalid token");
@@ -67,6 +69,7 @@ export default function ResetPasswordPage() {
           token,
           newPassword: data.newPassword,
         }),
+        credentials: 'include',
       });
       
       const responseData = await response.json();
