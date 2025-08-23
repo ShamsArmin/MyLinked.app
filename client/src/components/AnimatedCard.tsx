@@ -19,7 +19,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
   ...props
 }) => {
   // Base styles
-  const baseStyles = "bg-white transition-all duration-300 overflow-hidden";
+  const baseStyles = "bg-base-100 transition-all duration-300 overflow-hidden";
   
   // Animation styles
   const animationStyles = {
@@ -55,7 +55,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
   };
   
   // Border styles
-  const borderStyles = border ? "border border-gray-200" : "";
+  const borderStyles = border ? "border border-base-200" : "";
   
   // Combine all styles
   const cardClasses = `
