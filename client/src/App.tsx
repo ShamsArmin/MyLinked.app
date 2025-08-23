@@ -12,7 +12,7 @@ import NotFound from "./pages/not-found";
 import PrivacyPolicy from "./pages/privacy-policy";
 import TermsOfService from "./pages/terms-of-service";
 import { useAuth, AuthProvider } from "./hooks/use-auth";
-import { ThemeProvider } from "./hooks/use-theme";
+// ThemeProvider is now handled in main.tsx
 import { ProtectedRoute } from "./lib/protected-route";
 import { AdminProtectedRoute } from "./lib/admin-protected-route";
 import { Award, Loader2 } from "lucide-react";
@@ -200,13 +200,11 @@ function App() {
     return (
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <ThemeProvider>
-            <ErrorBoundary>
-              <Router />
-              <AIChatbot />
-            </ErrorBoundary>
-            <Toaster />
-          </ThemeProvider>
+          <ErrorBoundary>
+            <Router />
+            <AIChatbot />
+          </ErrorBoundary>
+          <Toaster />
         </AuthProvider>
       </QueryClientProvider>
     );

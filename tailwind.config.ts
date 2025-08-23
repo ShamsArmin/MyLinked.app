@@ -1,8 +1,12 @@
 import type { Config } from "tailwindcss";
+const daisyuiThemes = require("daisyui/src/colors/themes");
 
-export default {
-  darkMode: ["class"],
-  content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
+const config: Config = {
+  content: [
+    "./client/index.html",
+    "./client/src/**/*.{js,ts,jsx,tsx}",
+    "./client/app/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
     extend: {
       borderRadius: {
@@ -86,5 +90,26 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
-} satisfies Config;
+  plugins: [
+    require("tailwindcss-animate"),
+    require("@tailwindcss/typography"),
+    require("daisyui"),
+  ],
+  daisyui: {
+    themes: [
+      "light",
+      "dark",
+      "forest",
+      "sunset",
+      "royal",
+      {
+        passion: {
+          ...daisyuiThemes["[data-theme=valentine]"],
+        },
+      },
+    ],
+    darkTheme: "dark",
+  },
+};
+
+export default config;

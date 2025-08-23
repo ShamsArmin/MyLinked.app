@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
+import PageShell from "../components/PageShell";
 
 export function AdminProtectedRoute({
   path,
@@ -50,5 +51,11 @@ export function AdminProtectedRoute({
     );
   }
 
-  return <Route path={path} component={Component} />;
+  return (
+    <Route path={path}>
+      <PageShell>
+        <Component />
+      </PageShell>
+    </Route>
+  );
 }

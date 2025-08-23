@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
+import PageShell from "../components/PageShell";
 
 interface ProtectedRouteProps {
   path: string;
@@ -37,7 +38,9 @@ export function ProtectedRoute({
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : user ? (
-        <Component />
+        <PageShell>
+          <Component />
+        </PageShell>
       ) : (
         <Redirect to="/auth" />
       )}

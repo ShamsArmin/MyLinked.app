@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,9 +22,7 @@ import {
   Eye,
   Save
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { useApplyTheme } from "@/hooks/use-theme";
-import { User } from "@shared/schema";
+import { useTheme } from "../context/ThemeContext";
 
 interface Theme {
   id: string;
@@ -137,9 +134,9 @@ const presetThemes: Theme[] = [
 ];
 
 export default function ThemesPage() {
-  const { user } = useAuth();
+  const { setTheme, theme: activeTheme } = useTheme();
   const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
-  const applyTheme = useApplyTheme();
+  const [isApplying, setIsApplying] = useState(false);
   const [customColors, setCustomColors] = useState({
     primary: "#3b82f6",
     secondary: "#1e40af",
@@ -149,14 +146,10 @@ export default function ThemesPage() {
     border: "#e5e7eb"
   });
 
-  // Get current user profile to check active theme
-  const { data: profile } = useQuery<User>({
-    queryKey: ["/api/profile"],
-    enabled: !!user
-  });
-
-  const handleSaveTheme = (theme: Theme) => {
-    applyTheme.mutate(theme.id);
+  const handleSaveTheme = async (theme: Theme) => {
+    setIsApplying(true);
+    await setTheme(theme.id);
+    setIsApplying(false);
   };
 
   const handleCustomColorChange = (colorType: string, value: string) => {
@@ -264,7 +257,7 @@ export default function ThemesPage() {
                       {theme.icon}
                       <CardTitle className="text-lg">{theme.name}</CardTitle>
                     </div>
-                    {profile?.theme === theme.id && (
+                    {activeTheme === theme.id && (
                       <Badge variant="secondary">
                         <Check className="h-3 w-3 mr-1" />
                         Active
@@ -290,7 +283,7 @@ export default function ThemesPage() {
                     <Button 
                       size="sm"
                       onClick={() => handleSaveTheme(theme)}
-                      disabled={applyTheme.isPending}
+                      disabled={isApplying}
                     >
                       <Save className="h-4 w-4 mr-1" />
                       Apply
@@ -429,7 +422,7 @@ export default function ThemesPage() {
                 <Button 
                   className="w-full"
                   onClick={() => handleSaveTheme(createCustomTheme())}
-                  disabled={applyTheme.isPending}
+                  disabled={isApplying}
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Save Custom Theme
