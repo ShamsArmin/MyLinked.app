@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import pgSession from "connect-pg-simple";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { monitor } from "./monitoring";
@@ -21,6 +22,17 @@ app.use(securityMiddleware.suspiciousActivityDetection);
 app.use(securityMiddleware.sqlInjectionProtection);
 app.use(securityMiddleware.xssProtection);
 app.use(securityMiddleware.inputValidation);
+
+// Enable CORS for front-end origin(s)
+app.use(
+  cors({
+    origin: [
+      process.env.FRONTEND_ORIGIN ?? "https://mylinked-app.onrender.com", // use real onrender URL here
+      // Add "https://mylinked.app" and "https://www.mylinked.app" later when SSL is ready
+    ],
+    credentials: true, // allow cookies
+  })
+);
 
 // Add monitoring middleware
 app.use(monitor.requestTracker);
