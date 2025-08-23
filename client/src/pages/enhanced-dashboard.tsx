@@ -371,9 +371,7 @@ export default function EnhancedDashboard() {
   // Create link mutation
   const createLinkMutation = useMutation({
     mutationFn: async (data: LinkFormValues) => {
-      const response = await apiRequest("POST", "/api/links", data);
-      const result = await response.json();
-      return result;
+      return await apiRequest("POST", "/api/links", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/links"] });
