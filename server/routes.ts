@@ -97,6 +97,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Domain health check endpoint
   app.get("/health", domainHealthCheck);
 
+  // Simple health check for load balancers
+  app.get('/healthz', (_req, res) => {
+    res.status(200).send('ok');
+  });
+
   // Database diagnostics
   app.get('/api/db/diag', async (_req, res) => {
     const mask = (url?: string) => {

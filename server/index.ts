@@ -46,7 +46,7 @@ app.use((req, res, next) => {
     // Force HTTPS for custom domains
     if (req.get('x-forwarded-proto') !== 'https' && req.get('x-forwarded-proto')) {
       console.log(`🔄 Redirecting to HTTPS: ${host}${req.path}`);
-      return res.redirect(301, `https://${host}${req.path}`);
+      return res.redirect(308, `https://${host}${req.path}`);
     }
   }
   
