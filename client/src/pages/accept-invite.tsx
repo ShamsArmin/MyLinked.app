@@ -72,9 +72,7 @@ export default function AcceptInvitePage() {
 
   const fetchInvitationDetails = async (inviteToken: string) => {
     try {
-      const response = await fetch(`/api/admin/invitation/${inviteToken}`, {
-        credentials: 'include',
-      });
+      const response = await fetch(`/api/admin/invitation/${inviteToken}`);
       const data = await response.json();
       
       if (!response.ok) {

@@ -20,9 +20,7 @@ export function UltraSimpleSupport() {
 
   const loadData = async () => {
     try {
-      const response = await fetch('/api/support/messages', {
-        credentials: 'include',
-      });
+      const response = await fetch('/api/support/messages');
       const data = await response.json();
       setMessages(data);
       setFeedback(`✅ Loaded ${data.length} messages successfully`);
@@ -44,8 +42,7 @@ export function UltraSimpleSupport() {
       const response = await fetch(`/api/support/messages/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-        credentials: 'include',
+        body: JSON.stringify({ status })
       });
       
       if (response.ok) {
@@ -67,8 +64,7 @@ export function UltraSimpleSupport() {
       const response = await fetch(`/api/support/messages/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isRead: !currentRead }),
-        credentials: 'include',
+        body: JSON.stringify({ isRead: !currentRead })
       });
       
       if (response.ok) {
@@ -90,8 +86,7 @@ export function UltraSimpleSupport() {
     
     try {
       const response = await fetch(`/api/support/messages/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
+        method: 'DELETE'
       });
       
       if (response.ok) {
@@ -116,8 +111,7 @@ export function UltraSimpleSupport() {
       const response = await fetch(`/api/support/messages/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminNotes: notes }),
-        credentials: 'include',
+        body: JSON.stringify({ adminNotes: notes })
       });
       
       if (response.ok) {

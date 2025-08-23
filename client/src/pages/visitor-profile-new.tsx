@@ -100,9 +100,7 @@ export default function VisitorProfileNew() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/profile", username],
     queryFn: async () => {
-      const response = await fetch(`/api/profile/${username}`, {
-        credentials: 'include',
-      });
+      const response = await fetch(`/api/profile/${username}`);
       if (!response.ok) {
         throw new Error('Profile not found');
       }
@@ -195,7 +193,6 @@ export default function VisitorProfileNew() {
           fieldOfWork: collaborationForm.fieldOfWork.trim(),
           message: collaborationForm.message.trim(),
         }),
-        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -248,10 +245,7 @@ export default function VisitorProfileNew() {
     console.log('Final URL:', finalUrl);
 
     try {
-      await fetch(`/api/links/${linkId}/click`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await fetch(`/api/links/${linkId}/click`, { method: 'POST' });
       if (finalUrl) {
         // For mobile compatibility, use location.href for special protocols
         if (finalUrl.startsWith('mailto:') || finalUrl.startsWith('tel:')) {
@@ -329,8 +323,7 @@ export default function VisitorProfileNew() {
       const response = await fetch('/api/referral-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestData),
-        credentials: 'include',
+        body: JSON.stringify(requestData)
       });
 
       console.log('Response status:', response.status);
@@ -398,7 +391,6 @@ export default function VisitorProfileNew() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestData),
-        credentials: 'include',
       });
 
       if (!response.ok) {

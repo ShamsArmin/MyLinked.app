@@ -266,7 +266,6 @@ export default function SupportPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-        credentials: 'include',
       });
 
       console.log('Response status:', response.status);

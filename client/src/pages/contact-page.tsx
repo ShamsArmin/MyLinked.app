@@ -31,7 +31,6 @@ export default function ContactPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
-        credentials: 'include',
       });
 
       console.log('Contact response status:', response.status);
