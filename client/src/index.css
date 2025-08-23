@@ -40,7 +40,8 @@
 }
 
 /* Prevent horizontal scrolling */
-html, body {
+html, body, #root {
+  @apply min-h-screen bg-base-200;
   overflow-x: hidden;
   max-width: 100%;
 }
