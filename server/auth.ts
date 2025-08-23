@@ -220,6 +220,12 @@ export function setupAuth(app: Express) {
       return res.status(401).json({ message: "Not authenticated" });
     }
   });
+
+  // Simple endpoint to inspect session information
+  app.get("/api/auth/whoami", (req, res) => {
+    const user = (req as any).user || (req as any).session?.user || null;
+    res.json({ user });
+  });
 }
 
 // Middleware to check if user is authenticated
