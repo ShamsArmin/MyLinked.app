@@ -23,13 +23,10 @@ app.use(securityMiddleware.sqlInjectionProtection);
 app.use(securityMiddleware.xssProtection);
 app.use(securityMiddleware.inputValidation);
 
-// Enable CORS for front-end origin(s)
+// Enable CORS for a single front-end origin
 app.use(
   cors({
-    origin: [
-      process.env.FRONTEND_ORIGIN ?? "https://mylinked-app.onrender.com", // use real onrender URL here
-      // Add "https://mylinked.app" and "https://www.mylinked.app" later when SSL is ready
-    ],
+    origin: process.env.FRONTEND_ORIGIN ?? "https://mylinked.app", // single origin for both UI and API
     credentials: true, // allow cookies
   })
 );
@@ -87,7 +84,7 @@ if (process.env.NODE_ENV === 'production') {
       cookie: {
         httpOnly: true,
         secure: true,
-        sameSite: 'lax',
+        sameSite: 'lax', // better default for same-origin
         maxAge: 1000 * 60 * 60 * 24 * 7,
       },
     })
