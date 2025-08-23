@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from './use-auth';
 
 type Theme = 'default' | 'minimal' | 'vibrant' | 'professional' | string;
@@ -209,4 +211,42 @@ export function useTheme() {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
+}
+
+export function useApplyTheme() {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (theme: string) => {
+      const updatedUser = await apiRequest("PATCH", "/api/profile", { theme });
+      return updatedUser; // treat as success if no throw
+    },
+    onSuccess: (_data, theme) => {
+      try {
+        document.documentElement.setAttribute("data-theme", theme);
+        document.body.classList.forEach((c) => {
+          if (c.startsWith("theme-")) document.body.classList.remove(c);
+        });
+        document.body.classList.add(`theme-${theme}`);
+      } catch (e) {
+        console.warn("Theme DOM update warning:", e);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+
+      toast({
+        title: "Theme applied",
+        description: `Your theme is now "${theme}".`,
+      });
+    },
+    onError: (e: any) => {
+      console.error("Theme apply error:", e);
+      const msg = e?.message || "Unknown error";
+      toast({
+        title: "Theme apply failed",
+        description: msg,
+        variant: "destructive",
+      });
+    },
+  });
 }

@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
+import { useApplyTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { User } from "@shared/schema";
 
@@ -140,6 +140,7 @@ export default function SimpleThemesDemo() {
   const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
   const [activeTheme, setActiveTheme] = useState<string>("ocean");
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const applyTheme = useApplyTheme();
 
   // Get current user profile to check active theme
   const { data: profile } = useQuery<User>({
@@ -154,32 +155,9 @@ export default function SimpleThemesDemo() {
     }
   }, [profile?.theme]);
 
-  // Apply theme mutation
-  const applyThemeMutation = useMutation({
-    mutationFn: async (themeId: string) => {
-      const res = await apiRequest("PATCH", "/api/profile", { theme: themeId });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to apply theme. Please try again.",
-        variant: "destructive"
-      });
-    }
-  });
-
   const handleApplyTheme = (theme: Theme) => {
     setActiveTheme(theme.id);
-    applyThemeMutation.mutate(theme.id);
-    toast({
-      title: "Theme Applied!",
-      description: `${theme.name} theme has been applied to your profile.`
-    });
+    applyTheme.mutate(theme.id);
   };
 
   const handleDarkModeToggle = () => {

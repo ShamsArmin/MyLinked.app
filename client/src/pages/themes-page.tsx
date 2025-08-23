@@ -23,10 +23,8 @@ import {
   Eye,
   Save
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { queryClient } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
+import { useApplyTheme } from "@/hooks/use-theme";
 import { User } from "@shared/schema";
 
 interface Theme {
@@ -140,8 +138,8 @@ const presetThemes: Theme[] = [
 
 export default function ThemesPage() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
+  const applyTheme = useApplyTheme();
   const [customColors, setCustomColors] = useState({
     primary: "#3b82f6",
     secondary: "#1e40af",
@@ -157,44 +155,8 @@ export default function ThemesPage() {
     enabled: !!user
   });
 
-  // Save theme mutation
-  const saveThemeMutation = useMutation({
-    mutationFn: async (themeData: any) => {
-      const res = await apiRequest("PATCH", "/api/profile", { theme: themeData.themeId });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ message: "Unknown error" }));
-        throw new Error(errorData.message || `Theme save failed: ${res.status}`);
-      }
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({
-        title: "Theme applied!",
-        description: "Your profile theme has been updated successfully."
-      });
-    },
-    onError: (error: any) => {
-      console.error('Theme save error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to apply theme. Please try again.",
-        variant: "destructive"
-      });
-    }
-  });
-
-  const handleSaveTheme = (theme: Theme, isCustom = false) => {
-    const themeData = {
-      themeId: theme.id,
-      name: theme.name,
-      colors: theme.colors,
-      gradient: theme.gradient,
-      isCustom
-    };
-    
-    saveThemeMutation.mutate(themeData);
+  const handleSaveTheme = (theme: Theme) => {
+    applyTheme.mutate(theme.id);
   };
 
   const handleCustomColorChange = (colorType: string, value: string) => {
@@ -328,7 +290,7 @@ export default function ThemesPage() {
                     <Button 
                       size="sm"
                       onClick={() => handleSaveTheme(theme)}
-                      disabled={saveThemeMutation.isPending}
+                      disabled={applyTheme.isPending}
                     >
                       <Save className="h-4 w-4 mr-1" />
                       Apply
@@ -466,8 +428,8 @@ export default function ThemesPage() {
                 
                 <Button 
                   className="w-full"
-                  onClick={() => handleSaveTheme(createCustomTheme(), true)}
-                  disabled={saveThemeMutation.isPending}
+                  onClick={() => handleSaveTheme(createCustomTheme())}
+                  disabled={applyTheme.isPending}
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Save Custom Theme
