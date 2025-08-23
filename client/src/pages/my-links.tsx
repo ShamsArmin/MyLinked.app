@@ -5,7 +5,16 @@ import { Link, insertLinkSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
+import {
+  fetchLinks,
+  LINKS_QK,
+  createLink,
+  deleteLink,
+  addLinkOptimistic,
+  removeLinkOptimistic,
+  invalidateLinks,
+} from "@/lib/links-api";
 import { z } from "zod";
 import { usePlatformIcons } from "@/hooks/use-platform-icons";
 import { useLocation } from "wouter";
@@ -121,24 +130,29 @@ export default function MyLinksPage() {
   };
 
   // Fetch links
-  const { data: links = [], isLoading, error } = useQuery({
-    queryKey: ['/api/links'],
+  const {
+    data: links = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: LINKS_QK,
+    queryFn: fetchLinks,
+    refetchOnMount: 'always',
     enabled: !!user,
   });
 
   // Create link mutation
   const createLinkMutation = useMutation({
-    mutationFn: async (data: LinkFormValues) => {
-      return await apiRequest('POST', '/api/links', data);
-    },
-    onSuccess: () => {
+    mutationFn: (data: LinkFormValues) => createLink(data),
+    onSuccess: (created) => {
+      addLinkOptimistic(created);
+      invalidateLinks();
       toast({
         title: 'Success',
         description: 'Link created successfully',
       });
       setIsAddDialogOpen(false);
       form.reset();
-      queryClient.invalidateQueries({ queryKey: ['/api/links'] });
     },
     onError: (error: Error) => {
       toast({
@@ -146,14 +160,14 @@ export default function MyLinksPage() {
         description: `Failed to create link: ${error.message}`,
         variant: 'destructive',
       });
+      invalidateLinks();
     },
   });
 
   // Update link mutation
   const updateLinkMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: LinkFormValues }) => {
-      const res = await apiRequest('PATCH', `/api/links/${id}`, data);
-      return await res.json();
+      return await apiRequest('PATCH', `/api/links/${id}`, data);
     },
     onSuccess: () => {
       toast({
@@ -163,7 +177,7 @@ export default function MyLinksPage() {
       setIsEditDialogOpen(false);
       setCurrentLink(null);
       editForm.reset();
-      queryClient.invalidateQueries({ queryKey: ['/api/links'] });
+      invalidateLinks();
     },
     onError: (error: Error) => {
       toast({
@@ -171,21 +185,22 @@ export default function MyLinksPage() {
         description: `Failed to update link: ${error.message}`,
         variant: 'destructive',
       });
+      invalidateLinks();
     },
   });
 
   // Delete link mutation
   const deleteLinkMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiRequest('DELETE', `/api/links/${id}`);
-      return await res.json();
+    mutationFn: (id: number) => deleteLink(id),
+    onMutate: (id: number) => {
+      removeLinkOptimistic(id);
     },
     onSuccess: () => {
+      invalidateLinks();
       toast({
         title: 'Success',
         description: 'Link deleted successfully',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/links'] });
     },
     onError: (error: Error) => {
       toast({
@@ -193,6 +208,7 @@ export default function MyLinksPage() {
         description: `Failed to delete link: ${error.message}`,
         variant: 'destructive',
       });
+      invalidateLinks();
     },
   });
 
@@ -604,6 +620,10 @@ export default function MyLinksPage() {
             )}
           </div>
         )}
+
+        <pre className="text-xs text-gray-500 bg-gray-100 p-2 rounded mt-4">
+          {JSON.stringify(links, null, 2)}
+        </pre>
 
         {/* Add Link Dialog */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
