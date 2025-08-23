@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,10 +19,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import { useApplyTheme } from "@/hooks/use-theme";
-import { useAuth } from "@/hooks/use-auth";
-import { User } from "@shared/schema";
+import { useTheme } from "../context/ThemeContext";
 
 interface Theme {
   id: string;
@@ -136,28 +133,15 @@ const presetThemes: Theme[] = [
 export default function SimpleThemesDemo() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const { user } = useAuth();
+  const { setTheme, theme: activeTheme } = useTheme();
   const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
-  const [activeTheme, setActiveTheme] = useState<string>("ocean");
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const applyTheme = useApplyTheme();
+  const [isApplying, setIsApplying] = useState(false);
 
-  // Get current user profile to check active theme
-  const { data: profile } = useQuery<User>({
-    queryKey: ["/api/profile"],
-    enabled: !!user,
-  });
-
-  // Update active theme when profile loads
-  useEffect(() => {
-    if (profile?.theme) {
-      setActiveTheme(profile.theme);
-    }
-  }, [profile?.theme]);
-
-  const handleApplyTheme = (theme: Theme) => {
-    setActiveTheme(theme.id);
-    applyTheme.mutate(theme.id);
+  const handleApplyTheme = async (theme: Theme) => {
+    setIsApplying(true);
+    await setTheme(theme.id);
+    setIsApplying(false);
   };
 
   const handleDarkModeToggle = () => {
@@ -345,10 +329,10 @@ export default function SimpleThemesDemo() {
                   Preview
                 </Button>
                 
-                <Button 
+                <Button
                   size="sm"
                   onClick={() => handleApplyTheme(theme)}
-                  disabled={activeTheme === theme.id}
+                  disabled={isApplying || activeTheme === theme.id}
                 >
                   <Save className="h-4 w-4 mr-1" />
                   {activeTheme === theme.id ? "Applied" : "Apply"}
