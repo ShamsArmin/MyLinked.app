@@ -366,11 +366,12 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   async getLinkById(id: number): Promise<Link | undefined> {
-    const [link] = await db
+    const rows = await db
       .select()
       .from(links)
-      .where(eq(links.id, id));
-    return link;
+      .where(eq(links.id, id))
+      .limit(1);
+    return rows?.[0] || undefined;
   }
 
   async createLink(userId: number, linkData: InsertLink): Promise<Link> {
@@ -406,11 +407,16 @@ export class EnhancedDatabaseStorage implements IStorage {
     return link;
   }
 
-  async deleteLink(id: number): Promise<boolean> {
-    const result = await db
-      .delete(links)
-      .where(eq(links.id, id));
-    return result.rowCount ? result.rowCount > 0 : false;
+  async deleteLink(id: number, userId?: number): Promise<boolean> {
+    if (userId) {
+      const result = await db
+        .delete(links)
+        .where(and(eq(links.id, id), eq(links.userId, userId)));
+      return result?.rowCount ? result.rowCount > 0 : (result as any)?.length > 0;
+    } else {
+      const result = await db.delete(links).where(eq(links.id, id));
+      return result?.rowCount ? result.rowCount > 0 : (result as any)?.length > 0;
+    }
   }
 
   async incrementLinkClicks(id: number): Promise<Link | undefined> {

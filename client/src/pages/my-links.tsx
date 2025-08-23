@@ -202,10 +202,15 @@ export default function MyLinksPage() {
         description: 'Link deleted successfully',
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
+      const msg = error?.message || 'Delete failed';
       toast({
-        title: 'Error',
-        description: `Failed to delete link: ${error.message}`,
+        title: msg.includes('401')
+          ? 'Please log in again.'
+          : msg.includes('403')
+          ? 'You are not allowed to delete this link.'
+          : 'Error',
+        description: msg,
         variant: 'destructive',
       });
       invalidateLinks();

@@ -37,6 +37,8 @@ import { spotlightRouter } from "./spotlight-routes";
 import { industryRouter } from "./industry-routes";
 import { referralRouter } from "./referral-routes";
 
+import linksRouter from "./routes/links";
+
 import { socialOAuthRouter } from "./social-oauth-simple";
 import { twitterOAuthRouter } from "./twitter-oauth-fixed";
 import { twitterDebugRouter } from "./twitter-debug-tool";
@@ -183,6 +185,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Set up authentication
   setupAuth(app);
+
+  // Log API requests for debugging auth issues
+  app.use((req, _res, next) => {
+    if (req.path.startsWith("/api/")) {
+      console.log("Incoming API", {
+        path: req.path,
+        method: req.method,
+        hasCookie: !!req.headers.cookie,
+        user: (req as any).user?.id ?? null,
+      });
+    }
+    next();
+  });
+
+  app.use("/api/links", linksRouter);
 
   // Set up TikTok OAuth
   setupTikTokOAuth(app);
@@ -1152,12 +1169,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // LINKS MANAGEMENT ROUTES
   // =============================================================================
 
-  app.get("/api/links", isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const userId = req.user.id;
-    const links = await storage.getLinks(userId);
-    res.json(links);
-  }));
-
   app.post("/api/links", isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.id;
     const linkData = insertLinkSchema.parse(req.body);
@@ -1177,23 +1188,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const updates = updateLinkSchema.parse(req.body);
     const updatedLink = await storage.updateLink(linkId, updates);
     res.json(updatedLink);
-  }));
-
-  app.delete("/api/links/:id", isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const userId = req.user.id;
-    const linkId = validateId(req.params.id);
-
-    // Verify link belongs to user
-    const link = await storage.getLinkById(linkId);
-    if (!link) return res.status(404).json({ message: "Link not found" });
-    if (link.userId !== userId) return res.status(403).json({ message: "Not authorized" });
-
-    const success = await storage.deleteLink(linkId);
-    if (success) {
-      res.status(204).send();
-    } else {
-      res.status(500).json({ message: "Failed to delete link" });
-    }
   }));
 
   // Record link click
