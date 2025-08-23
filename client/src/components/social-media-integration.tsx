@@ -213,7 +213,9 @@ export default function SocialMediaIntegration() {
               className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1"
               onClick={async () => {
                 try {
-                  const response = await fetch('/api/social/connect/facebook');
+                  const response = await fetch('/api/social/connect/facebook', {
+                    credentials: 'include',
+                  });
                   const data = await response.json();
                   if (data.authUrl) {
                     window.location.href = data.authUrl;
@@ -230,7 +232,9 @@ export default function SocialMediaIntegration() {
               className="bg-pink-500 hover:bg-pink-600 text-white text-xs px-3 py-1"
               onClick={async () => {
                 try {
-                  const response = await fetch('/api/social/connect/instagram');
+                  const response = await fetch('/api/social/connect/instagram', {
+                    credentials: 'include',
+                  });
                   const data = await response.json();
                   if (data.authUrl) {
                     window.location.href = data.authUrl;
@@ -247,7 +251,9 @@ export default function SocialMediaIntegration() {
               className="bg-black hover:bg-gray-800 text-white text-xs px-3 py-1"
               onClick={async () => {
                 try {
-                  const response = await fetch('/api/social/connect/tiktok');
+                  const response = await fetch('/api/social/connect/tiktok', {
+                    credentials: 'include',
+                  });
                   const data = await response.json();
                   if (data.authUrl) {
                     window.location.href = data.authUrl;

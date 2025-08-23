@@ -33,7 +33,9 @@ export function BulletproofSupport() {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/support/messages');
+      const response = await fetch('/api/support/messages', {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data = await response.json();
         setMessages(data);
@@ -54,7 +56,8 @@ export function BulletproofSupport() {
       const response = await fetch(`/api/support/messages/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -80,7 +83,8 @@ export function BulletproofSupport() {
 
     try {
       const response = await fetch(`/api/support/messages/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include',
       });
 
       if (response.ok) {

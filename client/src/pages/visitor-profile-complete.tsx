@@ -34,7 +34,9 @@ export default function VisitorProfileComplete() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/profile", username],
     queryFn: async () => {
-      const response = await fetch(`/api/profile/${username}`);
+      const response = await fetch(`/api/profile/${username}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Profile not found');
       }
@@ -168,7 +170,10 @@ export default function VisitorProfileComplete() {
     
     // Record the click for analytics (don't await this)
     try {
-      fetch(`/api/links/${linkId}/click`, { method: 'POST' });
+      fetch(`/api/links/${linkId}/click`, {
+        method: 'POST',
+        credentials: 'include',
+      });
     } catch (error) {
       console.error('Failed to record click:', error);
     }
@@ -203,7 +208,10 @@ export default function VisitorProfileComplete() {
     
     // Record the referral click for analytics (don't await this)
     try {
-      fetch(`/api/referral-links/${linkId}/click`, { method: 'POST' });
+      fetch(`/api/referral-links/${linkId}/click`, {
+        method: 'POST',
+        credentials: 'include',
+      });
     } catch (error) {
       console.error('Failed to record referral click:', error);
     }

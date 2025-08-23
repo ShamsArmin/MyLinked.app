@@ -44,7 +44,10 @@ export function SupportManagement() {
   // Fetch support messages
   const { data: messages = [], isLoading, refetch } = useQuery({
     queryKey: ['/api/support/messages'],
-    queryFn: () => fetch('/api/support/messages').then(res => res.json()) as Promise<SupportMessage[]>
+    queryFn: () =>
+      fetch('/api/support/messages', { credentials: 'include' }).then(res =>
+        res.json(),
+      ) as Promise<SupportMessage[]>
   });
 
   // Update message status

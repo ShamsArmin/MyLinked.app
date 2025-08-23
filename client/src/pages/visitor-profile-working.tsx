@@ -72,7 +72,9 @@ export default function VisitorProfileWorking() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/profile", username],
     queryFn: async () => {
-      const response = await fetch(`/api/profile/${username}`);
+      const response = await fetch(`/api/profile/${username}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Profile not found');
       }
@@ -129,6 +131,7 @@ export default function VisitorProfileWorking() {
           ...referralForm,
           profileUserId: parseInt(data?.profile.id, 10)
         }),
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -180,6 +183,7 @@ export default function VisitorProfileWorking() {
           receiverId: profile.id,
           message: collaborationForm.message
         }),
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -210,7 +214,9 @@ export default function VisitorProfileWorking() {
   const { data: authData } = useQuery({
     queryKey: ["/api/user"],
     queryFn: async () => {
-      const response = await fetch('/api/user');
+      const response = await fetch('/api/user', {
+        credentials: 'include',
+      });
       if (response.ok) {
         const user = await response.json();
         setIsAuthenticated(true);
@@ -541,7 +547,10 @@ export default function VisitorProfileWorking() {
                               return;
                             }
                             // Record click for analytics
-                            fetch(`/api/links/${link.id}/click`, { method: 'POST' }).catch(console.error);
+                            fetch(`/api/links/${link.id}/click`, {
+                              method: 'POST',
+                              credentials: 'include',
+                            }).catch(console.error);
                           }}
                         >
                           <div className="flex items-center justify-between">
@@ -683,7 +692,10 @@ export default function VisitorProfileWorking() {
                               onClick={() => {
                                 if (project.url) {
                                   // Record click for analytics
-                                  fetch(`/api/spotlight/projects/${project.id}/click`, { method: 'POST' }).catch(console.error);
+                                  fetch(`/api/spotlight/projects/${project.id}/click`, {
+                                    method: 'POST',
+                                    credentials: 'include',
+                                  }).catch(console.error);
                                   window.open(project.url, '_blank');
                                 }
                               }}
@@ -930,7 +942,10 @@ export default function VisitorProfileWorking() {
                                 return;
                               }
                               // Record click for analytics
-                              fetch(`/api/referral-links/${link.id}/click`, { method: 'POST' }).catch(console.error);
+                              fetch(`/api/referral-links/${link.id}/click`, {
+                                method: 'POST',
+                                credentials: 'include',
+                              }).catch(console.error);
                             }}
                           >
                             <ExternalLink className="h-3 w-3" />
