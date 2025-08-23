@@ -208,16 +208,16 @@ export function setupAuth(app: Express) {
       if (err) {
         return res.status(500).json({ message: "Logout failed" });
       }
-      res.json({ message: "Logged out successfully" });
+      return res.json({ message: "Logged out successfully" });
     });
   });
 
   // Get current user route
   app.get("/api/user", (req, res) => {
     if (req.isAuthenticated()) {
-      res.json(req.user);
+      return res.json(req.user);
     } else {
-      res.status(401).json({ message: "Not authenticated" });
+      return res.status(401).json({ message: "Not authenticated" });
     }
   });
 }

@@ -57,10 +57,18 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 if (process.env.NODE_ENV === 'production') {
+  if (!process.env.SESSION_SECRET) {
+    console.error('SESSION_SECRET must be set in production');
+    process.exit(1);
+  }
   const PgSession = pgSession(session);
   app.use(
     session({
-      store: new PgSession({ conString: process.env.DATABASE_URL }),
+      store: new PgSession({
+        conString: process.env.DATABASE_URL,
+        tableName: 'session',
+        createTableIfMissing: true,
+      }),
       secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
@@ -155,12 +163,14 @@ app.use((req, res, next) => {
     }
   });
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+    if (res.headersSent) {
+      return next(err);
+    }
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
     console.error("Server error:", err);
+    return res.status(status).json({ message });
     // Don't throw the error again as it could crash the server
   });
 
