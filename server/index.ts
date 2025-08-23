@@ -13,6 +13,20 @@ import { db, pool } from "./db";
 // import { initMarketingCampaigns } from "./marketing-campaigns";
 
 const app = express();
+app.set("trust proxy", 1);
+
+// Enable CORS for cross-origin requests with credentials
+app.use((req, res, next) => {
+  const origin = req.get('origin') || '*';
+  res.header('Access-Control-Allow-Origin', origin);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 // Add security middleware (must be first)
 app.use(securityMiddleware.securityHeaders);
@@ -75,7 +89,7 @@ if (process.env.NODE_ENV === 'production') {
       cookie: {
         httpOnly: true,
         secure: true,
-        sameSite: 'lax',
+        sameSite: 'none',
         maxAge: 1000 * 60 * 60 * 24 * 7,
       },
     })
@@ -86,6 +100,10 @@ if (process.env.NODE_ENV === 'production') {
       secret: process.env.SESSION_SECRET || 'mylinked-secret-key',
       resave: false,
       saveUninitialized: false,
+      cookie: {
+        secure: false,
+        sameSite: 'lax',
+      },
     })
   );
 }
