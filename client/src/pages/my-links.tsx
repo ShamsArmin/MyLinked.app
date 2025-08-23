@@ -621,10 +621,6 @@ export default function MyLinksPage() {
           </div>
         )}
 
-        <pre className="text-xs text-gray-500 bg-gray-100 p-2 rounded mt-4">
-          {JSON.stringify(links, null, 2)}
-        </pre>
-
         {/* Add Link Dialog */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
