@@ -1,6 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
-import pgSession from "connect-pg-simple";
 import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -14,6 +13,7 @@ import { db, pool } from "./db";
 // import { initMarketingCampaigns } from "./marketing-campaigns";
 
 const app = express();
+app.set("trust proxy", 1);
 
 // Add security middleware (must be first)
 app.use(securityMiddleware.securityHeaders);
@@ -23,11 +23,11 @@ app.use(securityMiddleware.sqlInjectionProtection);
 app.use(securityMiddleware.xssProtection);
 app.use(securityMiddleware.inputValidation);
 
-// Enable CORS for a single front-end origin
+// If you keep CORS, restrict to single origin
 app.use(
   cors({
-    origin: process.env.FRONTEND_ORIGIN ?? "https://mylinked.app", // single origin for both UI and API
-    credentials: true, // allow cookies
+    origin: "https://mylinked.app",
+    credentials: true,
   })
 );
 
@@ -65,39 +65,24 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
-if (process.env.NODE_ENV === 'production') {
-  if (!process.env.SESSION_SECRET) {
-    console.error('SESSION_SECRET must be set in production');
-    process.exit(1);
-  }
-  const PgSession = pgSession(session);
-  app.use(
-    session({
-      store: new PgSession({
-        conString: process.env.DATABASE_URL,
-        tableName: 'session',
-        createTableIfMissing: true,
-      }),
-      secret: process.env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax', // better default for same-origin
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-      },
-    })
-  );
-} else {
-  app.use(
-    session({
-      secret: process.env.SESSION_SECRET || 'mylinked-secret-key',
-      resave: false,
-      saveUninitialized: false,
-    })
-  );
-}
+app.use(session({
+  secret: process.env.SESSION_SECRET!, // set in Render → Environment
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: true, // HTTPS on Render
+    sameSite: 'lax', // single-origin default
+  },
+  // TODO: move to a persistent store later; MemoryStore is OK short-term
+}));
+
+app.get("/healthz", (_req, res) => res.status(200).send("ok"));
+
+app.get("/api/auth/whoami", (req, res) => {
+  const user = (req as any).user || (req as any).session?.user || null;
+  res.json({ user });
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -196,7 +181,14 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  
+
+  app.use((req, res, next) => {
+    if (req.headers.host === "www.mylinked.app") {
+      return res.redirect(301, `https://mylinked.app${req.url}`);
+    }
+    next();
+  });
+
   // Add error handling for port conflicts
   server.on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
