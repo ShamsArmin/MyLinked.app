@@ -57,7 +57,7 @@ export interface IStorage {
   getLinkById(id: number): Promise<Link | undefined>;
   createLink(userId: number, link: InsertLink): Promise<Link>;
   updateLink(id: number, updates: UpdateLink): Promise<Link | undefined>;
-  deleteLink(id: number): Promise<boolean>;
+  deleteLink(id: number, userId?: number): Promise<boolean>;
   incrementLinkClicks(id: number): Promise<Link | undefined>;
   incrementLinkViews(id: number): Promise<Link | undefined>;
   updateLinkAiScore(id: number, score: number): Promise<Link | undefined>;

@@ -22,7 +22,8 @@ export const createLink = async (payload: LinkPayload) => {
 };
 
 export const deleteLink = async (id: number) => {
-  await apiRequest("DELETE", `/api/links/${id}`);
+  // DELETE returns 204 or { success: true }
+  return await apiRequest("DELETE", `/api/links/${id}`);
 };
 
 export function invalidateLinks() {

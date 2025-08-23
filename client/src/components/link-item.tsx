@@ -33,10 +33,15 @@ const LinkItem: React.FC<LinkItemProps> = ({ link, onEdit }) => {
         description: "Your link has been deleted successfully.",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
+      const msg = error?.message || "Delete failed";
       toast({
-        title: "Delete failed",
-        description: error.message,
+        title: msg.includes("401")
+          ? "Please log in again."
+          : msg.includes("403")
+          ? "You are not allowed to delete this link."
+          : "Delete failed",
+        description: msg,
         variant: "destructive",
       });
       invalidateLinks();
