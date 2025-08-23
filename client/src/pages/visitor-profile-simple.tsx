@@ -28,9 +28,7 @@ export default function VisitorProfileSimple() {
     queryKey: ["/api/profile", username],
     queryFn: async () => {
       console.log("VisitorProfile: Fetching data for", username);
-      const response = await fetch(`/api/profile/${username}`, {
-        credentials: 'include',
-      });
+      const response = await fetch(`/api/profile/${username}`);
       if (!response.ok) {
         throw new Error('Profile not found');
       }

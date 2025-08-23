@@ -43,9 +43,7 @@ export function SupportManagement() {
   const { data: messages = [], isLoading, refetch } = useQuery({
     queryKey: ['/api/support/messages'],
     queryFn: async () => {
-      const response = await fetch('/api/support/messages', {
-        credentials: 'include',
-      });
+      const response = await fetch('/api/support/messages');
       if (!response.ok) throw new Error('Failed to fetch messages');
       return response.json() as Promise<SupportMessage[]>;
     }
@@ -57,8 +55,7 @@ export function SupportManagement() {
       const response = await fetch(`/api/support/messages/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-        credentials: 'include',
+        body: JSON.stringify(updates)
       });
       if (!response.ok) throw new Error('Failed to update message');
       return response.json();
@@ -83,8 +80,7 @@ export function SupportManagement() {
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/support/messages/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
+        method: 'DELETE'
       });
       if (!response.ok) throw new Error('Failed to delete message');
       return response.json();
