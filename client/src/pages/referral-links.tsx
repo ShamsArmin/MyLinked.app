@@ -340,7 +340,7 @@ const ReferralLinks = () => {
   const getAffiliateLinks = () => referralLinks?.filter(link => link.linkType === 'affiliate') || [];
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-black dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header Section - IMPLEMENTED: ArrowLeft icon FIRST, followed by Referral Links text */}
         <div className="flex items-center justify-between mb-6">
@@ -650,14 +650,14 @@ const ReferralLinks = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               {/* Contact Information */}
                               <div className="space-y-4">
-                                <h4 className="font-semibold text-lg text-gray-800 dark:text-gray-200 border-b pb-2">
+                                <h4 className="font-semibold text-lg text-gray-800 border-b pb-2">
                                   Contact Information
                                 </h4>
                                 
                                 <div className="flex items-center space-x-3">
                                   <Mail className="h-4 w-4 text-gray-500" />
                                   <div>
-                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</p>
+                                    <p className="text-sm font-medium text-gray-700">Email</p>
                                     <p className="text-sm text-blue-600 hover:underline">
                                       <a href={`mailto:${request.requesterEmail}`}>{request.requesterEmail}</a>
                                     </p>
@@ -668,7 +668,7 @@ const ReferralLinks = () => {
                                   <div className="flex items-center space-x-3">
                                     <Phone className="h-4 w-4 text-gray-500" />
                                     <div>
-                                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone</p>
+                                      <p className="text-sm font-medium text-gray-700">Phone</p>
                                       <p className="text-sm text-blue-600 hover:underline cursor-pointer">
                                         <a href={`tel:${request.requesterPhone}`} className="hover:text-blue-800">
                                           {request.requesterPhone}
@@ -682,7 +682,7 @@ const ReferralLinks = () => {
                                   <div className="flex items-center space-x-3">
                                     <Globe className="h-4 w-4 text-gray-500" />
                                     <div>
-                                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Website</p>
+                                      <p className="text-sm font-medium text-gray-700">Website</p>
                                       <p className="text-sm text-blue-600 hover:underline break-all cursor-pointer">
                                         <a href={request.requesterWebsite} target="_blank" rel="noopener noreferrer" className="hover:text-blue-800">
                                           {request.requesterWebsite}
@@ -696,8 +696,8 @@ const ReferralLinks = () => {
                                   <div className="flex items-center space-x-3">
                                     <Briefcase className="h-4 w-4 text-gray-500" />
                                     <div>
-                                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Field of Work</p>
-                                      <p className="text-sm text-gray-600 dark:text-gray-400">{request.fieldOfWork}</p>
+                                      <p className="text-sm font-medium text-gray-700">Field of Work</p>
+                                      <p className="text-sm text-gray-600">{request.fieldOfWork}</p>
                                     </div>
                                   </div>
                                 )}
@@ -705,16 +705,16 @@ const ReferralLinks = () => {
 
                               {/* Referral Link Details */}
                               <div className="space-y-4">
-                                <h4 className="font-semibold text-lg text-gray-800 dark:text-gray-200 border-b pb-2">
+                                <h4 className="font-semibold text-lg text-gray-800 border-b pb-2">
                                   Referral Link Details
                                 </h4>
                                 
-                                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                                   <div className="flex items-start space-x-3">
                                     <ExternalLink className="h-5 w-5 text-blue-600 mt-1" />
                                     <div className="flex-1">
-                                      <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Requested Link Title</p>
-                                      <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{request.linkTitle}</p>
+                                      <p className="text-sm font-medium text-blue-700 mb-1">Requested Link Title</p>
+                                      <p className="text-xl font-bold text-blue-900">{request.linkTitle}</p>
                                     </div>
                                   </div>
                                 </div>
@@ -722,7 +722,7 @@ const ReferralLinks = () => {
                                 <div className="flex items-start space-x-3">
                                   <Link className="h-4 w-4 text-gray-500 mt-1" />
                                   <div className="flex-1">
-                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">URL</p>
+                                    <p className="text-sm font-medium text-gray-700">URL</p>
                                     <p className="text-sm text-blue-600 hover:underline break-all">
                                       <a href={request.linkUrl} target="_blank" rel="noopener noreferrer">
                                         {request.linkUrl}
@@ -733,9 +733,9 @@ const ReferralLinks = () => {
 
                                 {request.description && (
                                   <div className="space-y-2">
-                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Description</p>
-                                    <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                    <p className="text-sm font-medium text-gray-700">Description</p>
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                      <p className="text-sm text-gray-700 leading-relaxed">
                                         {request.description}
                                       </p>
                                     </div>
@@ -745,8 +745,8 @@ const ReferralLinks = () => {
                             </div>
 
                             {/* Request Footer */}
-                            <div className="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                              <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex justify-between items-center pt-6 mt-6 border-t border-gray-200">
+                              <div className="flex items-center space-x-2 text-sm text-gray-600">
                                 <Calendar className="h-5 w-5 text-blue-500" />
                                 <div>
                                   <p className="font-medium">Request Submitted</p>

@@ -62,9 +62,9 @@ export default function ForgotPasswordPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg shadow-xl border-white/20 dark:border-gray-700/50">
+          <Card className="bg-white/90 backdrop-blur-lg shadow-xl border-white/20">
             <CardHeader className="text-center space-y-4">
               <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                 <Mail className="h-8 w-8 text-white" />
@@ -74,10 +74,10 @@ export default function ForgotPasswordPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-6">
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600">
                 If an account with this email exists, you will receive a password reset link shortly.
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500">
                 Check your spam folder if you don't see the email in your inbox.
               </p>
               <Button
@@ -94,9 +94,9 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg shadow-xl border-white/20 dark:border-gray-700/50">
+        <Card className="bg-white/90 backdrop-blur-lg shadow-xl border-white/20">
           <CardHeader className="text-center space-y-4">
             {/* Logo */}
             <div className="flex justify-center">
@@ -115,18 +115,18 @@ export default function ForgotPasswordPage() {
                 MyLinked
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+            <CardTitle className="text-2xl font-bold text-gray-900">
               Forgot Password
             </CardTitle>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-gray-600">
               Enter your email address and we'll send you a link to reset your password.
             </p>
           </CardHeader>
 
           <CardContent>
             {errorMessage && (
-              <Alert className="mb-6 border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
-                <AlertDescription className="text-red-800 dark:text-red-300">
+              <Alert className="mb-6 border-red-200 bg-red-50">
+                <AlertDescription className="text-red-800">
                   {errorMessage}
                 </AlertDescription>
               </Alert>
@@ -165,7 +165,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="w-full h-12 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+                  className="w-full h-12 text-gray-600 hover:text-gray-800"
                   onClick={() => setLocation("/auth")}
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />

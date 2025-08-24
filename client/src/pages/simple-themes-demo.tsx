@@ -20,7 +20,7 @@ import {
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { useApplyTheme } from "@/hooks/use-theme";
+import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "@/hooks/use-auth";
 import { User } from "@shared/schema";
 
@@ -140,7 +140,7 @@ export default function SimpleThemesDemo() {
   const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
   const [activeTheme, setActiveTheme] = useState<string>("ocean");
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const applyTheme = useApplyTheme();
+  const { setTheme } = useTheme();
 
   // Get current user profile to check active theme
   const { data: profile } = useQuery<User>({
@@ -155,22 +155,15 @@ export default function SimpleThemesDemo() {
     }
   }, [profile?.theme]);
 
-  const handleApplyTheme = (theme: Theme) => {
+  const handleApplyTheme = async (theme: Theme) => {
     setActiveTheme(theme.id);
-    applyTheme.mutate(theme.id);
+    await setTheme(theme.id);
   };
 
-  const handleDarkModeToggle = () => {
+  const handleDarkModeToggle = async () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
-    
-    // Apply dark mode to the document
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    
+    await setTheme(newDarkMode ? 'dark' : 'light');
     toast({
       title: newDarkMode ? "Dark Mode Enabled" : "Light Mode Enabled",
       description: `Switched to ${newDarkMode ? "dark" : "light"} mode.`
@@ -281,8 +274,8 @@ export default function SimpleThemesDemo() {
           <CardDescription>
             Toggle between light and dark mode for your profile display
           </CardDescription>
-          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-            <p className="text-sm text-blue-700 dark:text-blue-300">
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm text-blue-700">
               💡 To switch to a different mode, turn off Dark Mode in the Appearance tab on your Profile page.
             </p>
           </div>

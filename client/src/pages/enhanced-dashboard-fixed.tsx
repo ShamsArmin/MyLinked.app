@@ -255,7 +255,7 @@ function LinkCard({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   onClick={() => onDelete(link.id)} 
-                  className="text-red-500 dark:text-red-400 focus:text-red-500 dark:focus:text-red-400"
+                  className="text-red-500 focus:text-red-500"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
@@ -677,7 +677,7 @@ export default function EnhancedDashboardFixed() {
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600 dark:text-red-400">
+                <DropdownMenuItem className="text-red-600">
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
                 </DropdownMenuItem>
@@ -715,7 +715,7 @@ export default function EnhancedDashboardFixed() {
                 </div>
                 {!isLoadingStats && (
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-500 dark:text-green-400">+12.5%</span> from last month
+                    <span className="text-green-500">+12.5%</span> from last month
                   </p>
                 )}
               </CardContent>
@@ -736,7 +736,7 @@ export default function EnhancedDashboardFixed() {
                 </div>
                 {!isLoadingStats && (
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-500 dark:text-green-400">+2.3%</span> from last month
+                    <span className="text-green-500">+2.3%</span> from last month
                   </p>
                 )}
               </CardContent>
@@ -783,7 +783,7 @@ export default function EnhancedDashboardFixed() {
           <div className="grid gap-6 md:grid-cols-7">
             {/* Links Section - 4 columns on medium screens */}
             <div className="md:col-span-4 space-y-6">
-              <Card className="shadow-md border-t-4 border-t-blue-500 dark:border-t-blue-700">
+              <Card className="shadow-md border-t-4 border-t-blue-500">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle>My Links</CardTitle>
@@ -813,7 +813,7 @@ export default function EnhancedDashboardFixed() {
                     </div>
                   ) : isErrorLinks ? (
                     <div className="text-center py-8">
-                      <div className="text-red-500 dark:text-red-400 mb-2">
+                      <div className="text-red-500 mb-2">
                         <X className="h-8 w-8 mx-auto" />
                       </div>
                       <h3 className="font-medium">Error Loading Links</h3>
@@ -1326,9 +1326,9 @@ export default function EnhancedDashboardFixed() {
                     <span className="text-muted-foreground">Current: </span>
                     {currentOptimizeLink.title}
                   </div>
-                  <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                  <div className="border rounded-md p-2 text-sm bg-green-50 border-green-200">
                     <span className="text-muted-foreground">Suggestion: </span>
-                    <span className="text-green-600 dark:text-green-400 font-medium">
+                    <span className="text-green-600 font-medium">
                       {currentOptimizeLink.platform === "twitter" 
                         ? "Follow My Twitter for Tech Insights & Updates" 
                         : `Improved ${currentOptimizeLink.title} with Better Keywords`}
@@ -1357,9 +1357,9 @@ export default function EnhancedDashboardFixed() {
                     <span className="text-muted-foreground">Current: </span>
                     {currentOptimizeLink.description || "No description provided."}
                   </div>
-                  <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                  <div className="border rounded-md p-2 text-sm bg-green-50 border-green-200">
                     <span className="text-muted-foreground">Suggestion: </span>
-                    <span className="text-green-600 dark:text-green-400">
+                    <span className="text-green-600">
                       {currentOptimizeLink.platform === "twitter" 
                         ? "Daily insights on web development, tech trends, and design. Join my 5K+ followers for practical tips and industry news!"
                         : "Join our community of professionals for exclusive insights, resources, and networking opportunities. Stay ahead in your career with our expert-curated content."}

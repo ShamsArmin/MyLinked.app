@@ -181,7 +181,7 @@ export default function AuthPage() {
                   className="h-12 w-auto"
                 />
               </div>
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="text-gray-500">
                 Enter your details to {activeTab === "login" ? "sign in" : "create an account"}
               </p>
             </div>
