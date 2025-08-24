@@ -19,23 +19,12 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Get auth context
-  const { user } = useAuth();
-  
-  // Initial defaults
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [theme, setTheme] = useState<Theme>('default');
-  const [font, setFont] = useState<Font>('inter');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [darkMode, setDarkMode] = useState(false);
-
-  // Function to get theme colors based on theme ID
-  const getThemeColors = (themeId: string) => {
-    const themes = {
+// Exported helper to allow theme colors to be applied outside the provider
+export const getThemeColors = (themeId: string) => {
+  const themes = {
       'ocean': {
         primary: '217 91% 60%', // Blue
-        secondary: '221 83% 40%', 
+        secondary: '221 83% 40%',
         accent: '188 91% 43%',
         background: '0 0% 100%',
         foreground: '220 14% 18%',
@@ -115,8 +104,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    return themes[themeId as keyof typeof themes] || themes.default;
-  };
+  return themes[themeId as keyof typeof themes] || themes.default;
+};
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Get auth context
+  const { user } = useAuth();
+
+  // Initial defaults
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [theme, setTheme] = useState<Theme>('default');
+  const [font, setFont] = useState<Font>('inter');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [darkMode, setDarkMode] = useState(false);
 
   // Function to get CSS font family based on font name
   const getFontFamily = (fontName: string | undefined): string => {
@@ -228,11 +228,21 @@ export function useApplyTheme() {
           if (c.startsWith("theme-")) document.body.classList.remove(c);
         });
         document.body.classList.add(`theme-${theme}`);
+
+        // Immediately apply CSS variables for the selected theme
+        const themeColors = getThemeColors(theme);
+        document.documentElement.style.setProperty('--primary', themeColors.primary);
+        document.documentElement.style.setProperty('--secondary', themeColors.secondary);
+        document.documentElement.style.setProperty('--accent', themeColors.accent);
+        document.documentElement.style.setProperty('--background', themeColors.background);
+        document.documentElement.style.setProperty('--foreground', themeColors.foreground);
+        document.documentElement.style.setProperty('--border', themeColors.border);
       } catch (e) {
         console.warn("Theme DOM update warning:", e);
       }
 
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
 
       toast({
         title: "Theme applied",

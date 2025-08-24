@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { usePlatformIcons } from "@/hooks/use-platform-icons";
+import { getThemeColors } from "@/hooks/use-theme";
 
 import {
   ExternalLink,
@@ -114,6 +115,23 @@ export default function VisitorProfileNew() {
     },
     enabled: !!username,
   });
+
+  // Apply the profile's theme when data is loaded
+  useEffect(() => {
+    if (data?.profile) {
+      const { theme = 'default', darkMode } = data.profile;
+      const themeColors = getThemeColors(theme);
+      document.documentElement.classList.toggle('dark', !!darkMode);
+      document.documentElement.style.setProperty('--primary', themeColors.primary);
+      document.documentElement.style.setProperty('--secondary', themeColors.secondary);
+      document.documentElement.style.setProperty('--accent', themeColors.accent);
+      document.documentElement.style.setProperty('--background', themeColors.background);
+      document.documentElement.style.setProperty('--foreground', themeColors.foreground);
+      document.documentElement.style.setProperty('--border', themeColors.border);
+      document.body.className = '';
+      document.body.classList.add(`theme-${theme}`);
+    }
+  }, [data?.profile]);
 
   // Collaboration request handler
   const handleSubmitCollaborationRequest = async () => {
@@ -429,10 +447,10 @@ export default function VisitorProfileNew() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading profile...</p>
+          <p className="text-muted-foreground">Loading profile...</p>
         </div>
       </div>
     );
@@ -440,11 +458,11 @@ export default function VisitorProfileNew() {
 
   if (error || !data?.profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Profile Not Found</h1>
-          <p className="text-gray-600 mb-6">The profile you're looking for doesn't exist.</p>
-          <Button 
+          <p className="text-muted-foreground mb-6">The profile you're looking for doesn't exist.</p>
+          <Button
             onClick={() => navigate('/')}
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
@@ -468,7 +486,7 @@ export default function VisitorProfileNew() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-black dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Join MyLinked Button - Fixed Position */}
       <div className="fixed top-4 right-4 z-50">
         <Button
