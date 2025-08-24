@@ -119,7 +119,7 @@ export default function PublicProfile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading profile...</p>
@@ -130,7 +130,7 @@ export default function PublicProfile() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Profile Not Found</h1>
           <p className="text-muted-foreground mb-6">The profile you're looking for doesn't exist.</p>
@@ -180,7 +180,7 @@ export default function PublicProfile() {
   const themeStyles = getThemeStyles();
 
   return (
-    <div className={`min-h-screen ${profile.darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className="min-h-screen bg-background">
       {/* Top Navigation */}
       <div className="absolute top-0 left-0 right-0 z-10 p-4">
         <div className="flex justify-between items-center">
@@ -193,7 +193,7 @@ export default function PublicProfile() {
           <Button
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/20"
+            className="text-foreground hover:bg-accent/20"
             onClick={() => window.location.href = '/'}
           >
             Create Your Profile
@@ -219,7 +219,7 @@ export default function PublicProfile() {
           <div className="max-w-4xl mx-auto">
             <div className="flex items-end gap-3 sm:gap-6">
               {/* Profile Avatar */}
-              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-full border-4 border-white bg-white overflow-hidden flex-shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-full border-4 border-background bg-background overflow-hidden flex-shrink-0">
                 {profile.profileImage ? (
                   <img 
                     src={profile.profileImage} 
@@ -234,9 +234,9 @@ export default function PublicProfile() {
               </div>
               
               {/* Profile Info */}
-              <div className="text-white flex-1 min-w-0">
+              <div className="text-foreground flex-1 min-w-0">
                 <h1 className="text-xl sm:text-2xl md:text-4xl font-bold mb-2 truncate">{profile.name}</h1>
-                <p className="text-gray-200 text-sm md:text-base mb-2 break-words leading-relaxed max-w-full overflow-hidden">
+                <p className="text-muted-foreground text-sm md:text-base mb-2 break-words leading-relaxed max-w-full overflow-hidden">
                   {profile.bio && profile.bio.length > 160 ? `${profile.bio.substring(0, 160)}...` : profile.bio}
                 </p>
                 <div className="flex flex-wrap gap-2 sm:gap-4 text-sm">
@@ -272,7 +272,7 @@ export default function PublicProfile() {
           <div className="lg:col-span-2 space-y-6">
             {/* Welcome Message */}
             {profile.welcomeMessage && (
-              <Card className={profile.darkMode ? 'bg-gray-800 border-gray-700' : ''}>
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <MessageCircle className="h-5 w-5" />
@@ -307,7 +307,7 @@ export default function PublicProfile() {
                       Your browser does not support the video element.
                     </video>
                   ) : (
-                    <p className={`${profile.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <p className="text-foreground">
                       {profile.welcomeMessage}
                     </p>
                   )}
@@ -317,7 +317,7 @@ export default function PublicProfile() {
 
             {/* Links Section */}
             {links && links.length > 0 && (
-              <Card className={profile.darkMode ? 'bg-gray-800 border-gray-700' : ''}>
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Globe className="h-5 w-5" />
@@ -334,9 +334,7 @@ export default function PublicProfile() {
                         <Button
                           key={link.id}
                           variant="outline"
-                          className={`justify-start p-4 h-auto hover:scale-105 transition-all ${
-                            profile.darkMode ? 'bg-gray-700 border-gray-600 hover:bg-gray-600' : 'bg-white hover:bg-gray-50'
-                          }`}
+                          className="justify-start p-4 h-auto hover:scale-105 transition-all bg-card border-border hover:bg-accent"
                           onClick={() => handleLinkClick(link.id, link.url)}
                         >
                           <div className="flex items-center gap-3 w-full">
@@ -367,7 +365,7 @@ export default function PublicProfile() {
 
             {/* Collaborative Spotlight */}
             {spotlightProjects && spotlightProjects.length > 0 && (
-              <Card className={profile.darkMode ? 'bg-gray-800 border-gray-700' : ''}>
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <GitBranch className="h-5 w-5" />
@@ -377,7 +375,7 @@ export default function PublicProfile() {
                 <CardContent>
                   <div className="grid gap-4">
                     {spotlightProjects.map(project => (
-                      <div key={project.id} className={`p-4 rounded-lg border ${profile.darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+                      <div key={project.id} className="p-4 rounded-lg border bg-card border-border">
                         <div className="flex items-start gap-4">
                           {project.imageUrl && (
                             <img 
@@ -396,7 +394,7 @@ export default function PublicProfile() {
                                 </Badge>
                               )}
                             </div>
-                            <p className={`text-sm mb-3 ${profile.darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            <p className="text-sm mb-3 text-foreground">
                               {project.description}
                             </p>
                             <div className="flex items-center justify-between">
@@ -431,7 +429,7 @@ export default function PublicProfile() {
           <div className="space-y-6">
             {/* Skills & Industry */}
             {(profile.skills?.length || profile.industry) && (
-              <Card className={profile.darkMode ? 'bg-gray-800 border-gray-700' : ''}>
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Award className="h-5 w-5" />
@@ -463,7 +461,7 @@ export default function PublicProfile() {
 
             {/* Referral Links */}
             {referralLinks && referralLinks.length > 0 && (
-              <Card className={profile.darkMode ? 'bg-gray-800 border-gray-700' : ''}>
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Star className="h-5 w-5" />
@@ -473,12 +471,12 @@ export default function PublicProfile() {
                 <CardContent>
                   <div className="space-y-3">
                     {referralLinks.map(link => (
-                      <div key={link.id} className={`p-3 rounded-lg border ${profile.darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+                      <div key={link.id} className="p-3 rounded-lg border bg-card border-border">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <h4 className="font-medium text-sm">{link.title}</h4>
                             {link.description && (
-                              <p className={`text-xs mt-1 ${profile.darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              <p className="text-xs mt-1 text-muted-foreground">
                                 {link.description}
                               </p>
                             )}
