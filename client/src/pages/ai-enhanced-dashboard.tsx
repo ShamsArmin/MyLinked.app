@@ -481,8 +481,8 @@ function SmartLinkAI({ links, onApplySuggestions }: { links: Link[], onApplySugg
   };
   
   return (
-    <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-      <CardHeader className="pb-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
+    <Card className="card-surface">
+      <CardHeader className="pb-2 themed-gradient">
         <CardTitle className="flex items-center text-lg font-semibold text-slate-800 dark:text-gray-200">
           <Brain className="h-5 w-5 mr-2 text-indigo-500" />
           Smart Link AI
@@ -598,8 +598,8 @@ function PitchModeCard() {
   const [, navigate] = useLocation();
   
   return (
-    <Card id="pitch-mode" className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-      <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
+    <Card id="pitch-mode" className="card-surface">
+      <CardHeader className="themed-gradient p-3 mb-3 rounded-lg">
         <div className="flex items-center">
           <Presentation className="h-5 w-5 mr-2 text-blue-600" />
           <CardTitle className="text-slate-800 dark:text-gray-200">Pitch Mode</CardTitle>
@@ -1459,7 +1459,7 @@ export default function AIEnhancedDashboard() {
   ];
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-black dark:via-gray-900 dark:to-gray-800">
+    <div className="page-surface">
       {/* Tour Guide */}
       <TourGuide 
         isOpen={showTour}
@@ -1468,7 +1468,7 @@ export default function AIEnhancedDashboard() {
       />
       
       {/* Dashboard Header */}
-      <header className="dashboard-header bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b-2 border-blue-200 dark:border-gray-700 shadow-lg">
+      <header className="dashboard-header bg-base-100 text-base-content border-b border-base-200 shadow">
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-4">
             <img 
@@ -1689,8 +1689,8 @@ export default function AIEnhancedDashboard() {
             </p>
           </div>
           {/* Enhanced Profile Preview - Matches Public Profile */}
-          <Card className="profile-preview-card overflow-hidden shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-800/90 dark:border-gray-600/50">
-            <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/30 dark:to-gray-800/30 border-b border-blue-200/30 dark:border-gray-600/30">
+          <Card className="profile-preview-card overflow-hidden card-surface">
+            <CardHeader className="themed-gradient p-3 mb-3 rounded-lg">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center text-slate-800 dark:text-gray-200">
                   <User className="h-5 w-5 mr-2 text-blue-600" />
@@ -1921,94 +1921,27 @@ export default function AIEnhancedDashboard() {
           </Card>
           
           {/* Quick Actions Card - Moved right after Profile Preview */}
-          <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-800/90 dark:border-gray-600/50">
-            <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/30 dark:to-gray-800/30 border-b border-blue-200/30 dark:border-gray-600/30">
-              <CardTitle className="text-slate-800 dark:text-gray-200 dark:text-gray-200">Quick Actions</CardTitle>
-              <CardDescription className="text-slate-600 dark:text-gray-400 dark:text-gray-400">Frequently used tools</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
-                  onClick={() => navigate("/optimize-links")}
-                >
-                  <Shuffle className="h-4 w-4 mb-1 text-indigo-500" />
-                  <span className="text-xs">Optimize Links</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
-                  onClick={() => navigate("/spotlight")}
-                >
-                  <Presentation className="h-4 w-4 mb-1 text-indigo-500" />
-                  <span className="text-xs">Spotlight</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
-                  onClick={() => navigate("/collaboration")}
-                >
-                  <Users className="h-4 w-4 mb-1 text-indigo-500" />
-                  <span className="text-xs">Collaboration</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
-                  onClick={() => navigate("/industry-examples")}
-                >
-                  <Briefcase className="h-4 w-4 mb-1 text-indigo-500" />
-                  <span className="text-xs">Industry</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
-                  onClick={() => navigate("/referral-links")}
-                >
-                  <Share2 className="h-4 w-4 mb-1 text-indigo-500" />
-                  <span className="text-xs">Referrals</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
-                  onClick={() => navigate("/branding")}
-                >
-                  <Paintbrush className="h-4 w-4 mb-1 text-indigo-500" />
-                  <span className="text-xs">Branding</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
-                  onClick={() => navigate("/themes-demo")}
-                >
-                  <Palette className="h-4 w-4 mb-1 text-indigo-500" />
-                  <span className="text-xs">Theme</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
-                  onClick={() => navigate("/my-links")}
-                >
-                  <LinkIcon className="h-4 w-4 mb-1 text-indigo-500" />
-                  <span className="text-xs">My Links</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <section className="card-surface p-4">
+            <div className="themed-gradient rounded-lg p-3 mb-3">
+              <h3 className="font-semibold">Quick Actions</h3>
+              <p className="text-sm opacity-70">Frequently used tools</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <button className="btn-primary-soft" onClick={() => navigate("/optimize-links")}>Optimize Links</button>
+              <button className="btn-accent-soft" onClick={() => navigate("/spotlight")}>Spotlight</button>
+              <button className="btn-outline-soft" onClick={() => navigate("/collaboration")}>Collaboration</button>
+              <button className="btn-warning-soft" onClick={() => navigate("/branding")}>Branding</button>
+              <button className="btn-ghost-soft" onClick={() => navigate("/referral-links")}>Referrals</button>
+              <button className="btn-secondary-soft" onClick={() => navigate("/themes")}>Theme</button>
+              <button className="btn-ghost-soft" onClick={() => navigate("/my-links")}>My Links</button>
+            </div>
+          </section>
 
           {/* Three Analysis Cards in a Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Social Score Card */}
-            <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-              <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
+            <Card className="card-surface">
+              <CardHeader className="themed-gradient p-3 mb-3 rounded-lg">
                 <CardTitle className="text-slate-800 dark:text-gray-200 text-lg">Social Score</CardTitle>
                 <CardDescription className="text-slate-600 dark:text-gray-400">Your profile engagement rating</CardDescription>
               </CardHeader>
@@ -2028,20 +1961,19 @@ export default function AIEnhancedDashboard() {
                       ></div>
                     </div>
                   )}
-                  <Button 
-                    size="sm"
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                  <button
+                    className="btn-primary-soft w-full"
                     onClick={() => navigate("/social-score")}
                   >
                     View Details
-                  </Button>
+                  </button>
                 </div>
               </CardContent>
             </Card>
 
             {/* Profile Views Card */}
-            <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-              <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
+            <Card className="card-surface">
+              <CardHeader className="themed-gradient p-3 mb-3 rounded-lg">
                 <CardTitle className="text-slate-800 dark:text-gray-200 text-lg">Profile Views</CardTitle>
                 <CardDescription className="text-slate-600 dark:text-gray-400">Total profile visits</CardDescription>
               </CardHeader>
@@ -2062,8 +1994,8 @@ export default function AIEnhancedDashboard() {
             </Card>
 
             {/* Link Clicks Card */}
-            <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-              <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
+            <Card className="card-surface">
+              <CardHeader className="themed-gradient p-3 mb-3 rounded-lg">
                 <CardTitle className="text-slate-800 dark:text-gray-200 text-lg">Link Clicks</CardTitle>
                 <CardDescription className="text-slate-600 dark:text-gray-400">Total link interactions</CardDescription>
               </CardHeader>
@@ -2447,8 +2379,8 @@ export default function AIEnhancedDashboard() {
             {/* Left Column - Engagement Trends (2 columns) */}
             <div className="md:col-span-2 space-y-6 overflow-x-hidden">
               {/* Engagement Trends Card */}
-              <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-                <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
+              <Card className="card-surface">
+                <CardHeader className="themed-gradient p-3 mb-3 rounded-lg">
                   <CardTitle className="flex items-center text-slate-800 dark:text-gray-200">
                     <LineChart className="h-5 w-5 mr-2 text-blue-600" />
                     Engagement Trends
