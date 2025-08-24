@@ -8,6 +8,9 @@ type Theme = 'default' | 'minimal' | 'vibrant' | 'professional' | string;
 type Font = 'inter' | 'poppins' | 'roboto' | 'montserrat' | 'opensans' | string;
 type ViewMode = 'list' | 'grid' | 'story' | 'portfolio';
 
+export const KNOWN = new Set(['light','dark','forest','sunset','royal','passion']);
+export const normalizeTheme = (t?: string) => (t && KNOWN.has(t) ? t : 'forest');
+
 interface ThemeContextType {
   darkMode: boolean;
   theme: Theme;
@@ -149,7 +152,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (source) {
       // Get values with fallbacks
       const userDarkMode = source.darkMode === true;
-      const userTheme = source.theme || 'default';
+      const userTheme = normalizeTheme(source.theme);
       const userFont = source.font || 'inter';
       const userViewMode = source.viewMode || 'list';
       
@@ -162,6 +165,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       
       // Apply dark mode to document
       document.documentElement.classList.toggle('dark', userDarkMode);
+      document.documentElement.setAttribute('data-theme', userTheme);
       
       // Apply font to document
       document.documentElement.style.setProperty('--font-primary', getFontFamily(userFont));
@@ -222,12 +226,13 @@ export function useApplyTheme() {
       return updatedUser; // treat as success if no throw
     },
     onSuccess: (_data, theme) => {
+      const normalized = normalizeTheme(theme);
       try {
-        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.setAttribute("data-theme", normalized);
         document.body.classList.forEach((c) => {
           if (c.startsWith("theme-")) document.body.classList.remove(c);
         });
-        document.body.classList.add(`theme-${theme}`);
+        document.body.classList.add(`theme-${normalized}`);
       } catch (e) {
         console.warn("Theme DOM update warning:", e);
       }
@@ -236,7 +241,7 @@ export function useApplyTheme() {
 
       toast({
         title: "Theme applied",
-        description: `Your theme is now "${theme}".`,
+        description: `Your theme is now "${normalized}".`,
       });
     },
     onError: (e: any) => {
