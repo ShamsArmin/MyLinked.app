@@ -13,6 +13,17 @@
     <meta property="og:url" content="https://mylinked.app" />
     <meta property="og:image" content="/src/assets/My_1749940535307.png" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <script>
+      (function () {
+        try {
+          var map = { midnight: 'night', passion: 'valentine', royal: 'luxury' };
+          var t = localStorage.getItem('theme');
+          if (t && map[t]) t = map[t];
+          document.documentElement.setAttribute('data-theme', t || 'forest');
+          document.documentElement.classList.remove('dark');
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

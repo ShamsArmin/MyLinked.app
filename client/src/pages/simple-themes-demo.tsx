@@ -20,7 +20,7 @@ import {
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { useApplyTheme } from "@/hooks/use-theme";
+import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/hooks/use-auth";
 import { User } from "@shared/schema";
 
@@ -140,7 +140,7 @@ export default function SimpleThemesDemo() {
   const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
   const [activeTheme, setActiveTheme] = useState<string>("ocean");
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const applyTheme = useApplyTheme();
+  const { setTheme } = useTheme();
 
   // Get current user profile to check active theme
   const { data: profile } = useQuery<User>({
@@ -157,20 +157,14 @@ export default function SimpleThemesDemo() {
 
   const handleApplyTheme = (theme: Theme) => {
     setActiveTheme(theme.id);
-    applyTheme.mutate(theme.id);
+    setTheme(theme.id);
   };
 
   const handleDarkModeToggle = () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
-    
-    // Apply dark mode to the document
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    
+    setTheme(newDarkMode ? 'dark' : 'light');
+
     toast({
       title: newDarkMode ? "Dark Mode Enabled" : "Light Mode Enabled",
       description: `Switched to ${newDarkMode ? "dark" : "light"} mode.`
