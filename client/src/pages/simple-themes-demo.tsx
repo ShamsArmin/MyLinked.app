@@ -264,7 +264,7 @@ export default function SimpleThemesDemo() {
               <Palette className="mr-3 h-8 w-8 text-primary" />
               Profile Themes
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-base-content/70">
               Choose from beautiful preset themes to customize your profile appearance
             </p>
           </div>
@@ -297,7 +297,7 @@ export default function SimpleThemesDemo() {
                 <p className="font-medium">
                   {isDarkMode ? "Dark Mode Active" : "Light Mode Active"}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-base-content/70">
                   {isDarkMode ? "Easier on the eyes in low light" : "Classic bright appearance"}
                 </p>
               </div>

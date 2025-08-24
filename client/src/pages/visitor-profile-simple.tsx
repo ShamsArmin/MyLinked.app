@@ -152,11 +152,11 @@ export default function VisitorProfileSimple() {
                             <div className="text-left">
                               <div className="font-medium">{link.title}</div>
                               {link.description && (
-                                <div className="text-sm text-muted-foreground">{link.description}</div>
+                                <div className="text-sm text-base-content/70">{link.description}</div>
                               )}
                             </div>
                           </div>
-                          <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                          <ExternalLink className="h-4 w-4 text-base-content/70" />
                         </Button>
                       );
                     })}

@@ -232,7 +232,7 @@ export function CollaborativeProfile({ className = '' }: CollaborativeProfilePro
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="text-sm font-medium">Collaborators ({collaborators.length})</h4>
                   <div className="relative w-[180px]">
-                    <Search className="absolute left-2 top-2.5 h-3 w-3 text-muted-foreground" />
+                    <Search className="absolute left-2 top-2.5 h-3 w-3 text-base-content/70" />
                     <Input
                       placeholder="Search..."
                       className="h-8 pl-7"
@@ -259,7 +259,7 @@ export function CollaborativeProfile({ className = '' }: CollaborativeProfilePro
                             <div>
                               <div className="font-medium text-sm">{collaborator.name || collaborator.username}</div>
                               {collaborator.name && (
-                                <div className="text-xs text-muted-foreground">@{collaborator.username}</div>
+                                <div className="text-xs text-base-content/70">@{collaborator.username}</div>
                               )}
                             </div>
                           </div>
@@ -278,15 +278,15 @@ export function CollaborativeProfile({ className = '' }: CollaborativeProfilePro
                   </ScrollArea>
                 ) : collaborators.length > 0 && searchQuery ? (
                   <div className="py-8 text-center">
-                    <p className="text-muted-foreground">No results for "{searchQuery}"</p>
+                    <p className="text-base-content/70">No results for "{searchQuery}"</p>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <div className="bg-muted p-3 rounded-full mb-3">
-                      <Users className="h-5 w-5 text-muted-foreground" />
+                    <div className="bg-base-200 p-3 rounded-full mb-3">
+                      <Users className="h-5 w-5 text-base-content/70" />
                     </div>
                     <h3 className="font-medium mb-1">No collaborators yet</h3>
-                    <p className="text-sm text-muted-foreground max-w-[270px] mb-4">
+                    <p className="text-sm text-base-content/70 max-w-[270px] mb-4">
                       Add team members to work together on your profile
                     </p>
                   </div>
@@ -295,12 +295,12 @@ export function CollaborativeProfile({ className = '' }: CollaborativeProfilePro
             </>
           )}
           
-          <div className="bg-muted p-3 rounded-lg text-sm">
+          <div className="bg-base-200 p-3 rounded-lg text-sm">
             <h4 className="font-medium mb-1">About Collaboration</h4>
-            <p className="text-muted-foreground text-xs mb-3">
+            <p className="text-base-content/70 text-xs mb-3">
               Collaborators can help manage your profile by:
             </p>
-            <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+            <ul className="text-xs text-base-content/70 space-y-1 list-disc list-inside">
               <li>Adding and updating links</li>
               <li>Editing profile information</li>
               <li>Managing social posts</li>

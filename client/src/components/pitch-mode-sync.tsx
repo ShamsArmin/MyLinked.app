@@ -253,7 +253,7 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center py-8">
-          <p className="text-muted-foreground">Failed to load pitch mode settings. Please try again.</p>
+          <p className="text-base-content/70">Failed to load pitch mode settings. Please try again.</p>
         </CardContent>
       </Card>
     );
@@ -305,17 +305,17 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
                     className={`border rounded-md p-2 cursor-pointer transition-colors ${
                       pitchType === option.id 
                         ? 'bg-primary/10 border-primary/20' 
-                        : 'hover:bg-muted/50'
+                        : 'hover:bg-base-200/50'
                     }`}
                     onClick={() => setPitchType(option.id)}
                   >
                     <div className="flex items-center mb-1">
-                      <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center mr-2">
+                      <div className="w-6 h-6 rounded-full bg-base-200 flex items-center justify-center mr-2">
                         {option.icon}
                       </div>
                       <span className="text-sm font-medium">{option.name}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-base-content/70">
                       {option.description}
                     </p>
                   </div>
@@ -333,7 +333,7 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
             </div>
           ) : (
             <div className="text-center py-4">
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-base-content/70 mb-3">
                 Enable pitch mode to customize your profile
               </p>
               <Button 
@@ -413,7 +413,7 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
                 </div>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-base-content/70">
               Selected areas will be highlighted on your pitch mode profile
             </p>
           </div>
@@ -430,7 +430,7 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
             disabled={!enabled}
             className={!enabled ? "opacity-50" : ""}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-base-content/70">
             This description will be prominently displayed when Pitch Mode is active
           </p>
         </div>
@@ -443,7 +443,7 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
             </div>
             
             <div className="flex items-center gap-2">
-              <div className="bg-background text-sm p-2 rounded flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+              <div className="bg-base-100 text-sm p-2 rounded flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                 {getShareUrl()}
               </div>
               <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
@@ -470,7 +470,7 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
                           id="link"
                           defaultValue={getShareUrl()}
                           readOnly
-                          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-muted-foreground"
+                          className="flex h-9 w-full rounded-md border border-base-300 bg-base-100 px-3 py-1 text-sm text-base-content/70"
                         />
                       </div>
                       <Button size="sm" className="px-3" onClick={handleCopyLink}>
@@ -537,7 +537,7 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
               </Dialog>
             </div>
             
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-base-content/70">
               Share this link when pitching to clients or during presentations
             </div>
           </div>

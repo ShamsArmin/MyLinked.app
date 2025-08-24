@@ -243,7 +243,7 @@ export default function ThemesPage() {
           <Palette className="mr-3 h-8 w-8 text-primary" />
           Profile Themes
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-base-content/70">
           Customize your profile appearance with beautiful themes and colors
         </p>
       </div>

@@ -122,7 +122,7 @@ export default function PublicProfile() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading profile...</p>
+          <p className="text-base-content/70">Loading profile...</p>
         </div>
       </div>
     );
@@ -133,7 +133,7 @@ export default function PublicProfile() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Profile Not Found</h1>
-          <p className="text-muted-foreground mb-6">The profile you're looking for doesn't exist.</p>
+          <p className="text-base-content/70 mb-6">The profile you're looking for doesn't exist.</p>
           <Button onClick={() => window.location.href = '/'}>Go Home</Button>
         </div>
       </div>
@@ -346,14 +346,14 @@ export default function PublicProfile() {
                             </div>
                             <div className="flex-1 text-left">
                               <div className="font-medium">{link.title}</div>
-                              <div className="text-sm text-muted-foreground flex items-center gap-2">
+                              <div className="text-sm text-base-content/70 flex items-center gap-2">
                                 <Eye className="h-3 w-3" />
                                 {link.views} views
                                 <MousePointer className="h-3 w-3 ml-2" />
                                 {link.clicks} clicks
                               </div>
                             </div>
-                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                            <ExternalLink className="h-4 w-4 text-base-content/70" />
                           </div>
                         </Button>
                       );

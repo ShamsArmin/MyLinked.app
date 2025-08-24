@@ -55,7 +55,7 @@ export default function SimpleDashboard() {
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <div className="hidden md:flex w-64 flex-col bg-card border-r h-screen sticky top-0">
+      <div className="hidden md:flex w-64 flex-col bg-base-100 border-r h-screen sticky top-0">
         <div className="py-6 px-4 border-b">
           <h1 className="text-xl font-bold">MyLinked</h1>
         </div>
@@ -111,7 +111,7 @@ export default function SimpleDashboard() {
           {/* Welcome Section */}
           <div>
             <h1 className="text-2xl font-bold">Welcome, {user?.name || 'User'}</h1>
-            <p className="text-muted-foreground">Manage your digital presence</p>
+            <p className="text-base-content/70">Manage your digital presence</p>
           </div>
 
           {/* Performance Overview */}
@@ -122,7 +122,7 @@ export default function SimpleDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.views}</div>
-                <p className="text-xs text-muted-foreground">Total profile views</p>
+                <p className="text-xs text-base-content/70">Total profile views</p>
               </CardContent>
             </Card>
             <Card>
@@ -131,7 +131,7 @@ export default function SimpleDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.ctr.toFixed(1)}%</div>
-                <p className="text-xs text-muted-foreground">Link click-through rate</p>
+                <p className="text-xs text-base-content/70">Link click-through rate</p>
               </CardContent>
             </Card>
             <Card>
@@ -140,13 +140,13 @@ export default function SimpleDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.score}</div>
-                <div className="w-full bg-muted rounded-full h-2 mt-2">
+                <div className="w-full bg-base-200 rounded-full h-2 mt-2">
                   <div 
                     className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full" 
                     style={{ width: `${stats.score}%` }}
                   ></div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Profile optimization score</p>
+                <p className="text-xs text-base-content/70 mt-1">Profile optimization score</p>
               </CardContent>
             </Card>
           </div>
@@ -170,9 +170,9 @@ export default function SimpleDashboard() {
               
               {isLoadingLinks ? (
                 <div className="space-y-3">
-                  <div className="h-12 bg-muted rounded animate-pulse"></div>
-                  <div className="h-12 bg-muted rounded animate-pulse"></div>
-                  <div className="h-12 bg-muted rounded animate-pulse"></div>
+                  <div className="h-12 bg-base-200 rounded animate-pulse"></div>
+                  <div className="h-12 bg-base-200 rounded animate-pulse"></div>
+                  <div className="h-12 bg-base-200 rounded animate-pulse"></div>
                 </div>
               ) : links.length > 0 ? (
                 <div className="space-y-3">
@@ -181,7 +181,7 @@ export default function SimpleDashboard() {
                       <CardContent className="p-4 flex justify-between items-center">
                         <div>
                           <h3 className="font-medium">{link.title}</h3>
-                          <p className="text-xs text-muted-foreground">{link.url}</p>
+                          <p className="text-xs text-base-content/70">{link.url}</p>
                         </div>
                         <div className="flex gap-2">
                           <Button variant="outline" size="icon">
@@ -200,7 +200,7 @@ export default function SimpleDashboard() {
                   <CardContent className="p-6 text-center">
                     <LinkIcon className="h-8 w-8 mx-auto mb-2 text-muted" />
                     <h3 className="font-medium mb-1">No Links Yet</h3>
-                    <p className="text-sm text-muted-foreground mb-3">Add your first link to get started</p>
+                    <p className="text-sm text-base-content/70 mb-3">Add your first link to get started</p>
                     <Button>
                       <Plus className="h-4 w-4 mr-1" /> Add Your First Link
                     </Button>
@@ -221,7 +221,7 @@ export default function SimpleDashboard() {
                     <div className="text-center">
                       <LineChart className="h-8 w-8 mx-auto mb-2 text-muted" />
                       <p className="text-sm font-medium">Analytics Chart</p>
-                      <p className="text-xs text-muted-foreground">View detailed analytics on the Analytics page</p>
+                      <p className="text-xs text-base-content/70">View detailed analytics on the Analytics page</p>
                     </div>
                   </div>
                 </CardContent>
@@ -251,7 +251,7 @@ export default function SimpleDashboard() {
                       {user?.name ? user.name.charAt(0) : 'U'}
                     </div>
                     <h3 className="font-medium">{user?.name || 'User'}</h3>
-                    <p className="text-sm text-muted-foreground mb-3">{user?.bio || 'Your bio here'}</p>
+                    <p className="text-sm text-base-content/70 mb-3">{user?.bio || 'Your bio here'}</p>
                     
                     <div className="w-full grid grid-cols-2 gap-2 mt-2">
                       <Button 
@@ -283,7 +283,7 @@ export default function SimpleDashboard() {
                     <div className="text-center py-4">
                       <GitBranch className="h-10 w-10 text-muted mx-auto mb-2" />
                       <h4 className="text-sm font-medium mb-1">Collaborative Projects</h4>
-                      <p className="text-xs text-muted-foreground mb-4">Showcase your work with others</p>
+                      <p className="text-xs text-base-content/70 mb-4">Showcase your work with others</p>
                       <Button 
                         variant="outline" 
                         size="sm" 

@@ -552,7 +552,7 @@ export default function VisitorProfileWorking() {
                               <div className="min-w-0 flex-1 text-left">
                                 <div className="font-medium truncate">{link.title}</div>
                                 {link.description && (
-                                  <div className="text-sm text-muted-foreground truncate">{link.description}</div>
+                                  <div className="text-sm text-base-content/70 truncate">{link.description}</div>
                                 )}
                               </div>
                             </div>
@@ -593,7 +593,7 @@ export default function VisitorProfileWorking() {
                         </CardHeader>
                         <CardContent className="pb-2">
                           {/* Project Thumbnail - Always show an image container */}
-                          <div className="aspect-video bg-muted rounded-md overflow-hidden mb-4 relative border border-muted-foreground/10">
+                          <div className="aspect-video bg-base-200 rounded-md overflow-hidden mb-4 relative border border-muted-foreground/10">
                             {project.thumbnail ? (
                               <img
                                 src={project.thumbnail}
@@ -604,10 +604,10 @@ export default function VisitorProfileWorking() {
                                 }}
                               />
                             ) : (
-                              <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+                              <div className="absolute inset-0 flex items-center justify-center bg-base-200/50">
                                 <div className="text-center px-4">
-                                  <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-2" />
-                                  <p className="text-sm text-muted-foreground">No image available</p>
+                                  <ImageIcon className="h-12 w-12 mx-auto text-base-content/50 mb-2" />
+                                  <p className="text-sm text-base-content/70">No image available</p>
                                 </div>
                               </div>
                             )}
@@ -616,7 +616,7 @@ export default function VisitorProfileWorking() {
                           {/* Tags - Improved visibility */}
                           <div className="mt-3">
                             <div className="flex items-center mb-1">
-                              <Tag className="h-3 w-3 mr-1 text-muted-foreground" />
+                              <Tag className="h-3 w-3 mr-1 text-base-content/70" />
                               <span className="text-sm font-medium">Tags:</span>
                             </div>
                             {project.tags && project.tags.length > 0 ? (
@@ -625,13 +625,13 @@ export default function VisitorProfileWorking() {
                                   <Badge key={tag.id} variant="outline" className="flex items-center gap-1 py-1 px-2">
                                     <span className="text-xs font-medium">{tag.label}</span>
                                     {tag.type && tag.type !== "tag" && (
-                                      <span className="text-[10px] text-muted-foreground">({tag.type})</span>
+                                      <span className="text-[10px] text-base-content/70">({tag.type})</span>
                                     )}
                                   </Badge>
                                 ))}
                               </div>
                             ) : (
-                              <p className="text-xs text-muted-foreground">No tags added yet</p>
+                              <p className="text-xs text-base-content/70">No tags added yet</p>
                             )}
                           </div>
                           
@@ -644,7 +644,7 @@ export default function VisitorProfileWorking() {
                             {project.contributors && project.contributors.length > 0 ? (
                               <div className="space-y-2">
                                 {project.contributors.slice(0, 3).map((contributor: any) => (
-                                  <div key={contributor.id} className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
+                                  <div key={contributor.id} className="flex items-center gap-2 bg-base-200/30 p-2 rounded-md">
                                     <Avatar className="h-7 w-7 border border-primary/20">
                                       <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
                                         {contributor.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'C'}
@@ -653,23 +653,23 @@ export default function VisitorProfileWorking() {
                                     <div className="flex-1 min-w-0">
                                       <p className="font-medium text-sm">{contributor.name}</p>
                                       {contributor.role && 
-                                        <p className="text-xs text-muted-foreground">{contributor.role}</p>
+                                        <p className="text-xs text-base-content/70">{contributor.role}</p>
                                       }
                                       {contributor.email && 
-                                        <p className="text-xs text-muted-foreground italic">{contributor.email}</p>
+                                        <p className="text-xs text-base-content/70 italic">{contributor.email}</p>
                                       }
                                     </div>
                                   </div>
                                 ))}
                                 {project.contributors.length > 3 && (
-                                  <div className="text-xs text-center bg-muted/20 p-1 rounded">
+                                  <div className="text-xs text-center bg-base-200/20 p-1 rounded">
                                     +{project.contributors.length - 3} more contributors
                                   </div>
                                 )}
                               </div>
                             ) : (
-                              <div className="text-center py-2 bg-muted/20 rounded-md">
-                                <p className="text-sm text-muted-foreground">No contributors added yet</p>
+                              <div className="text-center py-2 bg-base-200/20 rounded-md">
+                                <p className="text-sm text-base-content/70">No contributors added yet</p>
                               </div>
                             )}
                           </div>
@@ -725,7 +725,7 @@ export default function VisitorProfileWorking() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-base-content/70 mb-4">
                   Interested in working together? Send a collaboration request to {profile.name || profile.username}.
                 </p>
                 
@@ -756,10 +756,10 @@ export default function VisitorProfileWorking() {
                                 </Badge>
                               </div>
                               {skill.description && (
-                                <p className="text-sm text-muted-foreground mb-1">{skill.description}</p>
+                                <p className="text-sm text-base-content/70 mb-1">{skill.description}</p>
                               )}
                               {skill.yearsOfExperience && (
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-base-content/70">
                                   {skill.yearsOfExperience} years experience
                                 </p>
                               )}
@@ -788,7 +788,7 @@ export default function VisitorProfileWorking() {
                         </DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-base-content/70">
                           Send a collaboration request to {profile.name || profile.username} to connect and work together.
                         </p>
                         
@@ -898,7 +898,7 @@ export default function VisitorProfileWorking() {
                           <div className="min-w-0 flex-1">
                             <h4 className="font-medium text-sm truncate">{link.title}</h4>
                             {link.description && (
-                              <p className="text-xs text-muted-foreground mt-1 break-words">{link.description}</p>
+                              <p className="text-xs text-base-content/70 mt-1 break-words">{link.description}</p>
                             )}
                             {link.referenceCompany && (
                               <Badge variant="outline" className="text-xs mt-2">
@@ -940,7 +940,7 @@ export default function VisitorProfileWorking() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground mb-4">No referral links available yet.</p>
+                  <p className="text-sm text-base-content/70 mb-4">No referral links available yet.</p>
                 )}
                 
                 <Button
@@ -967,7 +967,7 @@ export default function VisitorProfileWorking() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-base-content/70">
               Share {profile.name || profile.username}'s profile with others
             </p>
             <div className="grid grid-cols-2 gap-3">
@@ -1018,7 +1018,7 @@ export default function VisitorProfileWorking() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 max-h-96 overflow-y-auto">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-base-content/70">
               Request to add your link to {profile.name || profile.username}'s referral section
             </p>
             

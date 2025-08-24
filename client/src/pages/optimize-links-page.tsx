@@ -117,7 +117,7 @@ export default function OptimizeLinksPage() {
   };
   
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-base-200 text-base-content">
       <main className="container mx-auto px-4 py-8 max-w-6xl space-y-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
@@ -129,7 +129,7 @@ export default function OptimizeLinksPage() {
         </div>
         
         <div className="mb-8">
-          <p className="text-muted-foreground">
+          <p className="text-base-content/70">
             Select any link below to optimize its content using AI suggestions.
           </p>
         </div>
@@ -154,7 +154,7 @@ export default function OptimizeLinksPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4 truncate">
+                  <p className="text-sm text-base-content/70 mb-4 truncate">
                     {link.url}
                   </p>
                   {link.description && (
@@ -163,7 +163,7 @@ export default function OptimizeLinksPage() {
                     </p>
                   )}
                   <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center text-sm text-muted-foreground">
+                    <div className="flex items-center text-sm text-base-content/70">
                       <span className="mr-3">{link.clicks || 0} clicks</span>
                       <span>{link.views || 0} views</span>
                     </div>
@@ -182,7 +182,7 @@ export default function OptimizeLinksPage() {
         ) : (
           <div className="text-center py-12">
             <h3 className="text-lg font-medium mb-2">No links found</h3>
-            <p className="text-muted-foreground mb-4">You haven't added any links yet.</p>
+            <p className="text-base-content/70 mb-4">You haven't added any links yet.</p>
             <Button onClick={handleBackToDashboard}>Go back to Dashboard</Button>
           </div>
         )}
@@ -209,7 +209,7 @@ export default function OptimizeLinksPage() {
                 </div>
                 <div>
                   <h4 className="font-medium text-sm">{currentOptimizeLink.title}</h4>
-                  <p className="text-xs text-muted-foreground truncate">{currentOptimizeLink.url}</p>
+                  <p className="text-xs text-base-content/70 truncate">{currentOptimizeLink.url}</p>
                 </div>
               </div>
               
@@ -217,9 +217,9 @@ export default function OptimizeLinksPage() {
                 <div>
                   <h4 className="font-medium text-sm mb-1">Title Improvement</h4>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs text-muted-foreground">Current quality score:</p>
+                    <p className="text-xs text-base-content/70">Current quality score:</p>
                     <div className="flex items-center">
-                      <div className="h-2 w-16 bg-muted rounded-full overflow-hidden mr-2">
+                      <div className="h-2 w-16 bg-base-200 rounded-full overflow-hidden mr-2">
                         <div 
                           className="h-full rounded-full" 
                           style={{ 
@@ -232,11 +232,11 @@ export default function OptimizeLinksPage() {
                     </div>
                   </div>
                   <div className="border rounded-md p-2 text-sm mb-2">
-                    <span className="text-muted-foreground">Current: </span>
+                    <span className="text-base-content/70">Current: </span>
                     {currentOptimizeLink.title}
                   </div>
                   <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
-                    <span className="text-muted-foreground">Suggestion: </span>
+                    <span className="text-base-content/70">Suggestion: </span>
                     <span className="text-green-600 dark:text-green-400 font-medium">
                       {currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
                         ? "Follow My X for Tech Insights & Updates" 
@@ -248,9 +248,9 @@ export default function OptimizeLinksPage() {
                 <div>
                   <h4 className="font-medium text-sm mb-1">Description Improvement</h4>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs text-muted-foreground">Current quality score:</p>
+                    <p className="text-xs text-base-content/70">Current quality score:</p>
                     <div className="flex items-center">
-                      <div className="h-2 w-16 bg-muted rounded-full overflow-hidden mr-2">
+                      <div className="h-2 w-16 bg-base-200 rounded-full overflow-hidden mr-2">
                         <div 
                           className="h-full rounded-full" 
                           style={{ 
@@ -263,11 +263,11 @@ export default function OptimizeLinksPage() {
                     </div>
                   </div>
                   <div className="border rounded-md p-2 text-sm mb-2">
-                    <span className="text-muted-foreground">Current: </span>
+                    <span className="text-base-content/70">Current: </span>
                     {currentOptimizeLink.description || "No description provided."}
                   </div>
                   <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
-                    <span className="text-muted-foreground">Suggestion: </span>
+                    <span className="text-base-content/70">Suggestion: </span>
                     <span className="text-green-600 dark:text-green-400">
                       {currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
                         ? "Daily insights on web development, tech trends, and design. Join my 5K+ followers for practical tips and industry news!"
@@ -307,7 +307,7 @@ export default function OptimizeLinksPage() {
                 </div>
               </div>
               
-              <DialogFooter className="pt-2 mt-4 sticky bottom-0 bg-background">
+              <DialogFooter className="pt-2 mt-4 sticky bottom-0 bg-base-100">
                 <Button 
                   variant="outline" 
                   onClick={() => setShowOptimizeDialog(false)}

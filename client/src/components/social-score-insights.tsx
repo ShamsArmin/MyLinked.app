@@ -168,7 +168,7 @@ export function SocialScoreInsights() {
           <div className="mt-6 flex justify-center">
             <button 
               onClick={() => window.location.href = '/analytics'}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 cursor-pointer"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-base-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-base-300 bg-base-100 hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 cursor-pointer"
             >
               View detailed analysis
             </button>

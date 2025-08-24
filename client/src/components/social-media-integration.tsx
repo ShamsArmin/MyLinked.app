@@ -289,7 +289,7 @@ export default function SocialMediaIntegration() {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-base-content/70">
                     {connected && connection ? (
                       <>@{connection.platformUsername} • Connected {formatDate(connection.connectedAt)}</>
                     ) : (
@@ -297,7 +297,7 @@ export default function SocialMediaIntegration() {
                     )}
                   </p>
                   {connected && connection?.lastSyncAt && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-base-content/70">
                       Last sync: {formatDate(connection.lastSyncAt)}
                     </p>
                   )}
@@ -356,11 +356,11 @@ export default function SocialMediaIntegration() {
           <h4 className="font-medium text-sm">Integration Status</h4>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-muted-foreground">Connected accounts:</span>
+              <span className="text-base-content/70">Connected accounts:</span>
               <span className="ml-2 font-medium">{connections.length}/4</span>
             </div>
             <div>
-              <span className="text-muted-foreground">Auto-sync:</span>
+              <span className="text-base-content/70">Auto-sync:</span>
               <span className="ml-2 font-medium">Every 30 minutes</span>
             </div>
           </div>

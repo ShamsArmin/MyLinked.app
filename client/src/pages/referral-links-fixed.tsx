@@ -423,7 +423,7 @@ const ReferralLinks = () => {
                   </svg>
                 </Button>
               </div>
-              <p className="text-muted-foreground">
+              <p className="text-base-content/70">
                 Create and manage your referral links for friends, sponsors, and affiliates
               </p>
             </div>
@@ -497,9 +497,9 @@ const ReferralLinks = () => {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <Link className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                      <Link className="h-12 w-12 mx-auto text-base-content/70 opacity-50" />
                       <h3 className="mt-4 text-lg font-medium">No referral links yet</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
+                      <p className="mt-2 text-sm text-base-content/70">
                         Create your first referral link to start sharing with others
                       </p>
                       <Button 
@@ -545,9 +545,9 @@ const ReferralLinks = () => {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <UserPlus className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                      <UserPlus className="h-12 w-12 mx-auto text-base-content/70 opacity-50" />
                       <h3 className="mt-4 text-lg font-medium">No friend referrals yet</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
+                      <p className="mt-2 text-sm text-base-content/70">
                         Create referral links for your friends
                       </p>
                       <Button 
@@ -596,9 +596,9 @@ const ReferralLinks = () => {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <Award className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                      <Award className="h-12 w-12 mx-auto text-base-content/70 opacity-50" />
                       <h3 className="mt-4 text-lg font-medium">No sponsor links yet</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
+                      <p className="mt-2 text-sm text-base-content/70">
                         Add links for your sponsors and partnerships
                       </p>
                       <Button 
@@ -647,9 +647,9 @@ const ReferralLinks = () => {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <Gift className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                      <Gift className="h-12 w-12 mx-auto text-base-content/70 opacity-50" />
                       <h3 className="mt-4 text-lg font-medium">No affiliate links yet</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
+                      <p className="mt-2 text-sm text-base-content/70">
                         Add your affiliate program links here
                       </p>
                       <Button 
@@ -706,23 +706,23 @@ const ReferralLinks = () => {
                             <div className="space-y-3">
                               <div className="min-w-0">
                                 <p className="text-sm font-medium">Requested Link:</p>
-                                <p className="text-sm text-muted-foreground truncate">{request.linkTitle}</p>
+                                <p className="text-sm text-base-content/70 truncate">{request.linkTitle}</p>
                                 <p className="text-sm text-blue-600 break-all overflow-hidden">{request.linkUrl}</p>
                               </div>
                               {request.fieldOfWork && (
                                 <div className="min-w-0">
                                   <p className="text-sm font-medium">Field of Work:</p>
-                                  <p className="text-sm text-muted-foreground break-words">{request.fieldOfWork}</p>
+                                  <p className="text-sm text-base-content/70 break-words">{request.fieldOfWork}</p>
                                 </div>
                               )}
                               {request.description && (
                                 <div className="min-w-0">
                                   <p className="text-sm font-medium">Description:</p>
-                                  <p className="text-sm text-muted-foreground break-words">{request.description}</p>
+                                  <p className="text-sm text-base-content/70 break-words">{request.description}</p>
                                 </div>
                               )}
                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pt-2">
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-base-content/70">
                                   Requested on {new Date(request.createdAt).toLocaleDateString()}
                                 </p>
                                 {request.status === 'pending' && (
@@ -756,9 +756,9 @@ const ReferralLinks = () => {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <Users className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                      <Users className="h-12 w-12 mx-auto text-base-content/70 opacity-50" />
                       <h3 className="mt-4 text-lg font-medium">No requests yet</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
+                      <p className="mt-2 text-sm text-base-content/70">
                         Visitors can request referral links from your public profile
                       </p>
                     </div>
@@ -1333,13 +1333,13 @@ const ReferralLinkCard = ({
       </CardHeader>
       <CardContent className="pb-2 px-3 pt-1">
         {link.description && (
-          <p className="text-xs text-muted-foreground mb-2 break-words line-clamp-2">
+          <p className="text-xs text-base-content/70 mb-2 break-words line-clamp-2">
             {link.description}
           </p>
         )}
-        <div className="flex items-center gap-1 bg-muted p-1.5 rounded-md cursor-pointer overflow-hidden hover:bg-muted/80 transition-colors" 
+        <div className="flex items-center gap-1 bg-base-200 p-1.5 rounded-md cursor-pointer overflow-hidden hover:bg-base-200/80 transition-colors" 
           onClick={() => handleLinkClick(link.url)}>
-          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+          <ExternalLink className="h-3.5 w-3.5 text-base-content/70 flex-shrink-0" />
           <a 
             href={link.url}
             target="_blank"
@@ -1364,7 +1364,7 @@ const ReferralLinkCard = ({
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between items-center text-xs text-muted-foreground px-3 py-1.5">
+      <CardFooter className="flex justify-between items-center text-xs text-base-content/70 px-3 py-1.5">
         <div className="flex items-center">
           <BarChart3 className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
           {link.clicks} clicks

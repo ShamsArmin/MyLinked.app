@@ -205,11 +205,11 @@ export function PitchModeLayout({
                     <h1 className={`text-3xl font-bold ${textColor} mb-2`}>
                       {profile.name || profile.username}
                     </h1>
-                    <p className="text-muted-foreground text-lg mb-1">@{profile.username}</p>
+                    <p className="text-base-content/70 text-lg mb-1">@{profile.username}</p>
                     {profile.profession && (
                       <div className="flex items-center gap-2 mb-3">
-                        <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{profile.profession}</span>
+                        <Briefcase className="h-4 w-4 text-base-content/70" />
+                        <span className="text-base-content/70">{profile.profession}</span>
                       </div>
                     )}
                     {profile.bio && (
@@ -275,15 +275,15 @@ export function PitchModeLayout({
                       <h3 className={`font-semibold ${textColor} truncate`}>
                         {link.title}
                       </h3>
-                      <p className="text-sm text-muted-foreground capitalize">
+                      <p className="text-sm text-base-content/70 capitalize">
                         {platformConfig.name}
                       </p>
-                      <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-4 mt-1 text-xs text-base-content/70">
                         <span>{link.clicks || 0} clicks</span>
                         <span>{link.views || 0} views</span>
                       </div>
                     </div>
-                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                    <ExternalLink className="h-4 w-4 text-base-content/70" />
                   </div>
                 </CardContent>
               </Card>
@@ -305,7 +305,7 @@ export function PitchModeLayout({
                 {spotlightProjects.slice(0, 4).map((project) => (
                   <div key={project.id} className="p-4 rounded-lg border">
                     <h4 className={`font-semibold ${textColor} mb-2`}>{project.title}</h4>
-                    <p className="text-sm text-muted-foreground mb-3">{project.description}</p>
+                    <p className="text-sm text-base-content/70 mb-3">{project.description}</p>
                     {project.url && (
                       <Button 
                         size="sm" 

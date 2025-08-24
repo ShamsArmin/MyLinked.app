@@ -48,7 +48,7 @@ export function OptimizeLinksSection({ links, onOptimizeLink, onClose }: Optimiz
         </div>
       </div>
       
-      <p className="text-muted-foreground mb-4">
+      <p className="text-base-content/70 mb-4">
         Select any link below to optimize its content using AI suggestions.
       </p>
       
@@ -57,14 +57,14 @@ export function OptimizeLinksSection({ links, onOptimizeLink, onClose }: Optimiz
           <Card key={link.id} className="overflow-hidden">
             <CardHeader className="pb-2">
               <div className="flex items-center space-x-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-base-200">
                   {getPlatformIcon(link.platform)}
                 </div>
                 <CardTitle className="text-lg">{link.title}</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4 truncate">
+              <p className="text-sm text-base-content/70 mb-4 truncate">
                 {link.url}
               </p>
               <div className="flex items-center justify-between mt-2">

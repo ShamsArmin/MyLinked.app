@@ -17,7 +17,7 @@ export function GridView({ links, onEdit, onDelete }: GridViewProps) {
       {links.map((link) => (
         <div 
           key={link.id} 
-          className="bg-card rounded-lg shadow hover:shadow-md transition-all p-4 border flex flex-col h-full"
+          className="bg-base-100 rounded-lg shadow hover:shadow-md transition-all p-4 border flex flex-col h-full"
         >
           <div className="flex justify-between items-start mb-3">
             <div className="flex items-center gap-2 mb-2">
@@ -31,10 +31,10 @@ export function GridView({ links, onEdit, onDelete }: GridViewProps) {
             />
           </div>
           
-          <p className="text-xs text-muted-foreground mb-3 truncate">{link.url}</p>
+          <p className="text-xs text-base-content/70 mb-3 truncate">{link.url}</p>
           
           <div className="mt-auto pt-3 border-t flex justify-between items-center">
-            <div className="flex gap-3 text-xs text-muted-foreground">
+            <div className="flex gap-3 text-xs text-base-content/70">
               <div className="flex items-center gap-1">
                 <Eye size={12} />
                 <span>{link.views || 0}</span>

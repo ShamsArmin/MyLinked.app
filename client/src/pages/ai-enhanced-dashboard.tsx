@@ -223,12 +223,12 @@ function LinkCard({
             </div>
             
             <div className="min-w-0 flex-1">
-              <h3 className="font-medium text-card-foreground truncate">{link.title}</h3>
+              <h3 className="font-medium text-base-content truncate">{link.title}</h3>
               <a 
                 href={link.url} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-sm text-muted-foreground hover:underline truncate max-w-full inline-block"
+                className="text-sm text-base-content/70 hover:underline truncate max-w-full inline-block"
               >
                 {link.url}
               </a>
@@ -256,7 +256,7 @@ function LinkCard({
             <div className="relative z-30">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-8 w-8 bg-background hover:bg-muted rounded-md border-muted">
+                  <Button variant="outline" size="icon" className="h-8 w-8 bg-base-100 hover:bg-base-200 rounded-md border-muted">
                     <MoreVerticalIcon className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -307,13 +307,13 @@ function LinkCard({
         </div>
         
         {link.description && (
-          <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
+          <p className="mt-3 text-sm text-base-content/70 line-clamp-2">
             {link.description}
           </p>
         )}
         
         <div className="mt-3 flex flex-col">
-          <div className="flex items-center text-xs text-muted-foreground mb-2">
+          <div className="flex items-center text-xs text-base-content/70 mb-2">
             <Eye className="h-3 w-3 mr-1 flex-shrink-0" />
             <span>{link.views || 0} views</span>
             <span className="mx-2 flex-shrink-0">•</span>
@@ -407,19 +407,19 @@ function ProfileFeedItem({
           <div className="font-medium text-sm">
             {platform === 'twitter' ? 'Your X' : platform === 'instagram' ? 'Your Instagram' : 'Your Post'}
           </div>
-          <div className="text-xs text-muted-foreground">{date}</div>
+          <div className="text-xs text-base-content/70">{date}</div>
         </div>
       </div>
       
       <p className="text-sm mb-2">{content}</p>
       
       {image && (
-        <div className="rounded-md overflow-hidden mb-2 bg-muted h-32 flex items-center justify-center">
-          <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+        <div className="rounded-md overflow-hidden mb-2 bg-base-200 h-32 flex items-center justify-center">
+          <ImageIcon className="h-8 w-8 text-base-content/50" />
         </div>
       )}
       
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="flex items-center justify-between text-xs text-base-content/70">
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
             <Heart className="h-3 w-3 mr-1" />
@@ -544,9 +544,9 @@ function SmartLinkAI({ links, onApplySuggestions }: { links: Link[], onApplySugg
                     if (!link) return null;
                     
                     return (
-                      <div key={item.id} className="flex items-center justify-between bg-muted/30 rounded-md p-2">
+                      <div key={item.id} className="flex items-center justify-between bg-base-200/30 rounded-md p-2">
                         <div className="flex items-center">
-                          <div className="bg-muted w-5 h-5 rounded-full flex items-center justify-center text-xs mr-2">
+                          <div className="bg-base-200 w-5 h-5 rounded-full flex items-center justify-center text-xs mr-2">
                             {index + 1}
                           </div>
                           <div 
@@ -558,7 +558,7 @@ function SmartLinkAI({ links, onApplySuggestions }: { links: Link[], onApplySugg
                           <span className="text-sm font-medium">{link.title}</span>
                         </div>
                         <div className="text-xs flex items-center">
-                          <div className="w-8 h-4 bg-muted rounded-full overflow-hidden mr-2">
+                          <div className="w-8 h-4 bg-base-200 rounded-full overflow-hidden mr-2">
                             <div 
                               className="h-full rounded-full" 
                               style={{ 
@@ -1776,15 +1776,15 @@ export default function AIEnhancedDashboard() {
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <p className="text-lg font-bold text-blue-600">{links?.length || 0}</p>
-                    <p className="text-xs text-muted-foreground">Links</p>
+                    <p className="text-xs text-base-content/70">Links</p>
                   </div>
                   <div>
                     <p className="text-lg font-bold text-green-600">{stats?.views || 0}</p>
-                    <p className="text-xs text-muted-foreground">Views</p>
+                    <p className="text-xs text-base-content/70">Views</p>
                   </div>
                   <div>
                     <p className="text-lg font-bold text-purple-600">{stats?.score || userData?.socialScore || 50}</p>
-                    <p className="text-xs text-muted-foreground">Score</p>
+                    <p className="text-xs text-base-content/70">Score</p>
                   </div>
                 </div>
               </div>
@@ -1808,7 +1808,7 @@ export default function AIEnhancedDashboard() {
                 {showShareOptions && (
                   <div className="space-y-3 px-1 animate-in fade-in slide-in-from-top-2 duration-300">
                     {/* Profile Link */}
-                    <div className="border rounded-md p-2 bg-muted/10">
+                    <div className="border rounded-md p-2 bg-base-200/10">
                       <p className="text-xs font-medium mb-1">Share Profile Link</p>
                       <div className="flex items-center">
                         <Input 
@@ -1837,14 +1837,14 @@ export default function AIEnhancedDashboard() {
                     </div>
                     
                     {/* QR Code */}
-                    <div className="border rounded-md p-3 bg-muted/10">
+                    <div className="border rounded-md p-3 bg-base-200/10">
                       <p className="text-xs font-medium mb-2">Profile QR Code</p>
                       <div className="flex justify-center mb-2">
                         <div className="bg-card p-2 rounded shadow-sm" style={{ minHeight: '188px', minWidth: '188px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {isGeneratingQRCode ? (
                             <div className="flex flex-col items-center justify-center">
                               <RefreshCw className="h-8 w-8 text-primary animate-spin mb-2" />
-                              <p className="text-xs text-muted-foreground">Generating QR code...</p>
+                              <p className="text-xs text-base-content/70">Generating QR code...</p>
                             </div>
                           ) : (
                             <canvas ref={qrCodeCanvasRef} width="180" height="180"></canvas>
@@ -2429,9 +2429,9 @@ export default function AIEnhancedDashboard() {
                 </div>
               </div>
               
-              <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+              <div className="mt-6 p-4 bg-base-200/30 rounded-lg">
                 <h4 className="font-medium text-sm mb-2">How Content Preview Works</h4>
-                <ul className="text-xs text-muted-foreground space-y-1">
+                <ul className="text-xs text-base-content/70 space-y-1">
                   <li>• Connect your social accounts to show latest posts on your profile</li>
                   <li>• Visitors can see your recent content without leaving your page</li>
                   <li>• Posts are clickable and link directly to the original content</li>

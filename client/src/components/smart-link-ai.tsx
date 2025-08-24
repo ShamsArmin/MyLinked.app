@@ -65,7 +65,7 @@ export function SmartLinkAI({ links = [], className = '' }: SmartLinkAIProps) {
                 <Lightbulb className="h-4 w-4 mr-2" />
                 Not enough data yet
               </AlertTitle>
-              <AlertDescription className="text-sm text-muted-foreground">
+              <AlertDescription className="text-sm text-base-content/70">
                 Add at least 3 links and get some clicks on them for AI to analyze engagement patterns.
               </AlertDescription>
             </Alert>
@@ -79,7 +79,7 @@ export function SmartLinkAI({ links = [], className = '' }: SmartLinkAIProps) {
                 </div>
                 <div>
                   <h4 className="font-medium text-sm">AI Ready</h4>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-base-content/70">
                     {links.length} links and {links.reduce((sum, link) => sum + (link.clicks || 0), 0)} clicks detected
                   </p>
                 </div>
@@ -88,7 +88,7 @@ export function SmartLinkAI({ links = [], className = '' }: SmartLinkAIProps) {
               <div className="space-y-2">
                 <h4 className="font-medium text-sm">How it works:</h4>
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 bg-muted rounded-lg">
+                  <div className="p-2 bg-base-200 rounded-lg">
                     <div className="flex justify-center mb-2">
                       <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                         <BarChart className="h-4 w-4 text-green-500" />
@@ -96,7 +96,7 @@ export function SmartLinkAI({ links = [], className = '' }: SmartLinkAIProps) {
                     </div>
                     <p className="text-xs">Analyzes engagement</p>
                   </div>
-                  <div className="p-2 bg-muted rounded-lg">
+                  <div className="p-2 bg-base-200 rounded-lg">
                     <div className="flex justify-center mb-2">
                       <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                         <BrainCircuit className="h-4 w-4 text-primary" />
@@ -104,7 +104,7 @@ export function SmartLinkAI({ links = [], className = '' }: SmartLinkAIProps) {
                     </div>
                     <p className="text-xs">AI optimizes order</p>
                   </div>
-                  <div className="p-2 bg-muted rounded-lg">
+                  <div className="p-2 bg-base-200 rounded-lg">
                     <div className="flex justify-center mb-2">
                       <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                         <ArrowUp className="h-4 w-4 text-amber-500" />
@@ -181,9 +181,9 @@ export function SmartLinkAI({ links = [], className = '' }: SmartLinkAIProps) {
               </ul>
             </div>
             
-            <div className="bg-muted p-3 rounded-lg">
+            <div className="bg-base-200 p-3 rounded-lg">
               <h4 className="font-medium mb-1">Best Practices:</h4>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-base-content/70">
                 For optimal results, run AI optimization after collecting at least a week of visitor data. You can always revert to manual ordering if preferred.
               </p>
             </div>
@@ -249,7 +249,7 @@ export function SmartLinkAI({ links = [], className = '' }: SmartLinkAIProps) {
               </>
             ) : (
               <div className="text-center py-4">
-                <X className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <X className="h-8 w-8 mx-auto mb-2 text-base-content/70" />
                 <p>No insights available yet. Run the AI optimization to generate personalized recommendations.</p>
               </div>
             )}

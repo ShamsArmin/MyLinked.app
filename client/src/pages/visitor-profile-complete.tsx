@@ -378,7 +378,7 @@ export default function VisitorProfileComplete() {
                             <div className="min-w-0 flex-1 text-left">
                               <div className="font-medium truncate">{link.title}</div>
                               {link.description && (
-                                <div className="text-sm text-muted-foreground truncate">{link.description}</div>
+                                <div className="text-sm text-base-content/70 truncate">{link.description}</div>
                               )}
                             </div>
                           </div>
@@ -407,7 +407,7 @@ export default function VisitorProfileComplete() {
                         <div className="flex justify-between items-start mb-3">
                           <div className="min-w-0 flex-1">
                             <h4 className="font-semibold truncate">{project.title}</h4>
-                            <p className="text-sm text-muted-foreground break-words mt-1">{project.description}</p>
+                            <p className="text-sm text-base-content/70 break-words mt-1">{project.description}</p>
                           </div>
                           {project.isPinned && (
                             <Star className="h-4 w-4 text-yellow-500 fill-current flex-shrink-0 ml-2" />
@@ -415,7 +415,7 @@ export default function VisitorProfileComplete() {
                         </div>
                         
                         <div className="flex items-center justify-between">
-                          <div className="flex gap-4 text-sm text-muted-foreground">
+                          <div className="flex gap-4 text-sm text-base-content/70">
                             <span className="flex items-center gap-1">
                               <Eye className="h-3 w-3" />
                               {project.views || 0}
@@ -461,7 +461,7 @@ export default function VisitorProfileComplete() {
                     <Activity className="h-4 w-4 mr-2 text-orange-500" />
                     Live Profile Feed
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-base-content/70 mt-1">
                     Latest activity from social accounts
                   </p>
                 </CardHeader>
@@ -486,7 +486,7 @@ export default function VisitorProfileComplete() {
                                post.platform === 'instagram' ? 'Instagram' : 
                                post.platform.charAt(0).toUpperCase() + post.platform.slice(1)}
                             </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-xs text-base-content/70">
                               {new Date(post.postedAt).toLocaleDateString()}
                             </div>
                           </div>
@@ -496,7 +496,7 @@ export default function VisitorProfileComplete() {
                           <p className="text-sm mb-2 break-words">{post.caption}</p>
                         )}
                         
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center justify-between text-xs text-base-content/70">
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center">
                               <Heart className="h-3 w-3 mr-1" />
@@ -584,7 +584,7 @@ export default function VisitorProfileComplete() {
                           <div className="min-w-0 flex-1">
                             <h4 className="font-medium text-sm truncate">{link.title}</h4>
                             {link.description && (
-                              <p className="text-xs text-muted-foreground mt-1 break-words">{link.description}</p>
+                              <p className="text-xs text-base-content/70 mt-1 break-words">{link.description}</p>
                             )}
                             {link.referenceCompany && (
                               <Badge variant="outline" className="text-xs mt-2">

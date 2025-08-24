@@ -154,7 +154,7 @@ export function SupportManagement() {
               <Mail className="h-5 w-5 text-blue-500" />
               <div>
                 <p className="text-2xl font-bold">{messages.length}</p>
-                <p className="text-sm text-muted-foreground">Total Messages</p>
+                <p className="text-sm text-base-content/70">Total Messages</p>
               </div>
             </div>
           </CardContent>
@@ -166,7 +166,7 @@ export function SupportManagement() {
               <AlertCircle className="h-5 w-5 text-orange-500" />
               <div>
                 <p className="text-2xl font-bold">{openCount}</p>
-                <p className="text-sm text-muted-foreground">Open</p>
+                <p className="text-sm text-base-content/70">Open</p>
               </div>
             </div>
           </CardContent>
@@ -178,7 +178,7 @@ export function SupportManagement() {
               <MessageSquare className="h-5 w-5 text-red-500" />
               <div>
                 <p className="text-2xl font-bold">{unreadCount}</p>
-                <p className="text-sm text-muted-foreground">Unread</p>
+                <p className="text-sm text-base-content/70">Unread</p>
               </div>
             </div>
           </CardContent>
@@ -192,7 +192,7 @@ export function SupportManagement() {
                 <p className="text-2xl font-bold">
                   {messages.filter(m => m.status === 'resolved').length}
                 </p>
-                <p className="text-sm text-muted-foreground">Resolved</p>
+                <p className="text-sm text-base-content/70">Resolved</p>
               </div>
             </div>
           </CardContent>
@@ -216,7 +216,7 @@ export function SupportManagement() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center space-x-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
+                          <User className="h-4 w-4 text-base-content/70" />
                           <span className="font-medium">{message.name}</span>
                           <Badge variant="outline">{message.email}</Badge>
                           <Badge variant={getPriorityColor(message.priority) as any}>
@@ -229,12 +229,12 @@ export function SupportManagement() {
                         
                         <div>
                           <h4 className="font-medium">{message.subject}</h4>
-                          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                          <p className="text-sm text-base-content/70 line-clamp-2 mt-1">
                             {message.message}
                           </p>
                         </div>
                         
-                        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                        <div className="flex items-center space-x-2 text-xs text-base-content/70">
                           <Clock className="h-3 w-3" />
                           <span>{new Date(message.createdAt).toLocaleString()}</span>
                           {message.resolvedAt && (
@@ -289,7 +289,7 @@ export function SupportManagement() {
                             <div className="space-y-4">
                               <div>
                                 <p className="text-sm font-medium">From: {message.name} ({message.email})</p>
-                                <p className="text-sm text-muted-foreground mt-2">{message.message}</p>
+                                <p className="text-sm text-base-content/70 mt-2">{message.message}</p>
                               </div>
                               <div>
                                 <label className="text-sm font-medium">Admin Notes:</label>
@@ -327,7 +327,7 @@ export function SupportManagement() {
               ))}
               
               {messages.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-base-content/70">
                   <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No support messages found</p>
                 </div>

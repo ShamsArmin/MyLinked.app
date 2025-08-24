@@ -979,7 +979,7 @@ export default function SpotlightPage() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Collaborative Spotlight</h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-base-content/70 mt-1">
               Showcase your projects and collaborations
             </p>
           </div>
@@ -1016,7 +1016,7 @@ export default function SpotlightPage() {
                     </CardHeader>
                     <CardContent className="pb-2">
                       {/* Project Thumbnail - Always show an image container */}
-                      <div className="aspect-video bg-muted rounded-md overflow-hidden mb-4 relative border border-muted-foreground/10">
+                      <div className="aspect-video bg-base-200 rounded-md overflow-hidden mb-4 relative border border-muted-foreground/10">
                         {project.thumbnail ? (
                           <img
                             src={project.thumbnail}
@@ -1027,10 +1027,10 @@ export default function SpotlightPage() {
                             }}
                           />
                         ) : (
-                          <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+                          <div className="absolute inset-0 flex items-center justify-center bg-base-200/50">
                             <div className="text-center px-4">
-                              <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-2" />
-                              <p className="text-sm text-muted-foreground">No image available</p>
+                              <ImageIcon className="h-12 w-12 mx-auto text-base-content/50 mb-2" />
+                              <p className="text-sm text-base-content/70">No image available</p>
                             </div>
                           </div>
                         )}
@@ -1039,7 +1039,7 @@ export default function SpotlightPage() {
                       {/* Tags - Improved visibility */}
                       <div className="mt-3">
                         <div className="flex items-center mb-1">
-                          <Tag className="h-3 w-3 mr-1 text-muted-foreground" />
+                          <Tag className="h-3 w-3 mr-1 text-base-content/70" />
                           <span className="text-sm font-medium">Tags:</span>
                         </div>
                         {project.tags && project.tags.length > 0 ? (
@@ -1048,13 +1048,13 @@ export default function SpotlightPage() {
                               <Badge key={tag.id} variant="outline" className="flex items-center gap-1 py-1 px-2">
                                 <span className="text-xs font-medium">{tag.label}</span>
                                 {tag.type && tag.type !== "tag" && (
-                                  <span className="text-[10px] text-muted-foreground">({tag.type})</span>
+                                  <span className="text-[10px] text-base-content/70">({tag.type})</span>
                                 )}
                               </Badge>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-xs text-muted-foreground">No tags added yet</p>
+                          <p className="text-xs text-base-content/70">No tags added yet</p>
                         )}
                       </div>
                       
@@ -1067,7 +1067,7 @@ export default function SpotlightPage() {
                         {project.contributors && project.contributors.length > 0 ? (
                           <div className="space-y-2">
                             {project.contributors.slice(0, 3).map((contributor) => (
-                              <div key={contributor.id} className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
+                              <div key={contributor.id} className="flex items-center gap-2 bg-base-200/30 p-2 rounded-md">
                                 <Avatar className="h-7 w-7 border border-primary/20">
                                   <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
                                     {getInitials(contributor.name)}
@@ -1076,23 +1076,23 @@ export default function SpotlightPage() {
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium text-sm">{contributor.name}</p>
                                   {contributor.role && 
-                                    <p className="text-xs text-muted-foreground">{contributor.role}</p>
+                                    <p className="text-xs text-base-content/70">{contributor.role}</p>
                                   }
                                   {contributor.email && 
-                                    <p className="text-xs text-muted-foreground italic">{contributor.email}</p>
+                                    <p className="text-xs text-base-content/70 italic">{contributor.email}</p>
                                   }
                                 </div>
                               </div>
                             ))}
                             {project.contributors.length > 3 && (
-                              <div className="text-xs text-center bg-muted/20 p-1 rounded">
+                              <div className="text-xs text-center bg-base-200/20 p-1 rounded">
                                 +{project.contributors.length - 3} more contributors
                               </div>
                             )}
                           </div>
                         ) : (
-                          <div className="text-center py-2 bg-muted/20 rounded-md">
-                            <p className="text-sm text-muted-foreground">No contributors added yet</p>
+                          <div className="text-center py-2 bg-base-200/20 rounded-md">
+                            <p className="text-sm text-base-content/70">No contributors added yet</p>
                           </div>
                         )}
                       </div>
@@ -1173,12 +1173,12 @@ export default function SpotlightPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : projects.length === 0 ? (
-          <div className="text-center p-12 border rounded-lg bg-muted/20">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
-              <AlertTriangle className="h-6 w-6 text-muted-foreground" />
+          <div className="text-center p-12 border rounded-lg bg-base-200/20">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-base-200 mb-4">
+              <AlertTriangle className="h-6 w-6 text-base-content/70" />
             </div>
             <h3 className="text-lg font-semibold">No Projects Yet</h3>
-            <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+            <p className="text-base-content/70 mb-4 max-w-md mx-auto">
               Start showcasing your collaborative projects by adding your first project.
             </p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
@@ -1204,7 +1204,7 @@ export default function SpotlightPage() {
                 </CardHeader>
                 <CardContent className="pb-2">
                   {/* Project Thumbnail - Always show an image container */}
-                  <div className="aspect-video bg-muted rounded-md overflow-hidden mb-4 relative border border-muted-foreground/10">
+                  <div className="aspect-video bg-base-200 rounded-md overflow-hidden mb-4 relative border border-muted-foreground/10">
                     {project.thumbnail ? (
                       <img
                         src={project.thumbnail}
@@ -1215,10 +1215,10 @@ export default function SpotlightPage() {
                         }}
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+                      <div className="absolute inset-0 flex items-center justify-center bg-base-200/50">
                         <div className="text-center px-4">
-                          <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-2" />
-                          <p className="text-sm text-muted-foreground">No image available</p>
+                          <ImageIcon className="h-12 w-12 mx-auto text-base-content/50 mb-2" />
+                          <p className="text-sm text-base-content/70">No image available</p>
                         </div>
                       </div>
                     )}
@@ -1236,13 +1236,13 @@ export default function SpotlightPage() {
                           <Badge key={tag.id} variant="outline" className="flex items-center gap-1 py-1 px-2">
                             <span className="text-xs font-medium">{tag.label}</span>
                             {tag.type && tag.type !== "tag" && (
-                              <span className="text-[10px] text-muted-foreground">({tag.type})</span>
+                              <span className="text-[10px] text-base-content/70">({tag.type})</span>
                             )}
                           </Badge>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground">No tags added yet</p>
+                      <p className="text-xs text-base-content/70">No tags added yet</p>
                     )}
                   </div>
                   
@@ -1255,7 +1255,7 @@ export default function SpotlightPage() {
                     {project.contributors && project.contributors.length > 0 ? (
                       <div className="space-y-2">
                         {project.contributors.slice(0, 3).map((contributor) => (
-                          <div key={contributor.id} className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
+                          <div key={contributor.id} className="flex items-center gap-2 bg-base-200/30 p-2 rounded-md">
                             <Avatar className="h-7 w-7 border border-primary/20">
                               <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
                                 {getInitials(contributor.name)}
@@ -1264,23 +1264,23 @@ export default function SpotlightPage() {
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-sm">{contributor.name}</p>
                               {contributor.role && 
-                                <p className="text-xs text-muted-foreground">{contributor.role}</p>
+                                <p className="text-xs text-base-content/70">{contributor.role}</p>
                               }
                               {contributor.email && 
-                                <p className="text-xs text-muted-foreground italic">{contributor.email}</p>
+                                <p className="text-xs text-base-content/70 italic">{contributor.email}</p>
                               }
                             </div>
                           </div>
                         ))}
                         {project.contributors.length > 3 && (
-                          <div className="text-xs text-center bg-muted/20 p-1 rounded">
+                          <div className="text-xs text-center bg-base-200/20 p-1 rounded">
                             +{project.contributors.length - 3} more contributors
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="text-center py-2 bg-muted/20 rounded-md">
-                        <p className="text-sm text-muted-foreground">No contributors added yet</p>
+                      <div className="text-center py-2 bg-base-200/20 rounded-md">
+                        <p className="text-sm text-base-content/70">No contributors added yet</p>
                       </div>
                     )}
                   </div>
@@ -1463,7 +1463,7 @@ export default function SpotlightPage() {
                     Upload
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-base-content/70">
                   Click Upload to select an image from your device, or paste a direct image URL
                 </p>
               </div>
@@ -1749,7 +1749,7 @@ export default function SpotlightPage() {
                     Upload
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-base-content/70">
                   Click Upload to select an image from your device, or paste a direct image URL
                 </p>
               </div>

@@ -113,7 +113,7 @@ export function SocialFeed({ className = '', username = '', limit = 6 }: SocialF
             <div className="text-sm font-medium line-clamp-2 h-10">
               {post.caption || 'No caption'}
             </div>
-            <div className="text-xs text-muted-foreground mt-1">
+            <div className="text-xs text-base-content/70 mt-1">
               {formatDistanceToNow(new Date(post.postedAt), { addSuffix: true })}
             </div>
           </div>
@@ -132,11 +132,11 @@ export function SocialFeed({ className = '', username = '', limit = 6 }: SocialF
   const renderEmptyState = (platform: string) => {
     return (
       <div className="flex flex-col items-center justify-center h-60 text-center">
-        <div className="bg-muted p-3 rounded-full mb-3">
+        <div className="bg-base-200 p-3 rounded-full mb-3">
           {getPlatformIcon(platform)}
         </div>
         <h3 className="text-lg font-medium">No {platform} posts yet</h3>
-        <p className="text-sm text-muted-foreground mb-4">
+        <p className="text-sm text-base-content/70 mb-4">
           Add your {platform} posts to showcase them on your profile
         </p>
         <Button size="sm" onClick={() => setAddDialogOpen(true)}>
