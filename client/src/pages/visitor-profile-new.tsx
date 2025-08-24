@@ -604,7 +604,7 @@ export default function VisitorProfileNew() {
 
           {/* Right Card - Bio & Details */}
           <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/50 dark:border-gray-600/50 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-t-lg">
+            <CardHeader className="rounded-t-lg card-header-themed">
               <CardTitle 
                 className="text-lg sm:text-xl text-gray-800 dark:text-gray-200 flex items-center justify-between sm:cursor-default cursor-pointer"
                 onClick={(e) => {
@@ -656,7 +656,7 @@ export default function VisitorProfileNew() {
 
         {/* My Links Section */}
         <Card className="mb-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/50 dark:border-gray-600/50 shadow-xl">
-          <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-t-lg">
+          <CardHeader className="rounded-t-lg card-header-themed">
             <CardTitle className="text-lg sm:text-xl text-gray-800 dark:text-gray-200">My Links</CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
@@ -884,7 +884,7 @@ export default function VisitorProfileNew() {
         <div className="grid md:grid-cols-3 gap-6">
           {/* Referral Links */}
           <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/50 dark:border-gray-600/50 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-t-lg">
+            <CardHeader className="rounded-t-lg card-header-themed">
               <CardTitle className="text-lg text-gray-800 dark:text-gray-200 flex items-center gap-2">
                 <LinkIcon className="h-5 w-5" />
                 Referral Links
@@ -1115,7 +1115,7 @@ export default function VisitorProfileNew() {
 
           {/* Connect & Collaborate */}
           <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/50 dark:border-gray-600/50 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-t-lg">
+            <CardHeader className="rounded-t-lg card-header-themed">
               <CardTitle className="text-lg text-gray-800 dark:text-gray-200 flex items-center gap-2">
                 <UserPlus className="h-5 w-5" />
                 Connect & Collaborate
@@ -1317,7 +1317,7 @@ export default function VisitorProfileNew() {
 
           {/* Collaborative Spotlight */}
           <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/50 dark:border-gray-600/50 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-t-lg">
+            <CardHeader className="rounded-t-lg card-header-themed">
               <CardTitle className="text-lg text-gray-800 dark:text-gray-200">Collaborative Spotlight</CardTitle>
             </CardHeader>
             <CardContent className="p-6">

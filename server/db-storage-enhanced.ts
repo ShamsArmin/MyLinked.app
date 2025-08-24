@@ -1041,10 +1041,11 @@ export class EnhancedDatabaseStorage implements IStorage {
   // Skills Management
   async getSkills(userId: number): Promise<any[]> {
     try {
-      const result = await db.select().from(userSkills)
-        .where(eq(userSkills.userId, userId))
-        .orderBy(desc(userSkills.level));
-      return result || [];
+      const rows = await db.execute(
+        sql`select skill from user_skills where user_id = ${userId} order by level desc`
+      );
+      const skills = (rows?.rows ?? []).map((r: any) => r.skill).filter(Boolean);
+      return skills;
     } catch (error) {
       console.error("Error fetching skills:", error);
       return [];
