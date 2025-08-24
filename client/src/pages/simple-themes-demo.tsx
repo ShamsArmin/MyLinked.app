@@ -138,7 +138,13 @@ export default function SimpleThemesDemo() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
-  const [activeTheme, setActiveTheme] = useState<string>("ocean");
+  const getStoredTheme = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') || 'ocean';
+    }
+    return 'ocean';
+  };
+  const [activeTheme, setActiveTheme] = useState<string>(getStoredTheme());
   const [isDarkMode, setIsDarkMode] = useState(false);
   const applyTheme = useApplyTheme();
 
@@ -152,11 +158,17 @@ export default function SimpleThemesDemo() {
   useEffect(() => {
     if (profile?.theme) {
       setActiveTheme(profile.theme);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('theme', profile.theme);
+      }
     }
   }, [profile?.theme]);
 
   const handleApplyTheme = (theme: Theme) => {
     setActiveTheme(theme.id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', theme.id);
+    }
     applyTheme.mutate(theme.id);
   };
 

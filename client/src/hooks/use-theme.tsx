@@ -133,7 +133,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Initial defaults
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [theme, setTheme] = useState<Theme>('default');
+  const getStoredTheme = () => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('theme') as Theme) || 'default';
+    }
+    return 'default';
+  };
+  const [theme, setTheme] = useState<Theme>(getStoredTheme());
   const [font, setFont] = useState<Font>('inter');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [darkMode, setDarkMode] = useState(false);
@@ -167,51 +173,48 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const source = profile || user;
     
     if (source) {
-      // Get values with fallbacks
       const userDarkMode = source.darkMode === true;
       const userTheme = source.theme || 'default';
       const userFont = source.font || 'inter';
       const userViewMode = source.viewMode || 'list';
-      
-      // Set state values
+
       setDarkMode(userDarkMode);
       setIsDarkMode(userDarkMode);
       setTheme(userTheme);
       setFont(userFont);
       setViewMode(userViewMode as ViewMode);
-      
-      // Apply dark mode to document
+
       document.documentElement.classList.toggle('dark', userDarkMode);
-      
-      // Apply font to document
       document.documentElement.style.setProperty('--font-primary', getFontFamily(userFont));
-      
-      // Apply custom CSS variables for the selected theme
-      const themeColors = getThemeColors(userTheme);
-      if (themeColors) {
-        document.documentElement.style.setProperty('--primary', themeColors.primary);
-        document.documentElement.style.setProperty('--secondary', themeColors.secondary);
-        document.documentElement.style.setProperty('--accent', themeColors.accent);
-        document.documentElement.style.setProperty('--background', themeColors.background);
-        document.documentElement.style.setProperty('--foreground', themeColors.foreground);
-        document.documentElement.style.setProperty('--border', themeColors.border);
-        document.documentElement.style.setProperty('--card', themeColors.card);
-        document.documentElement.style.setProperty('--card-foreground', themeColors.cardForeground);
-        document.documentElement.style.setProperty('--card', themeColors.card);
-        document.documentElement.style.setProperty('--card-foreground', themeColors.cardForeground);
-      }
-      
-      // Apply font style to body
       document.body.style.fontFamily = getFontFamily(userFont);
-      
-      // Make body changes based on theme
-      document.body.className = '';
-      document.body.classList.add(`theme-${userTheme}`);
-      if (userDarkMode) {
-        document.body.classList.add('dark');
-      }
     }
   }, [user, profile]);
+
+  // Persist and apply theme whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', theme);
+    }
+    const themeColors = getThemeColors(theme);
+    if (themeColors) {
+      document.documentElement.style.setProperty('--primary', themeColors.primary);
+      document.documentElement.style.setProperty('--secondary', themeColors.secondary);
+      document.documentElement.style.setProperty('--accent', themeColors.accent);
+      document.documentElement.style.setProperty('--background', themeColors.background);
+      document.documentElement.style.setProperty('--foreground', themeColors.foreground);
+      document.documentElement.style.setProperty('--border', themeColors.border);
+      document.documentElement.style.setProperty('--card', themeColors.card);
+      document.documentElement.style.setProperty('--card-foreground', themeColors.cardForeground);
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.classList.forEach((c) => {
+      if (c.startsWith('theme-')) document.body.classList.remove(c);
+    });
+    document.body.classList.add(`theme-${theme}`);
+    if (darkMode) {
+      document.body.classList.add('dark');
+    }
+  }, [theme, darkMode]);
 
   return (
     <ThemeContext.Provider
