@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+import daisyui from "daisyui";
+import themes from "daisyui/src/theming/themes";
 
 export default {
   darkMode: ["class"],
@@ -86,5 +88,19 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require("@tailwindcss/typography"),
+    daisyui,
+  ],
+  daisyui: {
+    themes: [
+      "light",
+      "dark",
+      "forest",
+      "sunset",
+      { royal: { ...themes.emerald } },
+      { passion: { ...themes.valentine } },
+    ],
+  },
 } satisfies Config;
