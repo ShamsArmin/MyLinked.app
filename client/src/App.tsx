@@ -36,10 +36,7 @@ import EnhancedAdminPanel from "./pages/enhanced-admin-panel";
 import ProfessionalAdminDashboard from "./pages/professional-admin-dashboard";
 import AdminLogin from "./pages/admin-login";
 import AcceptInvitePage from "./pages/accept-invite";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
-import ErrorBoundary from "@/components/ui/error-boundary";
 import ScrollToTop from "@/components/ui/scroll-to-top";
 import { AIChatbot } from "@/components/ai-chatbot";
 import ContactPage from "./pages/contact-page";
@@ -195,20 +192,16 @@ function Router() {
 function App() {
   // Log that the App component is running
   console.log("App component rendering");
-  
+
   try {
     return (
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ThemeProvider>
-            <ErrorBoundary>
-              <Router />
-              <AIChatbot />
-            </ErrorBoundary>
-            <Toaster />
-          </ThemeProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <Router />
+          <AIChatbot />
+          <Toaster />
+        </ThemeProvider>
+      </AuthProvider>
     );
   } catch (error) {
     console.error("Error in App component:", error);

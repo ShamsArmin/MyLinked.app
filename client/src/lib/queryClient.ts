@@ -24,11 +24,13 @@ export async function apiRequest(method: string, url: string, data?: any) {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchInterval: false,
+      staleTime: 30_000,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      retry: 1,
+      gcTime: 5 * 60 * 1000,
     },
-    mutations: { retry: false },
+    mutations: {
+      retry: 0,
+    },
   },
 });
