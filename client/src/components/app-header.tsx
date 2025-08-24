@@ -99,11 +99,11 @@ const AppHeader: React.FC = () => {
                       </SheetClose>
                     );
                   })}
-                  <div className="h-px bg-gray-200 my-3"></div>
+                  <div className="h-px bg-border my-3"></div>
                   <SheetClose asChild>
                     <WouterLink
                       href={`/profile/${user.username}`}
-                      className="flex items-center gap-3 py-2 px-4 rounded-lg text-gray-600 hover:bg-gray-50"
+                      className="flex items-center gap-3 py-2 px-4 rounded-lg text-muted-foreground hover:bg-muted"
                     >
                       <User className="h-5 w-5" />
                       Your Profile
@@ -112,7 +112,7 @@ const AppHeader: React.FC = () => {
                   <SheetClose asChild>
                     <WouterLink
                       href="/themes"
-                      className="flex items-center gap-3 py-2 px-4 rounded-lg text-gray-600 hover:bg-gray-50"
+                      className="flex items-center gap-3 py-2 px-4 rounded-lg text-muted-foreground hover:bg-muted"
                     >
                       <Palette className="h-5 w-5" />
                       Themes
@@ -121,7 +121,7 @@ const AppHeader: React.FC = () => {
                   <SheetClose asChild>
                     <WouterLink
                       href="/settings"
-                      className="flex items-center gap-3 py-2 px-4 rounded-lg text-gray-600 hover:bg-gray-50"
+                      className="flex items-center gap-3 py-2 px-4 rounded-lg text-muted-foreground hover:bg-muted"
                     >
                       <Settings className="h-5 w-5" />
                       Settings
@@ -130,14 +130,14 @@ const AppHeader: React.FC = () => {
                   <SheetClose asChild>
                     <WouterLink
                       href="/support"
-                      className="flex items-center gap-3 py-2 px-4 rounded-lg text-gray-600 hover:bg-gray-50"
+                      className="flex items-center gap-3 py-2 px-4 rounded-lg text-muted-foreground hover:bg-muted"
                     >
                       <HelpCircle className="h-5 w-5" />
                       Support
                     </WouterLink>
                   </SheetClose>
                   <button
-                    className="flex items-center gap-3 py-2 px-4 rounded-lg text-red-600 hover:bg-red-50 w-full text-left"
+                    className="flex items-center gap-3 py-2 px-4 rounded-lg text-destructive hover:bg-destructive/10 w-full text-left"
                     onClick={() => {
                       // Set loading state
                       setIsLoggingOut(true);
@@ -182,7 +182,7 @@ const AppHeader: React.FC = () => {
                   key={item.href}
                   href={item.href}
                   className={`${
-                    isActive ? "text-primary-600 font-medium" : "text-gray-600 hover:text-primary-600"
+                    isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-primary"
                   } transition-colors`}
                 >
                   {item.label}
@@ -193,7 +193,7 @@ const AppHeader: React.FC = () => {
             <WouterLink 
               href="/social-score"
               className={`${
-                location === "/social-score" ? "text-primary-600 font-medium" : "text-gray-600 hover:text-primary-600"
+                location === "/social-score" ? "text-primary font-medium" : "text-muted-foreground hover:text-primary"
               } transition-colors flex items-center gap-1`}
             >
               <Award className="h-4 w-4" />
@@ -202,7 +202,7 @@ const AppHeader: React.FC = () => {
             
             <SocialScoreMini />
             
-            <div className="h-5 w-px bg-gray-200"></div>
+            <div className="h-5 w-px bg-border"></div>
             
 
             
@@ -213,7 +213,7 @@ const AppHeader: React.FC = () => {
                 className="flex items-center gap-2 hover:bg-transparent"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
               >
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                   {user.profileImage ? (
                     <img
                       src={user.profileImage}
@@ -221,20 +221,20 @@ const AppHeader: React.FC = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-gray-600 font-medium text-sm">
+                    <span className="text-muted-foreground font-medium text-sm">
                       {user.name ? user.name.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
                 <span className="text-sm font-medium">{user.name || user.username}</span>
-                <ChevronDown className="h-4 w-4 text-gray-500" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
               
               {dropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-card border border-border rounded-lg shadow-lg z-50">
                   <div className="py-1">
                     <div 
-                      className="flex items-center w-full p-3 text-left hover:bg-gray-50 cursor-pointer border-b border-gray-100"
+                      className="flex items-center w-full p-3 text-left hover:bg-muted cursor-pointer border-b border-border"
                       onClick={() => {
                         setDropdownOpen(false);
                         window.location.href = `/profile/${user.username}`;
@@ -244,7 +244,7 @@ const AppHeader: React.FC = () => {
                       <span>Profile</span>
                     </div>
                     <div 
-                      className="flex items-center w-full p-3 text-left hover:bg-gray-50 cursor-pointer border-b border-gray-100"
+                      className="flex items-center w-full p-3 text-left hover:bg-muted cursor-pointer border-b border-border"
                       onClick={() => {
                         setDropdownOpen(false);
                         window.location.href = '/themes';
@@ -254,7 +254,7 @@ const AppHeader: React.FC = () => {
                       <span>Themes</span>
                     </div>
                     <div 
-                      className="flex items-center w-full p-3 text-left hover:bg-gray-50 cursor-pointer border-b border-gray-100"
+                      className="flex items-center w-full p-3 text-left hover:bg-muted cursor-pointer border-b border-border"
                       onClick={() => {
                         setDropdownOpen(false);
                         window.location.href = '/settings';
@@ -264,7 +264,7 @@ const AppHeader: React.FC = () => {
                       <span>Settings</span>
                     </div>
                     <div 
-                      className="flex items-center w-full p-3 text-left hover:bg-blue-50 cursor-pointer text-blue-600 font-medium border-b border-blue-200 bg-blue-50"
+                        className="flex items-center w-full p-3 text-left hover:bg-primary/10 cursor-pointer text-primary font-medium border-b border-border bg-primary/10"
                       onClick={() => {
                         console.log('Support menu clicked');
                         setDropdownOpen(false);
@@ -275,7 +275,7 @@ const AppHeader: React.FC = () => {
                       <span>Support</span>
                     </div>
                     <div 
-                      className="flex items-center w-full p-3 text-left hover:bg-red-50 cursor-pointer text-red-600 mt-2"
+                      className="flex items-center w-full p-3 text-left hover:bg-destructive/10 cursor-pointer text-destructive mt-2"
                       onClick={() => {
                         setDropdownOpen(false);
                         setIsLoggingOut(true);

@@ -28,15 +28,19 @@ export const getThemeColors = (themeId: string) => {
         accent: '188 91% 43%',
         background: '0 0% 100%',
         foreground: '220 14% 18%',
-        border: '220 13% 91%'
+        border: '220 13% 91%',
+        card: '0 0% 100%',
+        cardForeground: '220 14% 18%'
       },
       'default': { // Same as ocean for themes-page.tsx compatibility
         primary: '217 91% 60%',
-        secondary: '221 83% 40%', 
+        secondary: '221 83% 40%',
         accent: '188 91% 43%',
         background: '0 0% 100%',
         foreground: '220 14% 18%',
-        border: '220 13% 91%'
+        border: '220 13% 91%',
+        card: '0 0% 100%',
+        cardForeground: '220 14% 18%'
       },
       'sunset': {
         primary: '24 95% 53%', // Orange
@@ -44,7 +48,9 @@ export const getThemeColors = (themeId: string) => {
         accent: '43 96% 56%',
         background: '48 100% 96%',
         foreground: '30 95% 19%',
-        border: '24 100% 83%'
+        border: '24 100% 83%',
+        card: '0 0% 100%',
+        cardForeground: '30 95% 19%'
       },
       'forest': {
         primary: '158 64% 52%', // Green
@@ -52,7 +58,9 @@ export const getThemeColors = (themeId: string) => {
         accent: '154 71% 59%',
         background: '138 76% 97%',
         foreground: '166 84% 15%',
-        border: '142 69% 82%'
+        border: '142 69% 82%',
+        card: '0 0% 100%',
+        cardForeground: '166 84% 15%'
       },
       'midnight': {
         primary: '243 75% 59%', // Purple
@@ -60,15 +68,19 @@ export const getThemeColors = (themeId: string) => {
         accent: '258 90% 66%',
         background: '222 84% 5%',
         foreground: '213 31% 91%',
-        border: '215 28% 17%'
+        border: '215 28% 17%',
+        card: '222 84% 7%',
+        cardForeground: '213 31% 91%'
       },
       'royal': {
-        primary: '262 83% 58%', // Royal purple  
+        primary: '262 83% 58%', // Royal purple
         secondary: '263 70% 50%',
         accent: '270 91% 65%',
         background: '270 100% 98%', // Light purple background
         foreground: '270 91% 27%', // Dark purple text
-        border: '270 40% 85%' // Purple border
+        border: '270 40% 85%', // Purple border
+        card: '0 0% 100%',
+        cardForeground: '270 91% 27%'
       },
       'passion': {
         primary: '0 78% 50%', // Passion red
@@ -76,7 +88,9 @@ export const getThemeColors = (themeId: string) => {
         accent: '0 70% 70%',
         background: '0 93% 97%', // Light red background
         foreground: '0 73% 25%', // Dark red text
-        border: '0 93% 83%' // Red border
+        border: '0 93% 83%', // Red border
+        card: '0 0% 100%',
+        cardForeground: '0 73% 25%'
       },
       'vibrant': {
         primary: '24 95% 53%', // Vibrant orange
@@ -84,7 +98,9 @@ export const getThemeColors = (themeId: string) => {
         accent: '43 96% 56%',
         background: '0 0% 100%',
         foreground: '20 14% 4%',
-        border: '20 6% 90%'
+        border: '20 6% 90%',
+        card: '0 0% 100%',
+        cardForeground: '20 14% 4%'
       },
       'minimal': {
         primary: '220 9% 46%', // Gray
@@ -92,7 +108,9 @@ export const getThemeColors = (themeId: string) => {
         accent: '220 13% 69%',
         background: '0 0% 100%',
         foreground: '220 9% 46%',
-        border: '220 13% 91%'
+        border: '220 13% 91%',
+        card: '0 0% 100%',
+        cardForeground: '220 9% 46%'
       },
       'professional': {
         primary: '243 75% 59%', // Indigo
@@ -100,7 +118,9 @@ export const getThemeColors = (themeId: string) => {
         accent: '258 90% 66%',
         background: '0 0% 100%',
         foreground: '220 14% 18%',
-        border: '220 13% 91%'
+        border: '220 13% 91%',
+        card: '0 0% 100%',
+        cardForeground: '220 14% 18%'
       }
     };
 
@@ -175,6 +195,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         document.documentElement.style.setProperty('--background', themeColors.background);
         document.documentElement.style.setProperty('--foreground', themeColors.foreground);
         document.documentElement.style.setProperty('--border', themeColors.border);
+        document.documentElement.style.setProperty('--card', themeColors.card);
+        document.documentElement.style.setProperty('--card-foreground', themeColors.cardForeground);
+        document.documentElement.style.setProperty('--card', themeColors.card);
+        document.documentElement.style.setProperty('--card-foreground', themeColors.cardForeground);
       }
       
       // Apply font style to body
@@ -230,13 +254,15 @@ export function useApplyTheme() {
         document.body.classList.add(`theme-${theme}`);
 
         // Immediately apply CSS variables for the selected theme
-        const themeColors = getThemeColors(theme);
-        document.documentElement.style.setProperty('--primary', themeColors.primary);
-        document.documentElement.style.setProperty('--secondary', themeColors.secondary);
-        document.documentElement.style.setProperty('--accent', themeColors.accent);
-        document.documentElement.style.setProperty('--background', themeColors.background);
-        document.documentElement.style.setProperty('--foreground', themeColors.foreground);
-        document.documentElement.style.setProperty('--border', themeColors.border);
+          const themeColors = getThemeColors(theme);
+          document.documentElement.style.setProperty('--primary', themeColors.primary);
+          document.documentElement.style.setProperty('--secondary', themeColors.secondary);
+          document.documentElement.style.setProperty('--accent', themeColors.accent);
+          document.documentElement.style.setProperty('--background', themeColors.background);
+          document.documentElement.style.setProperty('--foreground', themeColors.foreground);
+          document.documentElement.style.setProperty('--border', themeColors.border);
+          document.documentElement.style.setProperty('--card', themeColors.card);
+          document.documentElement.style.setProperty('--card-foreground', themeColors.cardForeground);
       } catch (e) {
         console.warn("Theme DOM update warning:", e);
       }
