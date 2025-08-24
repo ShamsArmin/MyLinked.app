@@ -84,9 +84,9 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
   };
   
   return (
-    <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+    <div className="bg-base-100 rounded-xl shadow-sm p-5 border border-base-200">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-gray-900 font-medium">Theme</h3>
+        <h3 className="text-base-content font-medium">Theme</h3>
         <button 
           className="text-primary-600 text-sm font-medium flex items-center gap-1 hover:text-primary-700 transition-colors"
           onClick={() => setCustomizeOpen(true)}
@@ -107,7 +107,7 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             {colors.map((color) => (
               <button
                 key={color.name}
-                className="aspect-square rounded-lg p-1 border border-gray-200 flex items-center justify-center hover:border-primary-300 transition-colors"
+                className="aspect-square rounded-lg p-1 border border-base-200 flex items-center justify-center hover:border-primary transition-colors"
                 style={{ background: color.value }}
                 title={color.name}
                 aria-label={`${color.name} color`}
@@ -132,9 +132,9 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             <button 
               key={theme.id}
               className={`w-10 h-10 rounded-lg flex items-center justify-center relative
-                ${isSelected 
-                  ? "bg-gray-200 shadow-md border border-gray-300" 
-                  : "bg-transparent hover:bg-gray-50"
+                ${isSelected
+                  ? "bg-base-200 shadow-md border border-base-300"
+                  : "bg-transparent hover:bg-base-200"
                 }`}
               onClick={() => {
                 console.log("Theme selected:", theme.id);
@@ -158,27 +158,27 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
           );
         })}
         
-        <button 
-          className="w-10 h-10 rounded-lg flex items-center justify-center relative bg-transparent hover:bg-gray-50"
+        <button
+          className="w-10 h-10 rounded-lg flex items-center justify-center relative bg-transparent hover:bg-base-200"
           onClick={() => setCustomizeOpen(true)}
           aria-label="Add custom theme"
           title="Custom theme"
         >
           <div className="w-7 h-7 rounded-full flex items-center justify-center bg-gradient-to-r from-purple-300 via-pink-300 to-blue-300">
-            <Palette className="h-4 w-4 text-gray-800" />
+            <Palette className="h-4 w-4 text-base-content" />
           </div>
         </button>
       </div>
-      
+
       {/* Font Style Selector */}
-      <div className="mt-8 border-t border-gray-100 pt-6">
-        <h3 className="text-gray-900 font-medium mb-4">Font Style</h3>
+      <div className="mt-8 border-t border-base-200 pt-6">
+        <h3 className="text-base-content font-medium mb-4">Font Style</h3>
         <div className="grid grid-cols-2 gap-3">
           <button 
             className={`px-3 py-2 rounded-lg text-base text-center font-inter
               ${selectedFont === 'inter' ? 
                 'bg-primary-50 text-primary-600 font-semibold border border-primary-200' : 
-                'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-100'
+                'bg-base-200 text-base-content hover:bg-base-300 border border-base-200'
               }`}
             onClick={() => {
               setSelectedFont('inter');
@@ -191,7 +191,7 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             className={`px-3 py-2 rounded-lg text-base text-center font-poppins
               ${selectedFont === 'poppins' ? 
                 'bg-primary-50 text-primary-600 font-semibold border border-primary-200' : 
-                'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-100'
+                'bg-base-200 text-base-content hover:bg-base-300 border border-base-200'
               }`}
             onClick={() => {
               setSelectedFont('poppins');
@@ -204,7 +204,7 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             className={`px-3 py-2 rounded-lg text-base text-center serif
               ${selectedFont === 'serif' ? 
                 'bg-primary-50 text-primary-600 font-semibold border border-primary-200' : 
-                'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-100'
+                'bg-base-200 text-base-content hover:bg-base-300 border border-base-200'
               }`}
             style={{ fontFamily: 'Georgia, serif' }}
             onClick={() => {
@@ -218,7 +218,7 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             className={`px-3 py-2 rounded-lg text-base text-center monospace
               ${selectedFont === 'monospace' ? 
                 'bg-primary-50 text-primary-600 font-semibold border border-primary-200' : 
-                'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-100'
+                'bg-base-200 text-base-content hover:bg-base-300 border border-base-200'
               }`}
             style={{ fontFamily: 'monospace' }}
             onClick={() => {
@@ -232,7 +232,7 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             className={`px-3 py-2 rounded-lg text-base text-center
               ${selectedFont === 'cursive' ? 
                 'bg-primary-50 text-primary-600 font-semibold border border-primary-200' : 
-                'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-100'
+                'bg-base-200 text-base-content hover:bg-base-300 border border-base-200'
               }`}
             style={{ fontFamily: 'cursive' }}
             onClick={() => {
@@ -246,7 +246,7 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             className={`px-3 py-2 rounded-lg text-base text-center
               ${selectedFont === 'system' ? 
                 'bg-primary-50 text-primary-600 font-semibold border border-primary-200' : 
-                'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-100'
+                'bg-base-200 text-base-content hover:bg-base-300 border border-base-200'
               }`}
             style={{ fontFamily: '-apple-system, BlinkMacSystemFont, system-ui, sans-serif' }}
             onClick={() => {
@@ -260,13 +260,13 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
       </div>
       
       {/* Dark mode toggle with icons */}
-      <div className="mt-8 border-t border-gray-100 pt-6 flex items-center justify-between">
+      <div className="mt-8 border-t border-base-200 pt-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sun className="h-5 w-5 text-amber-500" />
-          <Label htmlFor="dark-mode" className="text-gray-900 text-sm font-medium cursor-pointer">
+          <Label htmlFor="dark-mode" className="text-base-content text-sm font-medium cursor-pointer">
             Dark Mode
           </Label>
-          <Moon className="h-5 w-5 text-gray-600" />
+          <Moon className="h-5 w-5 text-base-content" />
         </div>
         <Switch 
           id="dark-mode" 
