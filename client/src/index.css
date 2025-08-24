@@ -1,376 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom animations for landing page */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 30px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-/* Custom button styles to fix contrast issues */
-@layer components {
-  .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 border border-primary;
-  }
-  
-  .btn-outline {
-    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
-  }
-  
-  .btn-ghost {
-    @apply hover:bg-accent hover:text-accent-foreground border border-transparent;
-  }
-  
-  .btn-link {
-    @apply text-primary underline-offset-4 hover:underline;
-  }
-}
-
-/* Prevent horizontal scrolling */
-html, body {
-  overflow-x: hidden;
-  max-width: 100%;
-}
-
-/* Simple fix for content overflow */
-.main-content {
-  overflow-x: hidden;
-  max-width: 100vw;
-}
-
-/* Card overflow fix */
-.card {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-/* Dialog fix */
-.dialog {
-  max-width: 98vw;
-}
-
-:root {
-  --font-primary: 'Inter', sans-serif;
-  
-  /* Default theme colors */
-  --background: 0 0% 100%;
-  --foreground: 20 14.3% 4.1%;
-  --muted: 60 4.8% 95.9%;
-  --muted-foreground: 25 5.3% 44.7%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 20 14.3% 4.1%;
-  --card: 0 0% 100%;
-  --card-foreground: 20 14.3% 4.1%;
-  --border: 20 5.9% 90%;
-  --input: 20 5.9% 90%;
-  --primary: 207 90% 54%; /* Blue shade */
-  --primary-foreground: 211 100% 99%;
-  --secondary: 215 25% 27%; /* Darker blue for better contrast in light mode */
-  --secondary-foreground: 210 40% 98%;
-  --accent: 217 19% 27%; /* Another darker shade for accents in light mode */
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 60 9.1% 97.8%;
-  --ring: 20 14.3% 4.1%;
-  --radius: 0.5rem;
-}
-
-.dark {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
---muted-foreground: 240 5% 64.9%;
---popover: 240 10% 3.9%;
---popover-foreground: 0 0% 98%;
---card: 240 10% 3.9%;
---card-foreground: 0 0% 98%;
---border: 240 3.7% 15.9%;
---input: 240 3.7% 15.9%;
---primary: 207 90% 54%;
---primary-foreground: 211 100% 99%;
---secondary: 240 3.7% 15.9%;
---secondary-foreground: 0 0% 98%;
---accent: 240 3.7% 15.9%;
---accent-foreground: 0 0% 98%;
---destructive: 0 62.8% 30.6%;
---destructive-foreground: 0 0% 98%;
---ring: 240 4.9% 83.9%;
---radius: 0.5rem;
-  }
-
+/* Base: only plain CSS (no @apply) */
 @layer base {
-  * {
-    @apply border-border;
-  }
-  
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .animate-fade-in {
-    animation: fadeIn 0.5s ease-in-out;
-  }
-  
-  /* Tour Guide Styles */
-  .tour-highlight {
-    position: relative;
-    z-index: 99;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 0 2px white !important;
-    border-radius: 8px !important;
-    animation: pulse-highlight 2s infinite;
+  :root { --radius: .5rem; }
+
+  html, body, #root {
+    min-height: 100vh;
+    background-color: hsl(var(--b2)); /* ≈ bg-base-200 */
+    color: hsl(var(--bc));            /* ≈ text-base-content */
   }
 
-  @keyframes pulse-highlight {
-    0%, 100% {
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 0 2px white !important;
-    }
-    50% {
-      box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.3), 0 0 0 2px white !important;
-    }
+  /* global border default */
+  *, ::before, ::after { border-color: hsl(var(--b3)); } /* ≈ border-base-300 */
+}
+
+/* Components: use variables instead of @apply for theme tokens */
+@layer components {
+  /* Page & panel/card surfaces */
+  .page-surface {
+    min-height: 100vh;
+    background-color: hsl(var(--b2)); /* page surface */
+    color: hsl(var(--bc));
   }
 
-  body {
-    @apply font-sans antialiased bg-background text-foreground;
-  }
-  
-  /* Fix for autofill background issue */
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus,
-  input:-webkit-autofill:active {
-    transition: background-color 5000s ease-in-out 0s;
-    -webkit-text-fill-color: hsl(var(--foreground)) !important;
-  }
-  
-  /* Fix for password autofill */
-  input[type="password"]:-webkit-autofill,
-  input[type="password"]:-webkit-autofill:hover,
-  input[type="password"]:-webkit-autofill:focus,
-  input[type="password"]:-webkit-autofill:active {
-    transition: background-color 5000s ease-in-out 0s;
-    -webkit-text-fill-color: hsl(var(--foreground)) !important;
-  }
-  
-  /* Ensure text is visible when inputting in password fields */
-  input[type="password"] {
-    color: hsl(var(--foreground)) !important;
-    background-color: transparent !important;
-    caret-color: hsl(var(--foreground)) !important;
-    opacity: 1 !important;
-  }
-  
-  /* Fix z-index for the password fields */
-  input[type="password"]:focus {
-    position: relative;
-    z-index: 10;
-    color: hsl(var(--foreground)) !important;
-    background-color: transparent !important;
-  }
-  
-  /* Dark mode specific fixes for autofill */
-  .dark input:-webkit-autofill,
-  .dark input:-webkit-autofill:hover, 
-  .dark input:-webkit-autofill:focus,
-  .dark input:-webkit-autofill:active {
-    -webkit-text-fill-color: hsl(var(--foreground)) !important;
-  }
-  
-  /* Custom utility classes */
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .card-surface {
+    background-color: hsl(var(--b1)); /* card surface */
+    color: hsl(var(--bc));
+    border: 1px solid hsl(var(--b3));
+    border-radius: 0.75rem; /* ≈ rounded-xl */
+    box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.1);
   }
 
-  /* Logo image quality improvements */
-  img[alt="MyLinked"] {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-    filter: contrast(1.1) brightness(1.05);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  
-  /* View Mode Styles */
-  .story-cards-container {
-    display: flex;
-    flex-direction: column !important;
-    overflow-y: auto;
-    max-height: 70vh;
-    padding: 32px;
-    max-width: 100%;
-    width: 100%;
-    overflow-x: hidden;
-  }
-  
-  .story-card {
-    background-color: hsl(var(--card));
-    color: hsl(var(--card-foreground));
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    margin-bottom: 64px;
-    min-height: 350px;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid hsl(var(--border));
-    max-width: 100%;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .story-card .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  }
-  
-  .story-card .content {
-    flex: 1;
-    overflow: auto;
-    word-break: break-word;
-    margin-bottom: 16px;
-    max-height: 200px;
-  }
-  
-  .story-card .footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
-    padding-top: 12px;
-    border-top: 1px solid hsl(var(--border));
-    position: sticky;
-    bottom: 0;
-    background-color: hsl(var(--card));
-    z-index: 10;
-  }
-  
-  .story-card .platform-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
-  }
-  
-  .story-card .stats {
-    display: flex;
-    gap: 12px;
-  }
-  
-  .story-card .visit-button {
-    padding: 12px 16px;
-    border-radius: 6px;
-    font-size: 14px;
-    background-color: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-    text-align: center;
-    font-weight: 500;
-    display: block;
-    width: 100%;
-    margin-top: 12px;
-    position: relative;
-    z-index: 10;
-    text-decoration: none;
-    border: none;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  .panel-surface {
+    background-color: hsl(var(--b1));
+    color: hsl(var(--bc));
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.1);
   }
 
-  .story-card .visit-button:hover {
-    background-color: hsl(var(--primary) / 0.9);
+  /* Theme-aware gradient header (primary→secondary) */
+  .themed-gradient {
+    background-image: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--s)) 100%);
+    color: hsl(var(--pc));
   }
+}
 
-  /* Fixed Visit Button for all cards */
-  .fixed-visit-btn {
-    position: absolute;
-    bottom: 12px;
-    left: 0;
-    right: 0;
-    width: calc(100% - 24px);
-    margin: 0 12px;
-    padding: 12px 0;
-    background-color: hsl(var(--primary));
-    color: white;
-    font-weight: 500;
-    text-align: center;
-    border-radius: 6px;
-    z-index: 30;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  }
-
-  .fixed-visit-btn:hover {
-    background-color: hsl(var(--primary) / 0.9);
-  }
-  
-  /* Background and spacing fixes for story cards */
-  .story-card {
-    padding-bottom: 60px;
-  }
-  
-  /* Add a gradient background behind the button to prevent text from showing through */
-  .story-card::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 70px;
-    background: linear-gradient(to bottom, hsla(var(--card) / 0) 0%, hsla(var(--card) / 1) 40%);
-    z-index: 20;
-    pointer-events: none;
-  }
-  
-  .links-container.list-view {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  /* Card Styles */
-  .link-card.grid-view {
-    @apply bg-card rounded-lg shadow-sm hover:shadow-md transition-all p-4 border h-full;
-  }
-  
-  .link-card.story-view {
-    @apply bg-card rounded-xl shadow p-5 border-2 border-muted/80 min-h-[220px];
-  }
-  
-  .link-card.portfolio-view {
-    @apply bg-card rounded-xl shadow-md hover:shadow-lg transition-all p-6 border;
-  }
-  
-  .link-card.list-view {
-    @apply flex items-center justify-between p-4 rounded-lg bg-card hover:bg-muted/50 transition-colors border shadow-sm;
-  }
+/* Optional: shadcn compatibility tokens backed by DaisyUI vars */
+@layer utilities {
+  .bg-background { background-color: hsl(var(--b2)); }
+  .text-foreground { color: hsl(var(--bc)); }
+  .border-border { border-color: hsl(var(--b3)); }
+  .bg-card { background-color: hsl(var(--b1)); }
+  .text-card-foreground { color: hsl(var(--bc)); }
+  .bg-popover { background-color: hsl(var(--b1)); }
+  .text-popover-foreground { color: hsl(var(--bc)); }
+  .bg-muted { background-color: hsl(var(--b2)); }
+  .text-muted-foreground { color: hsl(var(--bc) / 0.7); }
+  .ring-ring { --tw-ring-color: hsl(var(--b3)); }
 }
