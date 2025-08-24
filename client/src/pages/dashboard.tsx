@@ -711,7 +711,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Dashboard Header */}
-      <header className="border-b shadow-sm">
+      <header className="border-b shadow-sm bg-primary text-primary-foreground">
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-4">
             <img 
@@ -797,7 +797,7 @@ export default function Dashboard() {
           {/* Performance Overview */}
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 bg-primary text-primary-foreground">
                 <CardTitle className="text-sm">Profile Views</CardTitle>
                 <CardDescription>Total views this month</CardDescription>
               </CardHeader>
@@ -818,7 +818,7 @@ export default function Dashboard() {
             </Card>
             
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 bg-primary text-primary-foreground">
                 <CardTitle className="text-sm">Click-Through Rate</CardTitle>
                 <CardDescription>Average CTR for all links</CardDescription>
               </CardHeader>
@@ -839,7 +839,7 @@ export default function Dashboard() {
             </Card>
             
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 bg-primary text-primary-foreground">
                 <CardTitle className="text-sm">Social Score</CardTitle>
                 <CardDescription>Profile optimization level</CardDescription>
               </CardHeader>
@@ -878,7 +878,7 @@ export default function Dashboard() {
           {/* Instagram Content Preview - NEW FEATURE SECTION */}
           {FEATURE_CONTENT_PREVIEW && (
             <Card className="mb-8 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 border-2 border-pink-200 dark:border-pink-700 shadow-lg">
-            <CardHeader>
+            <CardHeader className="bg-primary text-primary-foreground">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-3 text-xl text-pink-600 dark:text-pink-400">
@@ -937,7 +937,7 @@ export default function Dashboard() {
             {/* Links Section - 4 columns on medium screens */}
             <div className="md:col-span-4 space-y-6">
               <Card className="shadow-md border-t-4 border-t-blue-500 dark:border-t-blue-700">
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-2 bg-primary text-primary-foreground">
                   <div className="flex items-center justify-between">
                     <CardTitle>My Links</CardTitle>
                     <Button onClick={() => setShowAddLinkDialog(true)}>
@@ -1006,7 +1006,7 @@ export default function Dashboard() {
               
               {/* Engagement Trends Card */}
               <Card>
-                <CardHeader>
+                <CardHeader className="bg-primary text-primary-foreground">
                   <CardTitle>Engagement Trends</CardTitle>
                   <CardDescription>View your profile performance over time</CardDescription>
                 </CardHeader>
@@ -1076,7 +1076,7 @@ export default function Dashboard() {
             {FEATURE_CONTENT_PREVIEW && (
               <div className="md:col-span-7 mb-6">
               <Card className="shadow-md border-t-4 border-t-pink-500 dark:border-t-pink-700">
-                <CardHeader>
+                <CardHeader className="bg-primary text-primary-foreground">
                   <CardTitle className="flex items-center gap-2">
                     <Instagram className="h-5 w-5 text-pink-500" />
                     Instagram Content Preview
@@ -1106,7 +1106,7 @@ export default function Dashboard() {
             <div className="md:col-span-3 space-y-6">
               {/* Quick Actions Card */}
               <Card>
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-2 bg-primary text-primary-foreground">
                   <CardTitle className="text-sm">Quick Actions</CardTitle>
                   <CardDescription>Frequently used tools</CardDescription>
                 </CardHeader>
@@ -1187,7 +1187,7 @@ export default function Dashboard() {
               
               {/* Profile Preview Card */}
               <Card>
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-2 bg-primary text-primary-foreground">
                   <CardTitle className="text-sm">Profile Preview</CardTitle>
                   <CardDescription>Your public profile</CardDescription>
                 </CardHeader>
@@ -1225,7 +1225,7 @@ export default function Dashboard() {
               
               {/* Spotlight Card for Collaborative Projects */}
               <Card>
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-2 bg-primary text-primary-foreground">
                   <CardTitle className="text-sm">Collaborative Spotlight</CardTitle>
                   <CardDescription>Showcase projects with others</CardDescription>
                 </CardHeader>

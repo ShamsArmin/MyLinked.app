@@ -144,35 +144,46 @@ export default function PublicProfile() {
 
   const getThemeStyles = () => {
     switch (profile.theme) {
+      case 'sunset':
+      case 'orange':
+        return {
+          gradient: 'from-orange-500 to-yellow-400',
+          primary: 'bg-orange-500',
+          accent: 'text-orange-600'
+        };
+      case 'forest':
+      case 'green':
+        return {
+          gradient: 'from-emerald-500 to-green-400',
+          primary: 'bg-green-500',
+          accent: 'text-green-600'
+        };
+      case 'midnight':
+        return {
+          gradient: 'from-indigo-700 to-violet-500',
+          primary: 'bg-indigo-600',
+          accent: 'text-indigo-300'
+        };
+      case 'royal':
       case 'purple':
         return {
-          gradient: 'from-purple-500 to-pink-500',
-          primary: 'bg-purple-500',
+          gradient: 'from-purple-600 to-fuchsia-500',
+          primary: 'bg-purple-600',
           accent: 'text-purple-600'
         };
+      case 'passion':
+        return {
+          gradient: 'from-red-600 to-rose-500',
+          primary: 'bg-red-600',
+          accent: 'text-red-600'
+        };
+      case 'default':
       case 'blue':
+      default:
         return {
           gradient: 'from-blue-500 to-cyan-400',
           primary: 'bg-blue-500',
           accent: 'text-blue-600'
-        };
-      case 'orange':
-        return {
-          gradient: 'from-amber-500 to-orange-500',
-          primary: 'bg-orange-500',
-          accent: 'text-orange-600'
-        };
-      case 'green':
-        return {
-          gradient: 'from-emerald-500 to-lime-500',
-          primary: 'bg-green-500',
-          accent: 'text-green-600'
-        };
-      default:
-        return {
-          gradient: 'from-indigo-500 to-purple-600',
-          primary: 'bg-indigo-500',
-          accent: 'text-indigo-600'
         };
     }
   };
@@ -273,7 +284,7 @@ export default function PublicProfile() {
             {/* Welcome Message */}
             {profile.welcomeMessage && (
               <Card className={profile.darkMode ? 'bg-gray-800 border-gray-700' : ''}>
-                <CardHeader>
+                <CardHeader className={`${themeStyles.primary} text-white`}>
                   <CardTitle className="flex items-center gap-2">
                     <MessageCircle className="h-5 w-5" />
                     Welcome Message
@@ -318,7 +329,7 @@ export default function PublicProfile() {
             {/* Links Section */}
             {links && links.length > 0 && (
               <Card className={profile.darkMode ? 'bg-gray-800 border-gray-700' : ''}>
-                <CardHeader>
+                <CardHeader className={`${themeStyles.primary} text-white`}>
                   <CardTitle className="flex items-center gap-2">
                     <Globe className="h-5 w-5" />
                     My Links
@@ -368,7 +379,7 @@ export default function PublicProfile() {
             {/* Collaborative Spotlight */}
             {spotlightProjects && spotlightProjects.length > 0 && (
               <Card className={profile.darkMode ? 'bg-gray-800 border-gray-700' : ''}>
-                <CardHeader>
+                <CardHeader className={`${themeStyles.primary} text-white`}>
                   <CardTitle className="flex items-center gap-2">
                     <GitBranch className="h-5 w-5" />
                     Collaborative Spotlight
@@ -432,7 +443,7 @@ export default function PublicProfile() {
             {/* Skills & Industry */}
             {(profile.skills?.length || profile.industry) && (
               <Card className={profile.darkMode ? 'bg-gray-800 border-gray-700' : ''}>
-                <CardHeader>
+                <CardHeader className={`${themeStyles.primary} text-white`}>
                   <CardTitle className="flex items-center gap-2">
                     <Award className="h-5 w-5" />
                     Skills & Industry
@@ -464,7 +475,7 @@ export default function PublicProfile() {
             {/* Referral Links */}
             {referralLinks && referralLinks.length > 0 && (
               <Card className={profile.darkMode ? 'bg-gray-800 border-gray-700' : ''}>
-                <CardHeader>
+                <CardHeader className={`${themeStyles.primary} text-white`}>
                   <CardTitle className="flex items-center gap-2">
                     <Star className="h-5 w-5" />
                     Recommended Links
