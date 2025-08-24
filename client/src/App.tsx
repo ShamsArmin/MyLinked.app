@@ -49,6 +49,7 @@ import MyLinksPage from "./pages/my-links";
 import ForgotPasswordPage from "./pages/forgot-password";
 import ResetPasswordPage from "./pages/reset-password";
 import CollaborationPage from "./pages/collaboration-page";
+import PageShell from "./components/PageShell";
 
 // Deprecated landing page - use the new component instead
 function OldLandingPage() {
@@ -201,11 +202,13 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ThemeProvider>
-            <ErrorBoundary>
-              <Router />
-              <AIChatbot />
-            </ErrorBoundary>
-            <Toaster />
+            <PageShell>
+              <ErrorBoundary>
+                <Router />
+                <AIChatbot />
+              </ErrorBoundary>
+              <Toaster />
+            </PageShell>
           </ThemeProvider>
         </AuthProvider>
       </QueryClientProvider>

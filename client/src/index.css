@@ -374,3 +374,27 @@ html, body {
     @apply flex items-center justify-between p-4 rounded-lg bg-card hover:bg-muted/50 transition-colors border shadow-sm;
   }
 }
+@layer components {
+  /* Page & card surfaces that follow DaisyUI theme */
+  .page-surface { @apply min-h-screen bg-base-200 text-base-content; }
+  .card-surface { @apply bg-base-100 text-base-content border border-base-200 rounded-xl shadow; }
+  .panel-surface { @apply bg-base-100 text-base-content rounded-xl shadow; }
+
+  /* Theme-aware gradient header (uses primary/secondary) */
+  .themed-gradient {
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--p)) 0%,
+      hsl(var(--s)) 100%
+    );
+    color: hsl(var(--pc));
+  }
+
+  /* Common button presets to replace bespoke styles */
+  .btn-primary-soft { @apply btn btn-primary; }
+  .btn-secondary-soft { @apply btn btn-secondary; }
+  .btn-accent-soft { @apply btn btn-accent; }
+  .btn-ghost-soft { @apply btn btn-ghost; }
+  .btn-outline-soft { @apply btn btn-outline; }
+  .btn-warning-soft { @apply btn btn-warning; }
+}
