@@ -12,7 +12,7 @@ import NotFound from "./pages/not-found";
 import PrivacyPolicy from "./pages/privacy-policy";
 import TermsOfService from "./pages/terms-of-service";
 import { useAuth, AuthProvider } from "./hooks/use-auth";
-import { ThemeProvider } from "./hooks/use-theme";
+// ThemeProvider is now applied in main.tsx via context/ThemeContext
 import { ProtectedRoute } from "./lib/protected-route";
 import { AdminProtectedRoute } from "./lib/admin-protected-route";
 import { Award, Loader2 } from "lucide-react";
@@ -118,8 +118,8 @@ function OldLandingPage() {
 // Basic Loading component
 function Loading() {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+    <div className="flex items-center justify-center min-h-screen bg-base-200">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
 }
@@ -200,13 +200,11 @@ function App() {
     return (
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <ThemeProvider>
-            <ErrorBoundary>
-              <Router />
-              <AIChatbot />
-            </ErrorBoundary>
-            <Toaster />
-          </ThemeProvider>
+          <ErrorBoundary>
+            <Router />
+            <AIChatbot />
+          </ErrorBoundary>
+          <Toaster />
         </AuthProvider>
       </QueryClientProvider>
     );

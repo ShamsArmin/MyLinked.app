@@ -2,7 +2,11 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    "./client/index.html",
+    "./client/src/**/*.{js,jsx,ts,tsx}",
+    "./client/app/**/*.{js,jsx,ts,tsx}"
+  ],
   theme: {
     extend: {
       borderRadius: {
@@ -86,5 +90,13 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require("@tailwindcss/typography"),
+    require("daisyui")
+  ],
+  daisyui: {
+    themes: ["light", "dark", "forest"],
+    darkTheme: "dark",
+  },
 } satisfies Config;
