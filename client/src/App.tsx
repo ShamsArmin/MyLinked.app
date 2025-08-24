@@ -12,7 +12,6 @@ import NotFound from "./pages/not-found";
 import PrivacyPolicy from "./pages/privacy-policy";
 import TermsOfService from "./pages/terms-of-service";
 import { useAuth, AuthProvider } from "./hooks/use-auth";
-import { ThemeProvider } from "./hooks/use-theme";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AdminProtectedRoute } from "./lib/admin-protected-route";
 import { Award, Loader2 } from "lucide-react";
@@ -49,6 +48,7 @@ import MyLinksPage from "./pages/my-links";
 import ForgotPasswordPage from "./pages/forgot-password";
 import ResetPasswordPage from "./pages/reset-password";
 import CollaborationPage from "./pages/collaboration-page";
+import ThemeDebug from "./dev/ThemeDebug";
 
 // Deprecated landing page - use the new component instead
 function OldLandingPage() {
@@ -200,13 +200,14 @@ function App() {
     return (
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <ThemeProvider>
-            <ErrorBoundary>
+          <ErrorBoundary>
+            <div className="min-h-screen bg-base-200 text-base-content">
               <Router />
               <AIChatbot />
-            </ErrorBoundary>
-            <Toaster />
-          </ThemeProvider>
+              <ThemeDebug />
+              <Toaster />
+            </div>
+          </ErrorBoundary>
         </AuthProvider>
       </QueryClientProvider>
     );

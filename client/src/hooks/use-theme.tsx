@@ -15,6 +15,7 @@ interface ThemeContextType {
   viewMode: ViewMode;
   isDarkMode: boolean;
   setIsDarkMode: (value: boolean) => void;
+  setTheme: (theme: string) => Promise<void>;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -25,7 +26,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   
   // Initial defaults
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [theme, setTheme] = useState<Theme>('default');
+  const [theme, setThemeState] = useState<Theme>('default');
   const [font, setFont] = useState<Font>('inter');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [darkMode, setDarkMode] = useState(false);
@@ -33,17 +34,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Function to get theme colors based on theme ID
   const getThemeColors = (themeId: string) => {
     const themes = {
-      'ocean': {
+      'light': {
         primary: '217 91% 60%', // Blue
-        secondary: '221 83% 40%', 
+        secondary: '221 83% 40%',
         accent: '188 91% 43%',
         background: '0 0% 100%',
         foreground: '220 14% 18%',
         border: '220 13% 91%'
       },
-      'default': { // Same as ocean for themes-page.tsx compatibility
+      'default': { // Alias for light
         primary: '217 91% 60%',
-        secondary: '221 83% 40%', 
+        secondary: '221 83% 40%',
         accent: '188 91% 43%',
         background: '0 0% 100%',
         foreground: '220 14% 18%',
@@ -65,7 +66,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         foreground: '166 84% 15%',
         border: '142 69% 82%'
       },
-      'midnight': {
+      'night': {
         primary: '243 75% 59%', // Purple
         secondary: '243 69% 53%',
         accent: '258 90% 66%',
@@ -73,15 +74,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         foreground: '213 31% 91%',
         border: '215 28% 17%'
       },
-      'royal': {
-        primary: '262 83% 58%', // Royal purple  
+      'luxury': {
+        primary: '262 83% 58%', // Royal purple
         secondary: '263 70% 50%',
         accent: '270 91% 65%',
         background: '270 100% 98%', // Light purple background
         foreground: '270 91% 27%', // Dark purple text
         border: '270 40% 85%' // Purple border
       },
-      'passion': {
+      'valentine': {
         primary: '0 78% 50%', // Passion red
         secondary: '0 77% 42%',
         accent: '0 70% 70%',
@@ -156,7 +157,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       // Set state values
       setDarkMode(userDarkMode);
       setIsDarkMode(userDarkMode);
-      setTheme(userTheme);
+      setThemeState(userTheme);
       setFont(userFont);
       setViewMode(userViewMode as ViewMode);
       
@@ -166,6 +167,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       // Apply font to document
       document.documentElement.style.setProperty('--font-primary', getFontFamily(userFont));
       
+      document.documentElement.setAttribute('data-theme', userTheme);
+
       // Apply custom CSS variables for the selected theme
       const themeColors = getThemeColors(userTheme);
       if (themeColors) {
@@ -176,18 +179,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         document.documentElement.style.setProperty('--foreground', themeColors.foreground);
         document.documentElement.style.setProperty('--border', themeColors.border);
       }
-      
+
       // Apply font style to body
       document.body.style.fontFamily = getFontFamily(userFont);
-      
-      // Make body changes based on theme
-      document.body.className = '';
-      document.body.classList.add(`theme-${userTheme}`);
-      if (userDarkMode) {
-        document.body.classList.add('dark');
-      }
     }
   }, [user, profile]);
+
+  const setTheme = async (next: string) => {
+    const previous = theme;
+    document.documentElement.setAttribute('data-theme', next);
+    setThemeState(next);
+    try {
+      await apiRequest("PATCH", "/api/profile", { theme: next });
+      await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', previous);
+      setThemeState(previous);
+      throw e;
+    }
+  };
 
   return (
     <ThemeContext.Provider
@@ -197,7 +207,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         font,
         viewMode,
         isDarkMode,
-        setIsDarkMode
+        setIsDarkMode,
+        setTheme
       }}
     >
       {children}

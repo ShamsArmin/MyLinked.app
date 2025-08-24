@@ -1,5 +1,7 @@
+import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { ThemeProvider } from "./hooks/use-theme";
 import "./index.css";
 
 // ensure all fetch requests include credentials
@@ -11,5 +13,9 @@ window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
 
 // Use the App component with our authentication system
 createRoot(document.getElementById("root")!).render(
-  <App />
+  <React.StrictMode>
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  </React.StrictMode>
 );
