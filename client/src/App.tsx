@@ -12,7 +12,6 @@ import NotFound from "./pages/not-found";
 import PrivacyPolicy from "./pages/privacy-policy";
 import TermsOfService from "./pages/terms-of-service";
 import { useAuth, AuthProvider } from "./hooks/use-auth";
-import { ThemeProvider } from "./hooks/use-theme";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AdminProtectedRoute } from "./lib/admin-protected-route";
 import { Award, Loader2 } from "lucide-react";
@@ -39,7 +38,6 @@ import AcceptInvitePage from "./pages/accept-invite";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
-import ErrorBoundary from "@/components/ui/error-boundary";
 import ScrollToTop from "@/components/ui/scroll-to-top";
 import { AIChatbot } from "@/components/ai-chatbot";
 import ContactPage from "./pages/contact-page";
@@ -49,6 +47,8 @@ import MyLinksPage from "./pages/my-links";
 import ForgotPasswordPage from "./pages/forgot-password";
 import ResetPasswordPage from "./pages/reset-password";
 import CollaborationPage from "./pages/collaboration-page";
+import BootDiagnostics from "./dev/BootDiagnostics";
+import HealthCheck from "./dev/HealthCheck";
 
 // Deprecated landing page - use the new component instead
 function OldLandingPage() {
@@ -193,37 +193,20 @@ function Router() {
 }
 
 function App() {
-  // Log that the App component is running
   console.log("App component rendering");
-  
-  try {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ThemeProvider>
-            <ErrorBoundary>
-              <Router />
-              <AIChatbot />
-            </ErrorBoundary>
-            <Toaster />
-          </ThemeProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    );
-  } catch (error) {
-    console.error("Error in App component:", error);
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">Application Error</h1>
-        <p className="text-gray-800 mb-4">
-          There was an error initializing the application. Please check the console for details.
-        </p>
-        <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto max-w-full">
-          {error instanceof Error ? error.message : String(error)}
-        </pre>
-      </div>
-    );
-  }
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <div className="min-h-screen bg-base-200 text-base-content">
+          <Router />
+          <AIChatbot />
+          <BootDiagnostics />
+          <HealthCheck />
+        </div>
+        <Toaster />
+      </AuthProvider>
+    </QueryClientProvider>
+  );
 }
 
 export default App;

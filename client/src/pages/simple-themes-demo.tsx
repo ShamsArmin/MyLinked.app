@@ -20,7 +20,7 @@ import {
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { useApplyTheme } from "@/hooks/use-theme";
+import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { User } from "@shared/schema";
 
@@ -140,7 +140,7 @@ export default function SimpleThemesDemo() {
   const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
   const [activeTheme, setActiveTheme] = useState<string>("ocean");
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const applyTheme = useApplyTheme();
+  const { setTheme } = useTheme();
 
   // Get current user profile to check active theme
   const { data: profile } = useQuery<User>({
@@ -155,9 +155,11 @@ export default function SimpleThemesDemo() {
     }
   }, [profile?.theme]);
 
-  const handleApplyTheme = (theme: Theme) => {
+  const handleApplyTheme = async (theme: Theme) => {
+    const map: Record<string, string> = { passion: 'valentine', royal: 'luxury', midnight: 'night' };
+    const name = map[theme.id] || theme.id;
     setActiveTheme(theme.id);
-    applyTheme.mutate(theme.id);
+    await setTheme(name);
   };
 
   const handleDarkModeToggle = () => {
