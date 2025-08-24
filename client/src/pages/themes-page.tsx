@@ -287,13 +287,22 @@ export default function ThemesPage() {
                       Preview
                     </Button>
                     
-                    <Button 
+                    <Button
                       size="sm"
                       onClick={() => handleSaveTheme(theme)}
-                      disabled={applyTheme.isPending}
+                      disabled={applyTheme.isPending || profile?.theme === theme.id}
                     >
-                      <Save className="h-4 w-4 mr-1" />
-                      Apply
+                      {profile?.theme === theme.id ? (
+                        <>
+                          <Check className="h-4 w-4 mr-1" />
+                          Applied
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-1" />
+                          Apply
+                        </>
+                      )}
                     </Button>
                   </div>
                 </CardContent>
