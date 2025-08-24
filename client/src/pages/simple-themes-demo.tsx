@@ -20,7 +20,7 @@ import {
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { useApplyTheme } from "@/hooks/use-theme";
+import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { User } from "@shared/schema";
 
@@ -42,7 +42,7 @@ interface Theme {
 
 const presetThemes: Theme[] = [
   {
-    id: "ocean",
+    id: "light",
     name: "Ocean Blue",
     description: "Professional and trustworthy",
     icon: <Waves className="h-5 w-5" />,
@@ -87,7 +87,7 @@ const presetThemes: Theme[] = [
     gradient: "linear-gradient(135deg, #059669 0%, #34d399 100%)"
   },
   {
-    id: "midnight",
+    id: "night",
     name: "Midnight Dark",
     description: "Sleek and modern",
     icon: <Moon className="h-5 w-5" />,
@@ -102,7 +102,7 @@ const presetThemes: Theme[] = [
     gradient: "linear-gradient(135deg, #6366f1 0%, #a78bfa 100%)"
   },
   {
-    id: "passion",
+    id: "valentine",
     name: "Passion Red",
     description: "Bold and energetic",
     icon: <Flame className="h-5 w-5" />,
@@ -117,7 +117,7 @@ const presetThemes: Theme[] = [
     gradient: "linear-gradient(135deg, #dc2626 0%, #f87171 100%)"
   },
   {
-    id: "royal",
+    id: "luxury",
     name: "Royal Purple",
     description: "Elegant and sophisticated",
     icon: <Crown className="h-5 w-5" />,
@@ -138,9 +138,9 @@ export default function SimpleThemesDemo() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
-  const [activeTheme, setActiveTheme] = useState<string>("ocean");
+  const [activeTheme, setActiveTheme] = useState<string>("light");
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const applyTheme = useApplyTheme();
+  const { setTheme } = useTheme();
 
   // Get current user profile to check active theme
   const { data: profile } = useQuery<User>({
@@ -155,9 +155,13 @@ export default function SimpleThemesDemo() {
     }
   }, [profile?.theme]);
 
-  const handleApplyTheme = (theme: Theme) => {
+  const handleApplyTheme = async (theme: Theme) => {
     setActiveTheme(theme.id);
-    applyTheme.mutate(theme.id);
+    try {
+      await setTheme(theme.id);
+    } catch (e) {
+      console.error('Failed to persist theme', e);
+    }
   };
 
   const handleDarkModeToggle = () => {
