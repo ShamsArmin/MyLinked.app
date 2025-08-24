@@ -235,9 +235,9 @@ export default function OptimizeLinksPage() {
                     <span className="text-muted-foreground">Current: </span>
                     {currentOptimizeLink.title}
                   </div>
-                  <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                  <div className="border rounded-md p-2 text-sm bg-green-50 border-green-200">
                     <span className="text-muted-foreground">Suggestion: </span>
-                    <span className="text-green-600 dark:text-green-400 font-medium">
+                    <span className="text-green-600 font-medium">
                       {currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
                         ? "Follow My X for Tech Insights & Updates" 
                         : `Improved ${currentOptimizeLink.title} with Better Keywords`}
@@ -266,9 +266,9 @@ export default function OptimizeLinksPage() {
                     <span className="text-muted-foreground">Current: </span>
                     {currentOptimizeLink.description || "No description provided."}
                   </div>
-                  <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                  <div className="border rounded-md p-2 text-sm bg-green-50 border-green-200">
                     <span className="text-muted-foreground">Suggestion: </span>
-                    <span className="text-green-600 dark:text-green-400">
+                    <span className="text-green-600">
                       {currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
                         ? "Daily insights on web development, tech trends, and design. Join my 5K+ followers for practical tips and industry news!"
                         : "Join our community of professionals for exclusive insights, resources, and networking opportunities. Stay ahead in your career with our expert-curated content."}

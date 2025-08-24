@@ -129,9 +129,9 @@ function ScoreRecommendationCard({
 }) {
   return (
     <Card className={`
-      ${status === "good" ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20" : ""}
-      ${status === "bad" ? "border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/20" : ""}
-      ${status === "neutral" ? "bg-white dark:bg-gray-900" : ""}
+      ${status === "good" ? "border-emerald-200 bg-emerald-50" : ""}
+      ${status === "bad" ? "border-rose-200 bg-rose-50" : ""}
+      ${status === "neutral" ? "bg-white" : ""}
     `}>
       <CardContent className="p-4 flex items-start">
         <div className="mr-3 mt-1">
@@ -146,8 +146,8 @@ function ScoreRecommendationCard({
           )}
         </div>
         <div className="flex-1">
-          <h3 className="font-medium text-sm mb-1 dark:text-gray-200">{title}</h3>
-          <p className="text-xs text-muted-foreground dark:text-gray-400">{description}</p>
+          <h3 className="font-medium text-sm mb-1">{title}</h3>
+          <p className="text-xs text-muted-foreground">{description}</p>
           
           {action && (
             <Button 

@@ -146,7 +146,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-black dark:via-gray-900 dark:to-gray-800 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex">
       {/* Left Column - Form */}
       <div className="flex-1 flex items-center justify-center p-8 max-w-md mx-auto">
         <div className="w-full max-w-md space-y-8">
@@ -189,7 +189,7 @@ export default function AuthPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="h-12 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium"
+                        className="h-12 bg-white hover:bg-gray-50 border-gray-200 text-gray-700 font-medium"
                         onClick={() => handleSocialLogin('google')}
                       >
                         <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
@@ -211,10 +211,10 @@ export default function AuthPage() {
                   {/* Divider */}
                   <div className="relative mb-6">
                     <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-gray-300 dark:border-gray-600" />
+                      <span className="w-full border-t border-gray-300" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="bg-white dark:bg-gray-800 px-4 text-gray-500 dark:text-gray-400">Or continue with email</span>
+                      <span className="bg-white px-4 text-gray-500">Or continue with email</span>
                     </div>
                   </div>
 
@@ -289,7 +289,7 @@ export default function AuthPage() {
                         <Button
                           type="button"
                           variant="link"
-                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                           onClick={() => setLocation("/forgot-password")}
                         >
                           Forgot your password?
@@ -311,7 +311,7 @@ export default function AuthPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="h-12 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium"
+                        className="h-12 bg-white hover:bg-gray-50 border-gray-200 text-gray-700 font-medium"
                         onClick={() => handleSocialLogin('google')}
                       >
                         <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
@@ -333,10 +333,10 @@ export default function AuthPage() {
                   {/* Divider */}
                   <div className="relative mb-6">
                     <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-gray-300 dark:border-gray-600" />
+                      <span className="w-full border-t border-gray-300" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="bg-white dark:bg-gray-800 px-4 text-gray-500 dark:text-gray-400">Or create account with email</span>
+                      <span className="bg-white px-4 text-gray-500">Or create account with email</span>
                     </div>
                   </div>
 

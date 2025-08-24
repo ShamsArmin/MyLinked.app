@@ -274,7 +274,7 @@ function LinkCard({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   onClick={() => onDelete(link.id)} 
-                  className="text-red-500 dark:text-red-400 focus:text-red-500 dark:focus:text-red-400"
+                  className="text-red-500 focus:text-red-500"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
@@ -773,7 +773,7 @@ export default function Dashboard() {
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600 dark:text-red-400">
+                <DropdownMenuItem className="text-red-600">
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
                 </DropdownMenuItem>
@@ -811,7 +811,7 @@ export default function Dashboard() {
                 </div>
                 {!isLoadingStats && (
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-500 dark:text-green-400">+12.5%</span> from last month
+                    <span className="text-green-500">+12.5%</span> from last month
                   </p>
                 )}
               </CardContent>
@@ -832,7 +832,7 @@ export default function Dashboard() {
                 </div>
                 {!isLoadingStats && (
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-500 dark:text-green-400">+2.3%</span> from last month
+                    <span className="text-green-500">+2.3%</span> from last month
                   </p>
                 )}
               </CardContent>
@@ -877,11 +877,11 @@ export default function Dashboard() {
           
           {/* Instagram Content Preview - NEW FEATURE SECTION */}
           {FEATURE_CONTENT_PREVIEW && (
-            <Card className="mb-8 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 border-2 border-pink-200 dark:border-pink-700 shadow-lg">
+            <Card className="mb-8 bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-pink-200 shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-3 text-xl text-pink-600 dark:text-pink-400">
+                  <CardTitle className="flex items-center gap-3 text-xl text-pink-600">
                     <Instagram className="h-7 w-7" />
                     Instagram Content Preview
                     <Badge variant="secondary" className="bg-pink-100 text-pink-700 border-pink-300">NEW</Badge>
@@ -901,8 +901,8 @@ export default function Dashboard() {
                   </h3>
                   <div className="p-6 border-2 border-dashed border-pink-300 rounded-lg text-center">
                     <Instagram className="h-12 w-12 mx-auto text-pink-400 mb-4" />
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Instagram Not Connected</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <h4 className="font-medium text-gray-900 mb-2">Instagram Not Connected</h4>
+                    <p className="text-sm text-gray-600">
                       Connect your Instagram account to show your latest post here
                     </p>
                   </div>
@@ -917,7 +917,7 @@ export default function Dashboard() {
                       <Instagram className="h-4 w-4 mr-2" />
                       Connect Instagram Account
                     </Button>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-gray-600">
                       <p className="mb-2">Once connected, your latest Instagram post will appear:</p>
                       <ul className="list-disc list-inside space-y-1 text-xs">
                         <li>On your public profile</li>
@@ -936,7 +936,7 @@ export default function Dashboard() {
           <div className="grid gap-6 md:grid-cols-7">
             {/* Links Section - 4 columns on medium screens */}
             <div className="md:col-span-4 space-y-6">
-              <Card className="shadow-md border-t-4 border-t-blue-500 dark:border-t-blue-700">
+              <Card className="shadow-md border-t-4 border-t-blue-500">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle>My Links</CardTitle>
@@ -966,7 +966,7 @@ export default function Dashboard() {
                     </div>
                   ) : isErrorLinks ? (
                     <div className="text-center py-8">
-                      <div className="text-red-500 dark:text-red-400 mb-2">
+                      <div className="text-red-500 mb-2">
                         <X className="h-8 w-8 mx-auto" />
                       </div>
                       <h3 className="font-medium">Error Loading Links</h3>
@@ -1075,7 +1075,7 @@ export default function Dashboard() {
             {/* Instagram Content Preview Section - Full Width */}
             {FEATURE_CONTENT_PREVIEW && (
               <div className="md:col-span-7 mb-6">
-              <Card className="shadow-md border-t-4 border-t-pink-500 dark:border-t-pink-700">
+              <Card className="shadow-md border-t-4 border-t-pink-500">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Instagram className="h-5 w-5 text-pink-500" />
@@ -1508,9 +1508,9 @@ export default function Dashboard() {
                     <span className="text-muted-foreground">Current: </span>
                     <span className="break-all">{currentOptimizeLink.title}</span>
                   </div>
-                  <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900 break-words">
+                  <div className="border rounded-md p-2 text-sm bg-green-50 border-green-200 break-words">
                     <span className="text-muted-foreground">Suggestion: </span>
-                    <span className="text-green-600 dark:text-green-400 font-medium break-words">
+                    <span className="text-green-600 font-medium break-words">
                       {currentOptimizeLink.platform === "twitter" 
                         ? "Follow My Twitter for Tech Insights & Updates" 
                         : `Improved ${currentOptimizeLink.title} with Better Keywords`}
@@ -1539,9 +1539,9 @@ export default function Dashboard() {
                     <span className="text-muted-foreground">Current: </span>
                     <span className="break-words">{currentOptimizeLink.description || "No description provided."}</span>
                   </div>
-                  <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900 break-words">
+                  <div className="border rounded-md p-2 text-sm bg-green-50 border-green-200 break-words">
                     <span className="text-muted-foreground">Suggestion: </span>
-                    <span className="text-green-600 dark:text-green-400 break-words">
+                    <span className="text-green-600 break-words">
                       {currentOptimizeLink.platform === "twitter" 
                         ? "Daily insights on web development, tech trends, and design. Join my 5K+ followers for practical tips and industry news!"
                         : "Join our community of professionals for exclusive insights, resources, and networking opportunities. Stay ahead in your career with our expert-curated content."}

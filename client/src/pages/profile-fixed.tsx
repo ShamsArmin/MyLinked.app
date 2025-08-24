@@ -156,7 +156,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-black dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -172,7 +172,7 @@ export default function ProfilePage() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold">Profile Settings</h1>
-              <p className="text-gray-600 dark:text-gray-400">Manage your MyLinked profile</p>
+              <p className="text-gray-600">Manage your MyLinked profile</p>
             </div>
           </div>
           

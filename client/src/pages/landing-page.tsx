@@ -21,7 +21,7 @@ export default function LandingPage() {
   const [, navigate] = useLocation();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 dark:from-black dark:via-gray-900 dark:to-gray-800 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 flex flex-col relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
@@ -30,7 +30,7 @@ export default function LandingPage() {
       </div>
 
       {/* Header */}
-      <header className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/50 shadow-lg relative z-10">
+      <header className="bg-white/95 backdrop-blur-xl border-b border-white/20 shadow-lg relative z-10">
         <div className="container mx-auto px-4 py-6 flex items-center justify-between">
           <div className="flex items-center">
             <img 

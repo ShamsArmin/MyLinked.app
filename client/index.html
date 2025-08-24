@@ -16,6 +16,17 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (function () {
+        try {
+          var map = { midnight: 'night', passion: 'valentine', royal: 'luxury' };
+          var t = localStorage.getItem('theme');
+          if (t && map[t]) t = map[t];
+          document.documentElement.setAttribute('data-theme', t || 'forest');
+          document.documentElement.classList.remove('dark');
+        } catch (e) {}
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>

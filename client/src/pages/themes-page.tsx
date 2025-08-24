@@ -24,7 +24,7 @@ import {
   Save
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useApplyTheme } from "@/hooks/use-theme";
+import { useTheme } from "../context/ThemeContext";
 import { User } from "@shared/schema";
 
 interface Theme {
@@ -139,7 +139,7 @@ const presetThemes: Theme[] = [
 export default function ThemesPage() {
   const { user } = useAuth();
   const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
-  const applyTheme = useApplyTheme();
+  const { setTheme } = useTheme();
   const [customColors, setCustomColors] = useState({
     primary: "#3b82f6",
     secondary: "#1e40af",
@@ -155,8 +155,8 @@ export default function ThemesPage() {
     enabled: !!user
   });
 
-  const handleSaveTheme = (theme: Theme) => {
-    applyTheme.mutate(theme.id);
+  const handleSaveTheme = async (theme: Theme) => {
+    await setTheme(theme.id);
   };
 
   const handleCustomColorChange = (colorType: string, value: string) => {

@@ -12,7 +12,7 @@ import NotFound from "./pages/not-found";
 import PrivacyPolicy from "./pages/privacy-policy";
 import TermsOfService from "./pages/terms-of-service";
 import { useAuth, AuthProvider } from "./hooks/use-auth";
-import { ThemeProvider } from "./hooks/use-theme";
+import { ThemeProvider } from "./context/ThemeContext";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AdminProtectedRoute } from "./lib/admin-protected-route";
 import { Award, Loader2 } from "lucide-react";
@@ -42,6 +42,7 @@ import { Toaster } from "@/components/ui/toaster";
 import ErrorBoundary from "@/components/ui/error-boundary";
 import ScrollToTop from "@/components/ui/scroll-to-top";
 import { AIChatbot } from "@/components/ai-chatbot";
+import AppShell from "./AppShell";
 import ContactPage from "./pages/contact-page";
 import CookiePolicyPage from "./pages/cookie-policy-page";
 import GDPRPage from "./pages/gdpr-page";
@@ -53,8 +54,8 @@ import CollaborationPage from "./pages/collaboration-page";
 // Deprecated landing page - use the new component instead
 function OldLandingPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-black dark:via-gray-900 dark:to-gray-800">
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
         <div className="mb-6">
           <div className="flex items-center justify-center mb-2">
             <h1 className="text-3xl font-bold text-blue-600">MyLinked</h1>
@@ -200,13 +201,15 @@ function App() {
     return (
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <ThemeProvider>
-            <ErrorBoundary>
-              <Router />
-              <AIChatbot />
-            </ErrorBoundary>
-            <Toaster />
-          </ThemeProvider>
+      <ThemeProvider>
+        <AppShell>
+          <ErrorBoundary>
+            <Router />
+            <AIChatbot />
+          </ErrorBoundary>
+          <Toaster />
+        </AppShell>
+      </ThemeProvider>
         </AuthProvider>
       </QueryClientProvider>
     );

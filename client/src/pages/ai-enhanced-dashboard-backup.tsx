@@ -1752,7 +1752,7 @@ export default function AIEnhancedDashboard() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
-                  className="text-red-600 dark:text-red-400"
+                  className="text-red-600"
                   onClick={() => {
                     // Call the logout API
                     apiRequest("POST", "/api/logout")
@@ -2045,7 +2045,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-black/20"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/optimize-links")}
                 >
                   <Shuffle className="h-4 w-4 mb-1 text-indigo-500" />
@@ -2054,7 +2054,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-black/20"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/spotlight")}
                 >
                   <Presentation className="h-4 w-4 mb-1 text-indigo-500" />
@@ -2063,7 +2063,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-black/20"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/collaboration")}
                 >
                   <Users className="h-4 w-4 mb-1 text-indigo-500" />
@@ -2072,7 +2072,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-black/20"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/industry-examples")}
                 >
                   <Briefcase className="h-4 w-4 mb-1 text-indigo-500" />
@@ -2081,7 +2081,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-black/20"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/referral-links")}
                 >
                   <Share2 className="h-4 w-4 mb-1 text-indigo-500" />
@@ -2090,7 +2090,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-black/20"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/branding")}
                 >
                   <Paintbrush className="h-4 w-4 mb-1 text-indigo-500" />
@@ -2099,7 +2099,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-black/20"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/collaboration")}
                 >
                   <Users className="h-4 w-4 mb-1 text-indigo-500" />
@@ -2108,7 +2108,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-black/20"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/my-links")}
                 >
                   <LinkIcon className="h-4 w-4 mb-1 text-indigo-500" />
@@ -2193,11 +2193,11 @@ export default function AIEnhancedDashboard() {
 
           {/* Multi-Platform Content Preview - NEW FEATURE SECTION */}
           {FEATURE_CONTENT_PREVIEW && (
-            <Card className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-2 border-indigo-200 dark:border-indigo-700 shadow-lg">
+            <Card className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-3 text-xl text-indigo-600 dark:text-indigo-400">
+                  <CardTitle className="flex items-center gap-3 text-xl text-indigo-600">
                     <Eye className="h-7 w-7" />
                     Content Preview
                     <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 border-indigo-300">NEW</Badge>
@@ -2244,7 +2244,7 @@ export default function AIEnhancedDashboard() {
                           <span className="text-xs font-medium">@{instagramPreview.profile?.username}</span>
                         </div>
                         {instagramPreview.latestPost.caption && (
-                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                          <p className="text-xs text-gray-600 line-clamp-2 mb-2">
                             {instagramPreview.latestPost.caption.length > 80 
                               ? `${instagramPreview.latestPost.caption.substring(0, 80)}...` 
                               : instagramPreview.latestPost.caption}
@@ -2264,7 +2264,7 @@ export default function AIEnhancedDashboard() {
                     <div className="p-4 border-2 border-dashed border-pink-300 rounded-lg text-center min-h-[180px] flex flex-col justify-center">
                       <Instagram className="h-8 w-8 mx-auto text-pink-400 mb-2" />
                       <h4 className="font-medium text-sm mb-1">Instagram Connected</h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                      <p className="text-xs text-gray-600 mb-3">
                         Showcasing your latest post
                       </p>
                       <Button 
@@ -2318,7 +2318,7 @@ export default function AIEnhancedDashboard() {
                           <span className="text-xs font-medium">@{facebookPreview.profile?.username}</span>
                         </div>
                         {facebookPreview.latestPost.caption && (
-                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                          <p className="text-xs text-gray-600 line-clamp-2 mb-2">
                             {facebookPreview.latestPost.caption.length > 80 
                               ? `${facebookPreview.latestPost.caption.substring(0, 80)}...` 
                               : facebookPreview.latestPost.caption}
@@ -2340,7 +2340,7 @@ export default function AIEnhancedDashboard() {
                       <h4 className="font-medium text-sm mb-1">
                         {facebookPreview?.tokenExpired ? 'Token Expired' : 'Not Connected'}
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                      <p className="text-xs text-gray-600 mb-3">
                         {facebookPreview?.message || 'Show your latest post'}
                       </p>
                       <Button 
@@ -2394,7 +2394,7 @@ export default function AIEnhancedDashboard() {
                           <span className="text-xs font-medium">@{tiktokPreview.profile?.username}</span>
                         </div>
                         {tiktokPreview.latestPost.caption && (
-                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                          <p className="text-xs text-gray-600 line-clamp-2 mb-2">
                             {tiktokPreview.latestPost.caption.length > 80 
                               ? `${tiktokPreview.latestPost.caption.substring(0, 80)}...` 
                               : tiktokPreview.latestPost.caption}
@@ -2416,7 +2416,7 @@ export default function AIEnhancedDashboard() {
                       <h4 className="font-medium text-sm mb-1">
                         {tiktokPreview?.tokenExpired ? 'Token Expired' : 'Not Connected'}
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                      <p className="text-xs text-gray-600 mb-3">
                         {tiktokPreview?.message || 'Show your latest video'}
                       </p>
                       <Button 
@@ -2474,7 +2474,7 @@ export default function AIEnhancedDashboard() {
                               <span className="text-xs font-medium">@{twitterPreview.profile?.username}</span>
                             </div>
                             {twitterPreview.latestPost.caption && (
-                              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                              <p className="text-xs text-gray-600 line-clamp-2 mb-2">
                                 {twitterPreview.latestPost.caption.length > 80 
                                   ? `${twitterPreview.latestPost.caption.substring(0, 80)}...` 
                                   : twitterPreview.latestPost.caption}
@@ -2499,7 +2499,7 @@ export default function AIEnhancedDashboard() {
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                             <span className="text-sm font-medium text-green-700">Connected</span>
                           </div>
-                          <p className="text-xs text-gray-600 dark:text-gray-400 text-center mb-3">
+                          <p className="text-xs text-gray-600 text-center mb-3">
                             X account connected successfully. Posts will appear here when API access is enhanced.
                           </p>
                           <Button 
@@ -2519,7 +2519,7 @@ export default function AIEnhancedDashboard() {
                       <h4 className="font-medium text-sm mb-1">
                         {twitterPreview?.tokenExpired ? 'Token Expired' : 'Not Connected'}
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                      <p className="text-xs text-gray-600 mb-3">
                         {twitterPreview?.message || 'Show your latest tweet'}
                       </p>
                       <Button 
@@ -3014,7 +3014,7 @@ export default function AIEnhancedDashboard() {
               </Card>
               
               {/* Collaboration Matchmaker Card */}
-              <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 border-indigo-100 dark:border-indigo-900">
+              <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-100">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center">
                     <User className="h-4 w-4 mr-2 text-indigo-500" />
@@ -3029,7 +3029,7 @@ export default function AIEnhancedDashboard() {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full text-xs bg-white/80 dark:bg-black/20"
+                    className="w-full text-xs bg-white/80"
                     onClick={() => navigate("/collaboration")}
                   >
                     Find Collaborators
@@ -3342,9 +3342,9 @@ export default function AIEnhancedDashboard() {
                     <span className="text-muted-foreground">Current: </span>
                     {currentOptimizeLink.title}
                   </div>
-                  <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                  <div className="border rounded-md p-2 text-sm bg-green-50 border-green-200">
                     <span className="text-muted-foreground">Suggestion: </span>
-                    <span className="text-green-600 dark:text-green-400 font-medium">
+                    <span className="text-green-600 font-medium">
                       {currentOptimizeLink.platform === "twitter" 
                         ? "Follow My Twitter for Tech Insights & Updates" 
                         : `Improved ${currentOptimizeLink.title} with Better Keywords`}
@@ -3373,9 +3373,9 @@ export default function AIEnhancedDashboard() {
                     <span className="text-muted-foreground">Current: </span>
                     {currentOptimizeLink.description || "No description provided."}
                   </div>
-                  <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                  <div className="border rounded-md p-2 text-sm bg-green-50 border-green-200">
                     <span className="text-muted-foreground">Suggestion: </span>
-                    <span className="text-green-600 dark:text-green-400">
+                    <span className="text-green-600">
                       {currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
                         ? "Daily insights on web development, tech trends, and design. Join my 5K+ followers for practical tips and industry news!"
                         : "Join our community of professionals for exclusive insights, resources, and networking opportunities. Stay ahead in your career with our expert-curated content."}

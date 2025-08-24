@@ -481,13 +481,13 @@ function SmartLinkAI({ links, onApplySuggestions }: { links: Link[], onApplySugg
   };
   
   return (
-    <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-      <CardHeader className="pb-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
-        <CardTitle className="flex items-center text-lg font-semibold text-slate-800 dark:text-gray-200">
+    <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg">
+      <CardHeader className="pb-2 bg-gradient-to-r from-blue-100 to-purple-100 border-b border-blue-200/30">
+        <CardTitle className="flex items-center text-lg font-semibold text-slate-800">
           <Brain className="h-5 w-5 mr-2 text-indigo-500" />
           Smart Link AI
         </CardTitle>
-        <CardDescription className="text-slate-600 dark:text-gray-400">
+        <CardDescription className="text-slate-600">
           Let AI analyze your engagement data and suggest the optimal order for your links
         </CardDescription>
       </CardHeader>
@@ -598,13 +598,13 @@ function PitchModeCard() {
   const [, navigate] = useLocation();
   
   return (
-    <Card id="pitch-mode" className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-      <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
+    <Card id="pitch-mode" className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg">
+      <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 border-b border-blue-200/30">
         <div className="flex items-center">
           <Presentation className="h-5 w-5 mr-2 text-blue-600" />
-          <CardTitle className="text-slate-800 dark:text-gray-200">Pitch Mode</CardTitle>
+          <CardTitle className="text-slate-800">Pitch Mode</CardTitle>
         </div>
-        <CardDescription className="text-slate-600 dark:text-gray-400">
+        <CardDescription className="text-slate-600">
           Transform your profile for different audiences
         </CardDescription>
       </CardHeader>
@@ -612,7 +612,7 @@ function PitchModeCard() {
         <div className="space-y-4">
           <div className="text-center">
             <Presentation className="h-12 w-12 mx-auto mb-3 text-blue-500" />
-            <p className="text-sm text-slate-600 dark:text-gray-400 mb-4">
+            <p className="text-sm text-slate-600 mb-4">
               Configure your pitch mode settings to optimize your profile for professional presentations, networking, and client meetings.
             </p>
           </div>
@@ -1459,7 +1459,7 @@ export default function AIEnhancedDashboard() {
   ];
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-black dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Tour Guide */}
       <TourGuide 
         isOpen={showTour}
@@ -1468,7 +1468,7 @@ export default function AIEnhancedDashboard() {
       />
       
       {/* Dashboard Header */}
-      <header className="dashboard-header bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b-2 border-blue-200 dark:border-gray-700 shadow-lg">
+      <header className="dashboard-header bg-white/90 backdrop-blur-md border-b-2 border-blue-200 shadow-lg">
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-4">
             <img 
@@ -1492,7 +1492,7 @@ export default function AIEnhancedDashboard() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5 text-slate-600 dark:text-gray-400" />
+                  <Bell className="h-5 w-5 text-slate-600" />
                   {notifications && notifications.length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                       {notifications.filter(n => n.status === 'pending').length}
@@ -1642,7 +1642,7 @@ export default function AIEnhancedDashboard() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
-                  className="text-red-600 dark:text-red-400"
+                  className="text-red-600"
                   onClick={() => {
                     // Call the logout API
                     apiRequest("POST", "/api/logout")
@@ -1684,15 +1684,15 @@ export default function AIEnhancedDashboard() {
             <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
               Welcome to Your Dashboard
             </h1>
-            <p className="text-slate-600 dark:text-gray-400 text-lg">
+            <p className="text-slate-600 text-lg">
               Manage your profile, links, and view performance metrics
             </p>
           </div>
           {/* Enhanced Profile Preview - Matches Public Profile */}
-          <Card className="profile-preview-card overflow-hidden shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-800/90 dark:border-gray-600/50">
-            <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/30 dark:to-gray-800/30 border-b border-blue-200/30 dark:border-gray-600/30">
+          <Card className="profile-preview-card overflow-hidden shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg">
+            <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 border-b border-blue-200/30">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center text-slate-800 dark:text-gray-200">
+                <CardTitle className="flex items-center text-slate-800">
                   <User className="h-5 w-5 mr-2 text-blue-600" />
                   Profile Preview
                 </CardTitle>
@@ -1706,7 +1706,7 @@ export default function AIEnhancedDashboard() {
                   View Live
                 </Button>
               </div>
-              <CardDescription className="text-slate-600 dark:text-gray-400">How your public profile appears to visitors</CardDescription>
+              <CardDescription className="text-slate-600">How your public profile appears to visitors</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               {/* Hero Section - Exactly like public profile */}
@@ -1921,17 +1921,17 @@ export default function AIEnhancedDashboard() {
           </Card>
           
           {/* Quick Actions Card - Moved right after Profile Preview */}
-          <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-800/90 dark:border-gray-600/50">
-            <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/30 dark:to-gray-800/30 border-b border-blue-200/30 dark:border-gray-600/30">
-              <CardTitle className="text-slate-800 dark:text-gray-200 dark:text-gray-200">Quick Actions</CardTitle>
-              <CardDescription className="text-slate-600 dark:text-gray-400 dark:text-gray-400">Frequently used tools</CardDescription>
+          <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg">
+            <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 border-b border-blue-200/30">
+              <CardTitle className="text-slate-800">Quick Actions</CardTitle>
+              <CardDescription className="text-slate-600">Frequently used tools</CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/optimize-links")}
                 >
                   <Shuffle className="h-4 w-4 mb-1 text-indigo-500" />
@@ -1940,7 +1940,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/spotlight")}
                 >
                   <Presentation className="h-4 w-4 mb-1 text-indigo-500" />
@@ -1949,7 +1949,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/collaboration")}
                 >
                   <Users className="h-4 w-4 mb-1 text-indigo-500" />
@@ -1958,7 +1958,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/industry-examples")}
                 >
                   <Briefcase className="h-4 w-4 mb-1 text-indigo-500" />
@@ -1967,7 +1967,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/referral-links")}
                 >
                   <Share2 className="h-4 w-4 mb-1 text-indigo-500" />
@@ -1976,7 +1976,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/branding")}
                 >
                   <Paintbrush className="h-4 w-4 mb-1 text-indigo-500" />
@@ -1985,7 +1985,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/themes-demo")}
                 >
                   <Palette className="h-4 w-4 mb-1 text-indigo-500" />
@@ -1994,7 +1994,7 @@ export default function AIEnhancedDashboard() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-gray-700/30"
+                  className="flex flex-col h-auto py-3 text-center justify-center bg-white/80"
                   onClick={() => navigate("/my-links")}
                 >
                   <LinkIcon className="h-4 w-4 mb-1 text-indigo-500" />
@@ -2007,17 +2007,17 @@ export default function AIEnhancedDashboard() {
           {/* Three Analysis Cards in a Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Social Score Card */}
-            <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-              <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
-                <CardTitle className="text-slate-800 dark:text-gray-200 text-lg">Social Score</CardTitle>
-                <CardDescription className="text-slate-600 dark:text-gray-400">Your profile engagement rating</CardDescription>
+            <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg">
+              <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 border-b border-blue-200/30">
+                <CardTitle className="text-slate-800 text-lg">Social Score</CardTitle>
+                <CardDescription className="text-slate-600">Your profile engagement rating</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-blue-600 mb-2">
                     {isLoadingStats ? "..." : `${stats?.score || 0}%`}
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-gray-400 mb-4">
+                  <div className="text-sm text-slate-600 mb-4">
                     {isLoadingStats ? "Loading..." : "Social engagement score"}
                   </div>
                   {!isLoadingStats && (
@@ -2040,17 +2040,17 @@ export default function AIEnhancedDashboard() {
             </Card>
 
             {/* Profile Views Card */}
-            <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-              <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
-                <CardTitle className="text-slate-800 dark:text-gray-200 text-lg">Profile Views</CardTitle>
-                <CardDescription className="text-slate-600 dark:text-gray-400">Total profile visits</CardDescription>
+            <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg">
+              <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 border-b border-blue-200/30">
+                <CardTitle className="text-slate-800 text-lg">Profile Views</CardTitle>
+                <CardDescription className="text-slate-600">Total profile visits</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-green-600 mb-2">
                     {isLoadingStats ? "..." : stats?.profileViews || 0}
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-gray-400 mb-4">
+                  <div className="text-sm text-slate-600 mb-4">
                     {isLoadingStats ? "Loading..." : "Total visits"}
                   </div>
                   <div className="flex items-center justify-center gap-1 text-sm text-green-600">
@@ -2062,17 +2062,17 @@ export default function AIEnhancedDashboard() {
             </Card>
 
             {/* Link Clicks Card */}
-            <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-              <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
-                <CardTitle className="text-slate-800 dark:text-gray-200 text-lg">Link Clicks</CardTitle>
-                <CardDescription className="text-slate-600 dark:text-gray-400">Total link interactions</CardDescription>
+            <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg">
+              <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 border-b border-blue-200/30">
+                <CardTitle className="text-slate-800 text-lg">Link Clicks</CardTitle>
+                <CardDescription className="text-slate-600">Total link interactions</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-purple-600 mb-2">
                     {isLoadingStats ? "..." : stats?.linkClicks || 0}
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-gray-400 mb-4">
+                  <div className="text-sm text-slate-600 mb-4">
                     {isLoadingStats ? "Loading..." : "Total clicks"}
                   </div>
                   <div className="flex items-center justify-center gap-1 text-sm text-purple-600">
@@ -2086,11 +2086,11 @@ export default function AIEnhancedDashboard() {
 
           {/* Multi-Platform Content Preview - NEW FEATURE SECTION */}
           {FEATURE_CONTENT_PREVIEW && (
-            <Card className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800/40 dark:to-gray-700/40 border-2 border-indigo-200 dark:border-gray-600 shadow-lg">
+            <Card className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-3 text-xl text-indigo-600 dark:text-indigo-400">
+                  <CardTitle className="flex items-center gap-3 text-xl text-indigo-600">
                     <Eye className="h-7 w-7" />
                     Content Preview
                     <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 border-indigo-300">NEW</Badge>
@@ -2137,7 +2137,7 @@ export default function AIEnhancedDashboard() {
                           <span className="text-xs font-medium">@{instagramPreview.profile?.username}</span>
                         </div>
                         {instagramPreview.latestPost.caption && (
-                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                          <p className="text-xs text-gray-600 line-clamp-2 mb-2">
                             {instagramPreview.latestPost.caption.length > 80 
                               ? `${instagramPreview.latestPost.caption.substring(0, 80)}...` 
                               : instagramPreview.latestPost.caption}
@@ -2157,7 +2157,7 @@ export default function AIEnhancedDashboard() {
                     <div className="p-4 border-2 border-dashed border-pink-300 rounded-lg text-center min-h-[180px] flex flex-col justify-center">
                       <Instagram className="h-8 w-8 mx-auto text-pink-400 mb-2" />
                       <h4 className="font-medium text-sm mb-1">Instagram Connected</h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                      <p className="text-xs text-gray-600 mb-3">
                         Showcasing your latest post
                       </p>
                       <Button 
@@ -2211,7 +2211,7 @@ export default function AIEnhancedDashboard() {
                           <span className="text-xs font-medium">@{facebookPreview.profile?.username}</span>
                         </div>
                         {facebookPreview.latestPost.caption && (
-                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                          <p className="text-xs text-gray-600 line-clamp-2 mb-2">
                             {facebookPreview.latestPost.caption.length > 80 
                               ? `${facebookPreview.latestPost.caption.substring(0, 80)}...` 
                               : facebookPreview.latestPost.caption}
@@ -2233,7 +2233,7 @@ export default function AIEnhancedDashboard() {
                       <h4 className="font-medium text-sm mb-1">
                         {facebookPreview?.tokenExpired ? 'Token Expired' : 'Not Connected'}
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                      <p className="text-xs text-gray-600 mb-3">
                         {facebookPreview?.message || 'Show your latest post'}
                       </p>
                       <Button 
@@ -2287,7 +2287,7 @@ export default function AIEnhancedDashboard() {
                           <span className="text-xs font-medium">@{tiktokPreview.profile?.username}</span>
                         </div>
                         {tiktokPreview.latestPost.caption && (
-                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                          <p className="text-xs text-gray-600 line-clamp-2 mb-2">
                             {tiktokPreview.latestPost.caption.length > 80 
                               ? `${tiktokPreview.latestPost.caption.substring(0, 80)}...` 
                               : tiktokPreview.latestPost.caption}
@@ -2309,7 +2309,7 @@ export default function AIEnhancedDashboard() {
                       <h4 className="font-medium text-sm mb-1">
                         {tiktokPreview?.tokenExpired ? 'Token Expired' : 'Not Connected'}
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                      <p className="text-xs text-gray-600 mb-3">
                         {tiktokPreview?.message || 'Show your latest video'}
                       </p>
                       <Button 
@@ -2367,7 +2367,7 @@ export default function AIEnhancedDashboard() {
                               <span className="text-xs font-medium">@{twitterPreview.profile?.username}</span>
                             </div>
                             {twitterPreview.latestPost.caption && (
-                              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                              <p className="text-xs text-gray-600 line-clamp-2 mb-2">
                                 {twitterPreview.latestPost.caption.length > 80 
                                   ? `${twitterPreview.latestPost.caption.substring(0, 80)}...` 
                                   : twitterPreview.latestPost.caption}
@@ -2392,7 +2392,7 @@ export default function AIEnhancedDashboard() {
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                             <span className="text-sm font-medium text-green-700">Connected</span>
                           </div>
-                          <p className="text-xs text-gray-600 dark:text-gray-400 text-center mb-3">
+                          <p className="text-xs text-gray-600 text-center mb-3">
                             X account connected successfully. Posts will appear here when API access is enhanced.
                           </p>
                           <Button 
@@ -2412,7 +2412,7 @@ export default function AIEnhancedDashboard() {
                       <h4 className="font-medium text-sm mb-1">
                         {twitterPreview?.tokenExpired ? 'Token Expired' : 'Not Connected'}
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                      <p className="text-xs text-gray-600 mb-3">
                         {twitterPreview?.message || 'Show your latest tweet'}
                       </p>
                       <Button 
@@ -2447,13 +2447,13 @@ export default function AIEnhancedDashboard() {
             {/* Left Column - Engagement Trends (2 columns) */}
             <div className="md:col-span-2 space-y-6 overflow-x-hidden">
               {/* Engagement Trends Card */}
-              <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg dark:bg-gray-900/90 dark:border-gray-600/50">
-                <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800/50 dark:to-gray-700/50 border-b border-blue-200/30 dark:border-gray-600/30">
-                  <CardTitle className="flex items-center text-slate-800 dark:text-gray-200">
+              <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg">
+                <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 border-b border-blue-200/30">
+                  <CardTitle className="flex items-center text-slate-800">
                     <LineChart className="h-5 w-5 mr-2 text-blue-600" />
                     Engagement Trends
                   </CardTitle>
-                  <CardDescription className="text-slate-600 dark:text-gray-400">View your profile performance over time</CardDescription>
+                  <CardDescription className="text-slate-600">View your profile performance over time</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[200px]">

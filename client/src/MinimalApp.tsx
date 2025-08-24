@@ -1170,7 +1170,7 @@ function DashboardPage({ onLogout }: { onLogout: () => void }) {
                         key={link.id} 
                         className="relative group"
                       >
-                        <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg aspect-square flex items-center justify-center shadow-sm overflow-hidden">
+                        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg aspect-square flex items-center justify-center shadow-sm overflow-hidden">
                           <div className="transform transition-transform group-hover:scale-110">
                             <PlatformIcon platform={link.platform} />
                           </div>

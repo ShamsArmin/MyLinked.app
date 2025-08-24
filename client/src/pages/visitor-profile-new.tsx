@@ -468,7 +468,7 @@ export default function VisitorProfileNew() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-black dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       {/* Join MyLinked Button - Fixed Position */}
       <div className="fixed top-4 right-4 z-50">
         <Button
@@ -496,7 +496,7 @@ export default function VisitorProfileNew() {
         {/* Top Grid - Profile Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
           {/* Left Card - Profile Image & Background */}
-          <Card className="relative overflow-hidden bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/50 dark:border-gray-600/50 shadow-xl">
+          <Card className="relative overflow-hidden bg-white/90 backdrop-blur-sm border-white/50 shadow-xl">
             {/* Background Image */}
             <div 
               className={`absolute inset-0 ${profile.profileBackground ? '' : 'bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400'}`}
@@ -515,7 +515,7 @@ export default function VisitorProfileNew() {
               <div className="flex flex-col items-center gap-3">
                 {/* Username Badge - More transparent */}
                 <div className="flex justify-center">
-                  <Badge variant="secondary" className="bg-white/70 dark:bg-gray-700/70 text-gray-800 dark:text-gray-200 px-4 py-2 text-sm font-medium">
+                  <Badge variant="secondary" className="bg-white/70 text-gray-800 px-4 py-2 text-sm font-medium">
                     @{profile.username}
                   </Badge>
                 </div>
@@ -556,7 +556,7 @@ export default function VisitorProfileNew() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowShareDialog(true)}
-                    className="p-2 bg-white/80 hover:bg-white/90 dark:bg-gray-700/80 dark:hover:bg-gray-600/90 rounded-full shadow-md"
+                    className="p-2 bg-white/80 hover:bg-white/90 rounded-full shadow-md"
                   >
                     <Share2 className="h-5 w-5 text-blue-600" />
                   </Button>
@@ -566,7 +566,7 @@ export default function VisitorProfileNew() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowSocialScoreDialog(true)}
-                      className="p-2 bg-white/80 hover:bg-white/90 dark:bg-gray-700/80 dark:hover:bg-gray-600/90 rounded-full shadow-md"
+                      className="p-2 bg-white/80 hover:bg-white/90 rounded-full shadow-md"
                     >
                       <TrendingUp className="h-5 w-5 text-purple-600" />
                     </Button>
@@ -575,7 +575,7 @@ export default function VisitorProfileNew() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowWelcomeMessageDialog(true)}
-                    className="p-2 bg-white/80 hover:bg-white/90 dark:bg-gray-700/80 dark:hover:bg-gray-600/90 rounded-full shadow-md"
+                    className="p-2 bg-white/80 hover:bg-white/90 rounded-full shadow-md"
                   >
                     <MessageCircle className="h-5 w-5 text-pink-600" />
                   </Button>
@@ -585,10 +585,10 @@ export default function VisitorProfileNew() {
           </Card>
 
           {/* Right Card - Bio & Details */}
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/50 dark:border-gray-600/50 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-t-lg">
+          <Card className="bg-white/90 backdrop-blur-sm border-white/50 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-lg">
               <CardTitle 
-                className="text-lg sm:text-xl text-gray-800 dark:text-gray-200 flex items-center justify-between sm:cursor-default cursor-pointer"
+                className="text-lg sm:text-xl text-gray-800 flex items-center justify-between sm:cursor-default cursor-pointer"
                 onClick={(e) => {
                   // Only allow clicks on mobile screens
                   if (window.innerWidth >= 640) return;
@@ -637,9 +637,9 @@ export default function VisitorProfileNew() {
         </div>
 
         {/* My Links Section */}
-        <Card className="mb-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/50 dark:border-gray-600/50 shadow-xl">
-          <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-t-lg">
-            <CardTitle className="text-lg sm:text-xl text-gray-800 dark:text-gray-200">My Links</CardTitle>
+        <Card className="mb-8 bg-white/90 backdrop-blur-sm border-white/50 shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-lg">
+            <CardTitle className="text-lg sm:text-xl text-gray-800">My Links</CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
             {/* Mobile: Always show grid layout */}
@@ -865,9 +865,9 @@ export default function VisitorProfileNew() {
         {/* Bottom Grid - Three Sections */}
         <div className="grid md:grid-cols-3 gap-6">
           {/* Referral Links */}
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/50 dark:border-gray-600/50 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-t-lg">
-              <CardTitle className="text-lg text-gray-800 dark:text-gray-200 flex items-center gap-2">
+          <Card className="bg-white/90 backdrop-blur-sm border-white/50 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-lg">
+              <CardTitle className="text-lg text-gray-800 flex items-center gap-2">
                 <LinkIcon className="h-5 w-5" />
                 Referral Links
               </CardTitle>
@@ -876,7 +876,7 @@ export default function VisitorProfileNew() {
               {referralLinks && referralLinks.length > 0 ? (
                 <div className="space-y-3 mb-4">
                   {referralLinks.slice(0, 3).map((link) => (
-                    <div key={link.id} className="p-3 rounded-lg border bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                    <div key={link.id} className="p-3 rounded-lg border bg-gray-50 border-gray-200 hover:bg-gray-100 transition-colors">
                       <div className="flex justify-between items-start">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 mb-2">
@@ -884,14 +884,14 @@ export default function VisitorProfileNew() {
                               {link.linkType?.toUpperCase() || 'REFERRAL'}
                             </span>
                             {link.referenceCompany && (
-                              <span className="text-xs text-gray-500 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                              <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
                                 {link.referenceCompany}
                               </span>
                             )}
                           </div>
-                          <h4 className="font-semibold text-sm text-gray-800 dark:text-gray-200 mb-1">{link.title}</h4>
+                          <h4 className="font-semibold text-sm text-gray-800 mb-1">{link.title}</h4>
                           {link.description && (
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 break-words">{link.description}</p>
+                            <p className="text-xs text-gray-600 mb-2 break-words">{link.description}</p>
                           )}
                           <div className="flex items-center gap-2">
                             <ExternalLink className="h-3 w-3 text-blue-500" />
@@ -928,7 +928,7 @@ export default function VisitorProfileNew() {
                       <DropdownMenuContent className="w-80 max-h-80 overflow-y-auto">
                         <div className="p-4 space-y-3">
                           {referralLinks.slice(3).map((link) => (
-                            <div key={link.id} className="p-3 rounded-lg border bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                            <div key={link.id} className="p-3 rounded-lg border bg-gray-50 border-gray-200 hover:bg-gray-100 transition-colors">
                               <div className="flex justify-between items-start">
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-2 mb-2">
@@ -936,14 +936,14 @@ export default function VisitorProfileNew() {
                                       {link.linkType?.toUpperCase() || 'REFERRAL'}
                                     </span>
                                     {link.referenceCompany && (
-                                      <span className="text-xs text-gray-500 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                                      <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
                                         {link.referenceCompany}
                                       </span>
                                     )}
                                   </div>
-                                  <h4 className="font-semibold text-sm text-gray-800 dark:text-gray-200 mb-1">{link.title}</h4>
+                                  <h4 className="font-semibold text-sm text-gray-800 mb-1">{link.title}</h4>
                                   {link.description && (
-                                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 break-words">{link.description}</p>
+                                    <p className="text-xs text-gray-600 mb-2 break-words">{link.description}</p>
                                   )}
                                   <div className="flex items-center gap-2">
                                     <ExternalLink className="h-3 w-3 text-blue-500" />
@@ -1096,9 +1096,9 @@ export default function VisitorProfileNew() {
           </Card>
 
           {/* Connect & Collaborate */}
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/50 dark:border-gray-600/50 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-t-lg">
-              <CardTitle className="text-lg text-gray-800 dark:text-gray-200 flex items-center gap-2">
+          <Card className="bg-white/90 backdrop-blur-sm border-white/50 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-lg">
+              <CardTitle className="text-lg text-gray-800 flex items-center gap-2">
                 <UserPlus className="h-5 w-5" />
                 Connect & Collaborate
               </CardTitle>
@@ -1298,9 +1298,9 @@ export default function VisitorProfileNew() {
           </Card>
 
           {/* Collaborative Spotlight */}
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/50 dark:border-gray-600/50 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-t-lg">
-              <CardTitle className="text-lg text-gray-800 dark:text-gray-200">Collaborative Spotlight</CardTitle>
+          <Card className="bg-white/90 backdrop-blur-sm border-white/50 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-lg">
+              <CardTitle className="text-lg text-gray-800">Collaborative Spotlight</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
@@ -1323,7 +1323,7 @@ export default function VisitorProfileNew() {
                         <h4 className="font-medium text-white text-sm">{project.title}</h4>
                         <div className="flex flex-wrap gap-1 mt-1">
                           {Array.isArray(project.tags) && project.tags.slice(0, 2).map((tag, index) => (
-                            <Badge key={index} variant="secondary" className="bg-white/90 dark:bg-gray-600/90 text-gray-800 dark:text-gray-200 text-xs">
+                            <Badge key={index} variant="secondary" className="bg-white/90 text-gray-800 text-xs">
                               {typeof tag === 'string' ? tag : (tag?.label || tag?.name || 'Tag')}
                             </Badge>
                           ))}
@@ -1436,7 +1436,7 @@ export default function VisitorProfileNew() {
                               <h4 className="font-medium text-white text-sm">{project.title}</h4>
                               <div className="flex flex-wrap gap-1 mt-1">
                                 {Array.isArray(project.tags) && project.tags.slice(0, 2).map((tag, index) => (
-                                  <Badge key={index} variant="secondary" className="bg-white/90 dark:bg-gray-600/90 text-gray-800 dark:text-gray-200 text-xs">
+                                  <Badge key={index} variant="secondary" className="bg-white/90 text-gray-800 text-xs">
                                     {typeof tag === 'string' ? tag : (tag?.label || tag?.name || 'Tag')}
                                   </Badge>
                                 ))}
