@@ -12,7 +12,7 @@ import NotFound from "./pages/not-found";
 import PrivacyPolicy from "./pages/privacy-policy";
 import TermsOfService from "./pages/terms-of-service";
 import { useAuth, AuthProvider } from "./hooks/use-auth";
-import { ThemeProvider } from "./hooks/use-theme";
+import { ThemeProvider } from "./context/ThemeContext";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AdminProtectedRoute } from "./lib/admin-protected-route";
 import { Award, Loader2 } from "lucide-react";
@@ -202,8 +202,10 @@ function App() {
         <AuthProvider>
           <ThemeProvider>
             <ErrorBoundary>
-              <Router />
-              <AIChatbot />
+              <div className="min-h-screen bg-base-200 text-base-content">
+                <Router />
+                <AIChatbot />
+              </div>
             </ErrorBoundary>
             <Toaster />
           </ThemeProvider>
