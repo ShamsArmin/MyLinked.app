@@ -15,6 +15,7 @@ interface ThemeContextType {
   viewMode: ViewMode;
   isDarkMode: boolean;
   setIsDarkMode: (value: boolean) => void;
+  setTheme: (name: string) => Promise<void>;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -25,7 +26,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   
   // Initial defaults
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [theme, setTheme] = useState<Theme>('default');
+  const [theme, setThemeState] = useState<Theme>('default');
   const [font, setFont] = useState<Font>('inter');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [darkMode, setDarkMode] = useState(false);
@@ -156,7 +157,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       // Set state values
       setDarkMode(userDarkMode);
       setIsDarkMode(userDarkMode);
-      setTheme(userTheme);
+      setThemeState(userTheme);
       setFont(userFont);
       setViewMode(userViewMode as ViewMode);
       
@@ -189,6 +190,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, profile]);
 
+  const setTheme = React.useCallback(async (name: string) => {
+    try {
+      document.documentElement.setAttribute('data-theme', name)
+      document.body.classList.forEach((c) => {
+        if (c.startsWith('theme-')) document.body.classList.remove(c)
+      })
+      document.body.classList.add(`theme-${name}`)
+    } catch (e) {
+      console.warn('Theme DOM update warning:', e)
+    }
+    try {
+      await apiRequest('PATCH', '/api/profile', { theme: name })
+      queryClient.invalidateQueries({ queryKey: ['/api/profile'] })
+      setThemeState(name)
+    } catch (e) {
+      console.error('Theme apply error:', e)
+    }
+  }, [])
+
   return (
     <ThemeContext.Provider
       value={{
@@ -197,7 +217,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         font,
         viewMode,
         isDarkMode,
-        setIsDarkMode
+        setIsDarkMode,
+        setTheme
       }}
     >
       {children}

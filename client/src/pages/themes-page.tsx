@@ -24,7 +24,7 @@ import {
   Save
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useApplyTheme } from "@/hooks/use-theme";
+import { useTheme } from "@/hooks/use-theme";
 import { User } from "@shared/schema";
 
 interface Theme {
@@ -139,7 +139,8 @@ const presetThemes: Theme[] = [
 export default function ThemesPage() {
   const { user } = useAuth();
   const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
-  const applyTheme = useApplyTheme();
+  const { setTheme } = useTheme();
+  const [isApplying, setIsApplying] = useState(false);
   const [customColors, setCustomColors] = useState({
     primary: "#3b82f6",
     secondary: "#1e40af",
@@ -155,8 +156,12 @@ export default function ThemesPage() {
     enabled: !!user
   });
 
-  const handleSaveTheme = (theme: Theme) => {
-    applyTheme.mutate(theme.id);
+  const handleSaveTheme = async (theme: Theme) => {
+    const map: Record<string, string> = { passion: 'valentine', royal: 'luxury', midnight: 'night' };
+    const name = map[theme.id] || theme.id;
+    setIsApplying(true);
+    await setTheme(name);
+    setIsApplying(false);
   };
 
   const handleCustomColorChange = (colorType: string, value: string) => {
@@ -287,11 +292,11 @@ export default function ThemesPage() {
                       Preview
                     </Button>
                     
-                    <Button 
-                      size="sm"
-                      onClick={() => handleSaveTheme(theme)}
-                      disabled={applyTheme.isPending}
-                    >
+                  <Button
+                    size="sm"
+                    onClick={() => handleSaveTheme(theme)}
+                    disabled={isApplying}
+                  >
                       <Save className="h-4 w-4 mr-1" />
                       Apply
                     </Button>
@@ -426,10 +431,10 @@ export default function ThemesPage() {
                   </div>
                 </div>
                 
-                <Button 
+                <Button
                   className="w-full"
                   onClick={() => handleSaveTheme(createCustomTheme())}
-                  disabled={applyTheme.isPending}
+                  disabled={isApplying}
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Save Custom Theme
