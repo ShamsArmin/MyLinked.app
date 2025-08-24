@@ -221,7 +221,7 @@ export default function VisitorProfileFinal() {
                             <Play className="h-4 w-4" />
                           )}
                         </Button>
-                        <span className="text-sm text-muted-foreground">Welcome Audio Message</span>
+                        <span className="text-sm text-base-content/70">Welcome Audio Message</span>
                       </div>
                     </div>
                   )}
@@ -308,11 +308,11 @@ export default function VisitorProfileFinal() {
                             <div className="min-w-0 flex-1">
                               <div className="font-medium truncate">{link.title}</div>
                               {link.description && (
-                                <div className="text-sm text-muted-foreground truncate">{link.description}</div>
+                                <div className="text-sm text-base-content/70 truncate">{link.description}</div>
                               )}
                             </div>
                           </div>
-                          <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0 ml-2" />
+                          <ExternalLink className="h-4 w-4 text-base-content/70 flex-shrink-0 ml-2" />
                         </Button>
                       );
                     })}
@@ -337,7 +337,7 @@ export default function VisitorProfileFinal() {
                         <div className="flex items-start justify-between mb-3">
                           <div className="min-w-0 flex-1">
                             <h4 className="font-semibold truncate">{project.title}</h4>
-                            <p className="text-sm text-muted-foreground break-words">{project.description}</p>
+                            <p className="text-sm text-base-content/70 break-words">{project.description}</p>
                           </div>
                           {project.isPinned && (
                             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 flex-shrink-0 ml-2" />
@@ -355,7 +355,7 @@ export default function VisitorProfileFinal() {
                         )}
 
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-4 text-sm text-base-content/70">
                             <span className="flex items-center gap-1">
                               <Eye className="h-3 w-3" />
                               {project.views || 0}
@@ -398,7 +398,7 @@ export default function VisitorProfileFinal() {
                     {socialPosts.map((post: any) => (
                       <div key={post.id} className={`p-4 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600' : `${themeStyles.bg} ${themeStyles.border}`}`}>
                         <p className="mb-2 break-words">{post.content}</p>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-4 text-sm text-base-content/70">
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             {new Date(post.createdAt).toLocaleDateString()}
@@ -475,7 +475,7 @@ export default function VisitorProfileFinal() {
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium text-sm truncate">{link.title}</h4>
                             {link.description && (
-                              <p className="text-xs text-muted-foreground mt-1 break-words">{link.description}</p>
+                              <p className="text-xs text-base-content/70 mt-1 break-words">{link.description}</p>
                             )}
                             {link.category && (
                               <Badge variant="outline" className="text-xs mt-2">
@@ -510,20 +510,20 @@ export default function VisitorProfileFinal() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Links</span>
+                    <span className="text-sm text-base-content/70">Total Links</span>
                     <span className="font-medium">{links.length}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Projects</span>
+                    <span className="text-sm text-base-content/70">Projects</span>
                     <span className="font-medium">{spotlightProjects.length}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Posts</span>
+                    <span className="text-sm text-base-content/70">Posts</span>
                     <span className="font-medium">{socialPosts.length}</span>
                   </div>
                   {profile.socialScore && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Social Score</span>
+                      <span className="text-sm text-base-content/70">Social Score</span>
                       <span className="font-medium">{profile.socialScore}/10</span>
                     </div>
                   )}

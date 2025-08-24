@@ -241,7 +241,7 @@ export function ShareProfileDialog({ open, onOpenChange, username }: ShareProfil
                 
                 {/* Show all pitch mode types - user can access any format */}
                 <div className="space-y-2">
-                  <Label htmlFor="professional-url" className="text-sm text-muted-foreground">Professional</Label>
+                  <Label htmlFor="professional-url" className="text-sm text-base-content/70">Professional</Label>
                   <div className="flex items-center space-x-2">
                     <Input
                       id="professional-url"
@@ -265,7 +265,7 @@ export function ShareProfileDialog({ open, onOpenChange, username }: ShareProfil
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="creative-url" className="text-sm text-muted-foreground">Creative</Label>
+                  <Label htmlFor="creative-url" className="text-sm text-base-content/70">Creative</Label>
                   <div className="flex items-center space-x-2">
                     <Input
                       id="creative-url"
@@ -289,7 +289,7 @@ export function ShareProfileDialog({ open, onOpenChange, username }: ShareProfil
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="startup-url" className="text-sm text-muted-foreground">Startup</Label>
+                  <Label htmlFor="startup-url" className="text-sm text-base-content/70">Startup</Label>
                   <div className="flex items-center space-x-2">
                     <Input
                       id="startup-url"
@@ -313,7 +313,7 @@ export function ShareProfileDialog({ open, onOpenChange, username }: ShareProfil
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="speaker-url" className="text-sm text-muted-foreground">Speaker</Label>
+                  <Label htmlFor="speaker-url" className="text-sm text-base-content/70">Speaker</Label>
                   <div className="flex items-center space-x-2">
                     <Input
                       id="speaker-url"
@@ -336,7 +336,7 @@ export function ShareProfileDialog({ open, onOpenChange, username }: ShareProfil
                   </div>
                 </div>
                 
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-base-content/70">
                   These links will open your profile in different Pitch Mode formats, perfect for various professional contexts.
                 </p>
               </div>
@@ -394,11 +394,11 @@ export function ShareProfileDialog({ open, onOpenChange, username }: ShareProfil
                 </div>
               ) : (
                 <div className="border-2 border-muted rounded-lg w-full h-64 flex items-center justify-center">
-                  <div className="animate-pulse text-muted-foreground">Generating QR Code...</div>
+                  <div className="animate-pulse text-base-content/70">Generating QR Code...</div>
                 </div>
               )}
               
-              <p className="text-sm text-center text-muted-foreground">
+              <p className="text-sm text-center text-base-content/70">
                 Scan this QR code with a smartphone camera to access your profile
               </p>
               

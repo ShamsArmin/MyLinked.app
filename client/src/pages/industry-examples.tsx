@@ -246,7 +246,7 @@ const IndustryExamples = () => {
         </div>
       </CardHeader>
       <CardContent className="pb-2">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-base-content/70">
           {user.bio || 'No bio available'}
         </p>
         <div className="flex flex-wrap gap-1 mt-2">
@@ -295,7 +295,7 @@ const IndustryExamples = () => {
             </Button>
             <div className="flex flex-col gap-2">
               <h1 className="text-3xl font-bold tracking-tight">Industry Discovery</h1>
-              <p className="text-muted-foreground">
+              <p className="text-base-content/70">
                 Connect with professionals across 25+ industries. Discover opportunities, build your network, and find like-minded collaborators.
               </p>
             </div>
@@ -309,7 +309,7 @@ const IndustryExamples = () => {
               <Building2 className="h-5 w-5 mr-2 text-primary" />
               Explore Industries
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-base-content/70">
               Select an industry to discover professionals and expand your network
             </p>
           </div>
@@ -332,7 +332,7 @@ const IndustryExamples = () => {
                       <h3 className="font-semibold text-sm mb-1 leading-tight">
                         {industry.name}
                       </h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
+                      <p className="text-xs text-base-content/70 line-clamp-2">
                         {industry.description}
                       </p>
                     </div>
@@ -345,7 +345,7 @@ const IndustryExamples = () => {
 
         {/* Filter Panel */}
         {selectedIndustry && (
-          <Card className="mb-6 bg-muted/30">
+          <Card className="mb-6 bg-base-200/30">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center">
                 <SlidersHorizontal className="h-5 w-5 mr-2" />

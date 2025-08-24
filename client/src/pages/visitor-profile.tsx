@@ -63,7 +63,7 @@ export default function VisitorProfile() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading profile...</p>
+          <p className="text-base-content/70">Loading profile...</p>
         </div>
       </div>
     );
@@ -74,7 +74,7 @@ export default function VisitorProfile() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Profile Not Found</h1>
-          <p className="text-muted-foreground mb-6">The profile you're looking for doesn't exist.</p>
+          <p className="text-base-content/70 mb-6">The profile you're looking for doesn't exist.</p>
           <Button onClick={() => window.location.href = '/'}>Go Home</Button>
         </div>
       </div>
@@ -262,14 +262,14 @@ export default function VisitorProfile() {
                             </div>
                             <div className="flex-1 text-left">
                               <div className="font-medium">{link.title}</div>
-                              <div className="text-sm text-muted-foreground flex items-center gap-2">
+                              <div className="text-sm text-base-content/70 flex items-center gap-2">
                                 <Eye className="h-3 w-3" />
                                 {link.views} views
                                 <MousePointer className="h-3 w-3 ml-2" />
                                 {link.clicks} clicks
                               </div>
                             </div>
-                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                            <ExternalLink className="h-4 w-4 text-base-content/70" />
                           </div>
                         </Button>
                       );
@@ -443,24 +443,24 @@ export default function VisitorProfile() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Links</span>
+                    <span className="text-sm text-base-content/70">Total Links</span>
                     <span className="font-medium">{links?.length || 0}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Clicks</span>
+                    <span className="text-sm text-base-content/70">Total Clicks</span>
                     <span className="font-medium">
                       {links?.reduce((total: number, link: any) => total + link.clicks, 0) || 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Views</span>
+                    <span className="text-sm text-base-content/70">Total Views</span>
                     <span className="font-medium">
                       {links?.reduce((total: number, link: any) => total + link.views, 0) || 0}
                     </span>
                   </div>
                   {profile.socialScore && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Social Score</span>
+                      <span className="text-sm text-base-content/70">Social Score</span>
                       <span className="font-medium">{profile.socialScore}</span>
                     </div>
                   )}
@@ -480,7 +480,7 @@ export default function VisitorProfile() {
                 className="h-8 w-8"
               />
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-base-content/70">
               Powered by MyLinked
             </p>
           </div>

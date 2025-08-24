@@ -17,7 +17,7 @@ export function PortfolioView({ links, onEdit, onDelete }: PortfolioViewProps) {
       {links.map((link) => (
         <div 
           key={link.id} 
-          className="bg-card rounded-xl shadow-md hover:shadow-lg transition-all p-6 border-2 border-muted"
+          className="bg-base-100 rounded-xl shadow-md hover:shadow-lg transition-all p-6 border-2 border-muted"
         >
           <div className="flex justify-between items-start mb-4">
             <div className="flex gap-3 items-center">
@@ -26,7 +26,7 @@ export function PortfolioView({ links, onEdit, onDelete }: PortfolioViewProps) {
               </div>
               <div>
                 <h3 className="font-medium text-base">{link.title}</h3>
-                <p className="text-muted-foreground text-sm">{link.url}</p>
+                <p className="text-base-content/70 text-sm">{link.url}</p>
               </div>
             </div>
             <LinkMenu 
@@ -39,12 +39,12 @@ export function PortfolioView({ links, onEdit, onDelete }: PortfolioViewProps) {
           <div className="border-t pt-4 flex items-center justify-between text-sm">
             <div className="flex gap-4">
               <div className="flex items-center gap-1">
-                <Eye size={14} className="text-muted-foreground" />
-                <span className="text-muted-foreground">{link.views || 0}</span>
+                <Eye size={14} className="text-base-content/70" />
+                <span className="text-base-content/70">{link.views || 0}</span>
               </div>
               <div className="flex items-center gap-1">
-                <MousePointerClick size={14} className="text-muted-foreground" />
-                <span className="text-muted-foreground">{link.clicks || 0}</span>
+                <MousePointerClick size={14} className="text-base-content/70" />
+                <span className="text-base-content/70">{link.clicks || 0}</span>
               </div>
             </div>
             <Button 

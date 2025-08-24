@@ -127,7 +127,7 @@ export function FollowSystem({ className = '' }: FollowSystemProps) {
           <div>
             <div className="font-medium">{user.name || user.username}</div>
             {user.name && (
-              <div className="text-xs text-muted-foreground">@{user.username}</div>
+              <div className="text-xs text-base-content/70">@{user.username}</div>
             )}
           </div>
         </div>
@@ -173,11 +173,11 @@ export function FollowSystem({ className = '' }: FollowSystemProps) {
   const renderEmptyState = (type: 'followers' | 'following') => {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-center">
-        <div className="bg-muted p-3 rounded-full mb-3">
-          <Users className="h-6 w-6 text-muted-foreground" />
+        <div className="bg-base-200 p-3 rounded-full mb-3">
+          <Users className="h-6 w-6 text-base-content/70" />
         </div>
         <h3 className="font-medium mb-1">No {type === 'followers' ? 'followers' : 'following'} yet</h3>
-        <p className="text-sm text-muted-foreground max-w-[240px] mb-4">
+        <p className="text-sm text-base-content/70 max-w-[240px] mb-4">
           {type === 'followers' 
             ? "When people follow you, they'll appear here."
             : "When you follow people, they'll appear here."}
@@ -222,7 +222,7 @@ export function FollowSystem({ className = '' }: FollowSystemProps) {
       <CardContent className="p-0">
         <div className="px-4 pb-2">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-base-content/70" />
             <Input
               placeholder="Search connections..."
               className="pl-9"
@@ -257,7 +257,7 @@ export function FollowSystem({ className = '' }: FollowSystemProps) {
               </ScrollArea>
             ) : following.length > 0 && searchQuery ? (
               <div className="py-8 text-center">
-                <p className="text-muted-foreground">No results for "{searchQuery}"</p>
+                <p className="text-base-content/70">No results for "{searchQuery}"</p>
               </div>
             ) : (
               renderEmptyState('following')
@@ -281,7 +281,7 @@ export function FollowSystem({ className = '' }: FollowSystemProps) {
               </ScrollArea>
             ) : followers.length > 0 && searchQuery ? (
               <div className="py-8 text-center">
-                <p className="text-muted-foreground">No results for "{searchQuery}"</p>
+                <p className="text-base-content/70">No results for "{searchQuery}"</p>
               </div>
             ) : (
               renderEmptyState('followers')
@@ -289,7 +289,7 @@ export function FollowSystem({ className = '' }: FollowSystemProps) {
           </TabsContent>
         </Tabs>
       </CardContent>
-      <CardFooter className="flex justify-center border-t p-4 text-xs text-muted-foreground">
+      <CardFooter className="flex justify-center border-t p-4 text-xs text-base-content/70">
         Following {following.length} · {followers.length} Followers
       </CardFooter>
     </Card>

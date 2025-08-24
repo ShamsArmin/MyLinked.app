@@ -14,7 +14,7 @@ export function ViewModeSelector({ currentMode, onModeChange }: ViewModeProps) {
   ];
 
   return (
-    <div className="bg-background rounded-lg shadow-sm p-2 mb-4 border">
+    <div className="bg-base-100 rounded-lg shadow-sm p-2 mb-4 border">
       <div className="flex flex-wrap justify-center gap-1">
         {modes.map((mode) => {
           const isActive = currentMode === mode.id;
@@ -27,7 +27,7 @@ export function ViewModeSelector({ currentMode, onModeChange }: ViewModeProps) {
               className={`flex items-center gap-1.5 py-1.5 px-3 rounded-md transition-colors ${
                 isActive 
                   ? 'bg-primary text-primary-foreground font-medium' 
-                  : 'text-muted-foreground hover:bg-muted'
+                  : 'text-base-content/70 hover:bg-base-200'
               }`}
               aria-pressed={isActive}
             >

@@ -686,7 +686,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">8</div>
-                  <p className="text-xs text-muted-foreground">+2 from last week</p>
+                  <p className="text-xs text-base-content/70">+2 from last week</p>
                 </CardContent>
               </Card>
               <Card>
@@ -695,7 +695,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">34</div>
-                  <p className="text-xs text-muted-foreground">+5 from last month</p>
+                  <p className="text-xs text-base-content/70">+5 from last month</p>
                 </CardContent>
               </Card>
               <Card>
@@ -704,7 +704,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">+18%</div>
-                  <p className="text-xs text-muted-foreground">Conversion rate lift</p>
+                  <p className="text-xs text-base-content/70">Conversion rate lift</p>
                 </CardContent>
               </Card>
             </div>
@@ -731,14 +731,14 @@ export default function ProfessionalAdminDashboard() {
                       </div>
                       <div>
                         <h4 className="font-medium">Homepage CTA Button</h4>
-                        <p className="text-sm text-muted-foreground">Blue vs Green button color</p>
+                        <p className="text-sm text-base-content/70">Blue vs Green button color</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <Badge variant="secondary" className="bg-blue-100 text-blue-700">Running</Badge>
                       <div className="text-sm">
                         <div className="font-medium">85% confidence</div>
-                        <div className="text-muted-foreground">2,340 visitors</div>
+                        <div className="text-base-content/70">2,340 visitors</div>
                       </div>
                       <Button variant="outline" size="sm">
                         <BarChart3 className="h-4 w-4" />
@@ -753,14 +753,14 @@ export default function ProfessionalAdminDashboard() {
                       </div>
                       <div>
                         <h4 className="font-medium">Signup Form Fields</h4>
-                        <p className="text-sm text-muted-foreground">5 fields vs 3 fields</p>
+                        <p className="text-sm text-base-content/70">5 fields vs 3 fields</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <Badge variant="secondary" className="bg-green-100 text-green-700">Completed</Badge>
                       <div className="text-sm">
                         <div className="font-medium">+24% conversion</div>
-                        <div className="text-muted-foreground">Winner: 3 fields</div>
+                        <div className="text-base-content/70">Winner: 3 fields</div>
                       </div>
                       <Button variant="outline" size="sm">
                         <Eye className="h-4 w-4" />
@@ -781,7 +781,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">15</div>
-                  <p className="text-xs text-muted-foreground">+3 from last week</p>
+                  <p className="text-xs text-base-content/70">+3 from last week</p>
                 </CardContent>
               </Card>
               <Card>
@@ -790,7 +790,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">1,234</div>
-                  <p className="text-xs text-muted-foreground">+5% from last month</p>
+                  <p className="text-xs text-base-content/70">+5% from last month</p>
                 </CardContent>
               </Card>
               <Card>
@@ -799,7 +799,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">89</div>
-                  <p className="text-xs text-muted-foreground">-12% from last month</p>
+                  <p className="text-xs text-base-content/70">-12% from last month</p>
                 </CardContent>
               </Card>
               <Card>
@@ -808,7 +808,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">76%</div>
-                  <p className="text-xs text-muted-foreground">+3% from last week</p>
+                  <p className="text-xs text-base-content/70">+3% from last week</p>
                 </CardContent>
               </Card>
             </div>
@@ -835,14 +835,14 @@ export default function ProfessionalAdminDashboard() {
                       </div>
                       <div>
                         <h4 className="font-medium">Premium Users</h4>
-                        <p className="text-sm text-muted-foreground">Users with paid subscriptions</p>
+                        <p className="text-sm text-base-content/70">Users with paid subscriptions</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <Badge variant="secondary" className="bg-green-100 text-green-700">Active</Badge>
                       <div className="text-sm">
                         <div className="font-medium">2,456 users</div>
-                        <div className="text-muted-foreground">18% of total</div>
+                        <div className="text-base-content/70">18% of total</div>
                       </div>
                       <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4" />
@@ -857,14 +857,14 @@ export default function ProfessionalAdminDashboard() {
                       </div>
                       <div>
                         <h4 className="font-medium">Highly Engaged</h4>
-                        <p className="text-sm text-muted-foreground">Users with 5+ sessions/week</p>
+                        <p className="text-sm text-base-content/70">Users with 5+ sessions/week</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <Badge variant="secondary" className="bg-green-100 text-green-700">Active</Badge>
                       <div className="text-sm">
                         <div className="font-medium">5,678 users</div>
-                        <div className="text-muted-foreground">42% of total</div>
+                        <div className="text-base-content/70">42% of total</div>
                       </div>
                       <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4" />
@@ -885,7 +885,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">4.2%</div>
-                  <p className="text-xs text-muted-foreground">+0.8% from last week</p>
+                  <p className="text-xs text-base-content/70">+0.8% from last week</p>
                 </CardContent>
               </Card>
               <Card>
@@ -894,7 +894,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">$45,890</div>
-                  <p className="text-xs text-muted-foreground">+12% from last month</p>
+                  <p className="text-xs text-base-content/70">+12% from last month</p>
                 </CardContent>
               </Card>
               <Card>
@@ -903,7 +903,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">$89.50</div>
-                  <p className="text-xs text-muted-foreground">+$5.20 from last month</p>
+                  <p className="text-xs text-base-content/70">+$5.20 from last month</p>
                 </CardContent>
               </Card>
               <Card>
@@ -912,7 +912,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">$234</div>
-                  <p className="text-xs text-muted-foreground">+$18 from last month</p>
+                  <p className="text-xs text-base-content/70">+$18 from last month</p>
                 </CardContent>
               </Card>
             </div>
@@ -939,13 +939,13 @@ export default function ProfessionalAdminDashboard() {
                       </div>
                       <div>
                         <h4 className="font-medium">Signup Funnel</h4>
-                        <p className="text-sm text-muted-foreground">Landing → Signup → Onboarding</p>
+                        <p className="text-sm text-base-content/70">Landing → Signup → Onboarding</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-sm">
                         <div className="font-medium">24.5% conversion</div>
-                        <div className="text-muted-foreground">12,450 visitors</div>
+                        <div className="text-base-content/70">12,450 visitors</div>
                       </div>
                       <Button variant="outline" size="sm">
                         <BarChart3 className="h-4 w-4" />
@@ -960,13 +960,13 @@ export default function ProfessionalAdminDashboard() {
                       </div>
                       <div>
                         <h4 className="font-medium">Purchase Funnel</h4>
-                        <p className="text-sm text-muted-foreground">Product → Cart → Checkout → Payment</p>
+                        <p className="text-sm text-base-content/70">Product → Cart → Checkout → Payment</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-sm">
                         <div className="font-medium">12.8% conversion</div>
-                        <div className="text-muted-foreground">5,890 visitors</div>
+                        <div className="text-base-content/70">5,890 visitors</div>
                       </div>
                       <Button variant="outline" size="sm">
                         <BarChart3 className="h-4 w-4" />
@@ -987,7 +987,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">$125,890</div>
-                  <p className="text-xs text-muted-foreground">+23% from last month</p>
+                  <p className="text-xs text-base-content/70">+23% from last month</p>
                 </CardContent>
               </Card>
               <Card>
@@ -996,7 +996,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">$42</div>
-                  <p className="text-xs text-muted-foreground">-$8 from last month</p>
+                  <p className="text-xs text-base-content/70">-$8 from last month</p>
                 </CardContent>
               </Card>
               <Card>
@@ -1005,7 +1005,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">2.1%</div>
-                  <p className="text-xs text-muted-foreground">-0.5% from last month</p>
+                  <p className="text-xs text-base-content/70">-0.5% from last month</p>
                 </CardContent>
               </Card>
               <Card>
@@ -1014,7 +1014,7 @@ export default function ProfessionalAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">$89,400</div>
-                  <p className="text-xs text-muted-foreground">+15% from last month</p>
+                  <p className="text-xs text-base-content/70">+15% from last month</p>
                 </CardContent>
               </Card>
             </div>

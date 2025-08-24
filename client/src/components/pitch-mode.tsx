@@ -145,7 +145,7 @@ export function PitchMode({ profile, className = '' }: PitchModeProps) {
             disabled={!enabled}
             className={!enabled ? "opacity-50" : ""}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-base-content/70">
             This description will be prominently displayed when Pitch Mode is active
           </p>
         </div>
@@ -158,7 +158,7 @@ export function PitchMode({ profile, className = '' }: PitchModeProps) {
             </div>
             
             <div className="flex items-center gap-2">
-              <div className="bg-background text-sm p-2 rounded flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+              <div className="bg-base-100 text-sm p-2 rounded flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                 {getShareUrl()}
               </div>
               <Button size="sm" variant="outline" onClick={handleCopyLink}>
@@ -166,21 +166,21 @@ export function PitchMode({ profile, className = '' }: PitchModeProps) {
               </Button>
             </div>
             
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-base-content/70">
               Share this link when pitching to clients or during presentations
             </div>
           </div>
         )}
         
-        <div className="bg-muted p-4 rounded-lg">
-          <h4 className="font-medium mb-2 flex items-center text-foreground">
+        <div className="bg-base-200 p-4 rounded-lg">
+          <h4 className="font-medium mb-2 flex items-center text-base-content">
             <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2">?</span>
             What's Pitch Mode?
           </h4>
-          <p className="text-sm text-muted-foreground mb-2">
+          <p className="text-sm text-base-content/70 mb-2">
             Pitch Mode transforms your profile into a streamlined, professional presentation:
           </p>
-          <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+          <ul className="text-sm text-base-content/70 list-disc list-inside space-y-1">
             <li>Optimized layout for presentations and meetings</li>
             <li>Prominent display of your most important links</li>
             <li>Clear call-to-action buttons</li>

@@ -198,7 +198,7 @@ export default function VisitorProfileFixed() {
                             <Play className="h-4 w-4" />
                           )}
                         </Button>
-                        <span className="text-sm text-muted-foreground">Welcome Audio Message</span>
+                        <span className="text-sm text-base-content/70">Welcome Audio Message</span>
                       </div>
                     </div>
                   )}
@@ -246,11 +246,11 @@ export default function VisitorProfileFixed() {
                             <div className="text-left">
                               <div className="font-medium">{link.title}</div>
                               {link.description && (
-                                <div className="text-sm text-muted-foreground">{link.description}</div>
+                                <div className="text-sm text-base-content/70">{link.description}</div>
                               )}
                             </div>
                           </div>
-                          <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                          <ExternalLink className="h-4 w-4 text-base-content/70" />
                         </Button>
                       );
                     })}
@@ -275,7 +275,7 @@ export default function VisitorProfileFixed() {
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <h4 className="font-semibold">{project.title}</h4>
-                            <p className="text-sm text-muted-foreground">{project.description}</p>
+                            <p className="text-sm text-base-content/70">{project.description}</p>
                           </div>
                           {project.isPinned && (
                             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
@@ -293,7 +293,7 @@ export default function VisitorProfileFixed() {
                         )}
 
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-4 text-sm text-base-content/70">
                             <span className="flex items-center gap-1">
                               <Eye className="h-3 w-3" />
                               {project.views || 0}
@@ -335,7 +335,7 @@ export default function VisitorProfileFixed() {
                     {socialPosts.map((post: any) => (
                       <div key={post.id} className={`p-4 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
                         <p className="mb-2">{post.content}</p>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-4 text-sm text-base-content/70">
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             {new Date(post.createdAt).toLocaleDateString()}
@@ -412,7 +412,7 @@ export default function VisitorProfileFixed() {
                           <div className="flex-1">
                             <h4 className="font-medium text-sm">{link.title}</h4>
                             {link.description && (
-                              <p className="text-xs text-muted-foreground mt-1">{link.description}</p>
+                              <p className="text-xs text-base-content/70 mt-1">{link.description}</p>
                             )}
                             {link.category && (
                               <Badge variant="outline" className="text-xs mt-2">
@@ -446,20 +446,20 @@ export default function VisitorProfileFixed() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Links</span>
+                    <span className="text-sm text-base-content/70">Total Links</span>
                     <span className="font-medium">{links.length}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Projects</span>
+                    <span className="text-sm text-base-content/70">Projects</span>
                     <span className="font-medium">{spotlightProjects.length}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Posts</span>
+                    <span className="text-sm text-base-content/70">Posts</span>
                     <span className="font-medium">{socialPosts.length}</span>
                   </div>
                   {profile.socialScore && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Social Score</span>
+                      <span className="text-sm text-base-content/70">Social Score</span>
                       <span className="font-medium">{profile.socialScore}/10</span>
                     </div>
                   )}

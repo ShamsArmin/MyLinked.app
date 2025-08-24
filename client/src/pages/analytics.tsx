@@ -182,7 +182,7 @@ function StatCard({ title, value, change, icon, description }: StatCardProps) {
       <CardContent className="p-6">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+            <p className="text-sm font-medium text-base-content/70 mb-1">{title}</p>
             <h3 className="text-2xl font-bold">{value}</h3>
             {change !== undefined && (
               <div className="flex items-center mt-1">
@@ -202,7 +202,7 @@ function StatCard({ title, value, change, icon, description }: StatCardProps) {
               </div>
             )}
             {description && (
-              <p className="text-xs text-muted-foreground mt-1">{description}</p>
+              <p className="text-xs text-base-content/70 mt-1">{description}</p>
             )}
           </div>
           <div className="bg-primary/10 p-2 rounded-full">
@@ -244,7 +244,7 @@ function TopLinksTable({ links }: { links: any[] }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/50">
+            <tr className="border-b bg-base-200/50">
               <th className="py-3 px-4 text-left font-medium">Link</th>
               <th className="py-3 px-4 text-left font-medium">Clicks</th>
               <th className="py-3 px-4 text-left font-medium">CTR</th>
@@ -257,7 +257,7 @@ function TopLinksTable({ links }: { links: any[] }) {
                 <td className="py-3 px-4">
                   <div>
                     <div className="font-medium">{link.title}</div>
-                    <div className="text-xs text-muted-foreground">{link.platform}</div>
+                    <div className="text-xs text-base-content/70">{link.platform}</div>
                   </div>
                 </td>
                 <td className="py-3 px-4">{link.clicks}</td>
@@ -416,7 +416,7 @@ export default function AnalyticsPage() {
             </Alert>
             
             {additionalInfo && (
-              <Alert className="mb-4 bg-muted/50">
+              <Alert className="mb-4 bg-base-200/50">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{additionalInfo}</AlertDescription>
               </Alert>
@@ -460,7 +460,7 @@ export default function AnalyticsPage() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <ul className="space-y-2 ml-6 list-disc text-muted-foreground">
+                  <ul className="space-y-2 ml-6 list-disc text-base-content/70">
                     {aiInsights.performanceInsights.map((insight, index) => (
                       <li key={index}>{insight}</li>
                     ))}
@@ -478,7 +478,7 @@ export default function AnalyticsPage() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <ul className="space-y-2 ml-6 list-disc text-muted-foreground">
+                  <ul className="space-y-2 ml-6 list-disc text-base-content/70">
                     {aiInsights.audienceInsights.map((insight, index) => (
                       <li key={index}>{insight}</li>
                     ))}
@@ -496,7 +496,7 @@ export default function AnalyticsPage() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <ul className="space-y-2 ml-6 list-disc text-muted-foreground">
+                  <ul className="space-y-2 ml-6 list-disc text-base-content/70">
                     {aiInsights.growthOpportunities.map((insight, index) => (
                       <li key={index}>{insight}</li>
                     ))}
@@ -514,7 +514,7 @@ export default function AnalyticsPage() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <ul className="space-y-2 ml-6 list-disc text-muted-foreground">
+                  <ul className="space-y-2 ml-6 list-disc text-base-content/70">
                     {aiInsights.contentRecommendations.map((insight, index) => (
                       <li key={index}>{insight}</li>
                     ))}
@@ -540,7 +540,7 @@ export default function AnalyticsPage() {
                             {platform}
                           </Badge>
                         </h4>
-                        <ul className="space-y-2 ml-6 list-disc text-muted-foreground">
+                        <ul className="space-y-2 ml-6 list-disc text-base-content/70">
                           {tips.map((tip, index) => (
                             <li key={index}>{tip}</li>
                           ))}
@@ -566,9 +566,9 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-base-200 text-base-content">
       {/* Header */}
-      <header className="border-b bg-card">
+      <header className="border-b bg-base-100">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-2">
@@ -596,7 +596,7 @@ export default function AnalyticsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
-              <p className="text-muted-foreground">
+              <p className="text-base-content/70">
                 View and analyze your profile performance
               </p>
             </div>
@@ -773,7 +773,7 @@ export default function AnalyticsPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b bg-muted/50">
+                          <tr className="border-b bg-base-200/50">
                             <th className="py-3 px-4 text-left font-medium">Link</th>
                             <th className="py-3 px-4 text-left font-medium">Views</th>
                             <th className="py-3 px-4 text-left font-medium">Clicks</th>
@@ -788,7 +788,7 @@ export default function AnalyticsPage() {
                                 <td className="py-3 px-4">
                                   <div>
                                     <div className="font-medium">{link.title}</div>
-                                    <div className="text-xs text-muted-foreground">{link.platform}</div>
+                                    <div className="text-xs text-base-content/70">{link.platform}</div>
                                   </div>
                                 </td>
                                 <td className="py-3 px-4">{link.views || 0}</td>
@@ -806,16 +806,16 @@ export default function AnalyticsPage() {
                   <div className="space-y-4">
                     {/* Performance Metrics */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div className="bg-muted/30 p-4 rounded-lg flex flex-col items-center">
-                        <h4 className="text-sm font-medium text-muted-foreground mb-1">Total Views</h4>
+                      <div className="bg-base-200/30 p-4 rounded-lg flex flex-col items-center">
+                        <h4 className="text-sm font-medium text-base-content/70 mb-1">Total Views</h4>
                         <div className="text-3xl font-bold">{userLinks.reduce((sum: number, link: any) => sum + (link.views || 0), 0)}</div>
                       </div>
-                      <div className="bg-muted/30 p-4 rounded-lg flex flex-col items-center">
-                        <h4 className="text-sm font-medium text-muted-foreground mb-1">Total Clicks</h4>
+                      <div className="bg-base-200/30 p-4 rounded-lg flex flex-col items-center">
+                        <h4 className="text-sm font-medium text-base-content/70 mb-1">Total Clicks</h4>
                         <div className="text-3xl font-bold">{userLinks.reduce((sum: number, link: any) => sum + (link.clicks || 0), 0)}</div>
                       </div>
-                      <div className="bg-muted/30 p-4 rounded-lg flex flex-col items-center">
-                        <h4 className="text-sm font-medium text-muted-foreground mb-1">Average CTR</h4>
+                      <div className="bg-base-200/30 p-4 rounded-lg flex flex-col items-center">
+                        <h4 className="text-sm font-medium text-base-content/70 mb-1">Average CTR</h4>
                         <div className="text-3xl font-bold">
                           {(() => {
                             const totalClicks = userLinks.reduce((sum: number, link: any) => sum + (link.clicks || 0), 0);
@@ -827,9 +827,9 @@ export default function AnalyticsPage() {
                     </div>
                     
                     {/* Performance insights text */}
-                    <div className="bg-muted/20 p-4 rounded-lg">
+                    <div className="bg-base-200/20 p-4 rounded-lg">
                       <h4 className="text-sm font-medium mb-2">Performance Analysis</h4>
-                      <ul className="space-y-2 ml-6 list-disc text-muted-foreground">
+                      <ul className="space-y-2 ml-6 list-disc text-base-content/70">
                         {userLinks.some((link: any) => link.clicks > 0) ? (
                           <>
                             <li>Your most clicked link is <span className="font-medium">{userLinks.reduce((prev: any, current: any) => 
@@ -867,7 +867,7 @@ export default function AnalyticsPage() {
                     </div>
                     
                     {/* Platform Distribution Chart */}
-                    <div className="bg-muted/20 p-4 rounded-lg">
+                    <div className="bg-base-200/20 p-4 rounded-lg">
                       <h4 className="text-sm font-medium mb-2">Platform Distribution</h4>
                       {userLinks.length > 0 && (
                         <div className="h-64">
@@ -913,7 +913,7 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-6 text-muted-foreground">
+                <div className="text-center py-6 text-base-content/70">
                   <p>No profile links found. Add links to your profile to see performance analytics.</p>
                   <Button 
                     variant="outline" 
@@ -948,7 +948,7 @@ export default function AnalyticsPage() {
                         <div className="text-4xl font-bold">
                           {socialScoreData.score}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-base-content/70">
                           {socialScoreData.change > 0 ? (
                             <span className="text-emerald-500">
                               +{socialScoreData.change} pts
@@ -981,7 +981,7 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="mt-4 text-center">
                     <div className="font-medium">Social Score</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-base-content/70">
                       Updated today
                     </div>
                   </div>
@@ -997,17 +997,17 @@ export default function AnalyticsPage() {
                         <span className="text-sm">{item.category}</span>
                         <span className="text-sm font-medium">{item.score}</span>
                       </div>
-                      <div className="relative h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="relative h-2 w-full bg-base-200 rounded-full overflow-hidden">
                         <div
                           className="absolute left-0 top-0 h-full bg-primary"
                           style={{ width: `${item.score}%` }}
                         />
                         <div
-                          className="absolute left-0 top-0 h-full bg-muted-foreground/30"
+                          className="absolute left-0 top-0 h-full bg-base-200-foreground/30"
                           style={{ width: `${item.avgScore}%` }}
                         />
                       </div>
-                      <div className="flex justify-between text-xs text-muted-foreground">
+                      <div className="flex justify-between text-xs text-base-content/70">
                         <div>Your score</div>
                         <div>Average</div>
                       </div>
@@ -1039,7 +1039,7 @@ export default function AnalyticsPage() {
                     <div className="text-6xl font-bold">
                       {stats?.followers || 0}
                     </div>
-                    <div className="mt-2 text-muted-foreground">Followers</div>
+                    <div className="mt-2 text-base-content/70">Followers</div>
                   </div>
                 </div>
                 <div className="flex items-center justify-center">
@@ -1047,7 +1047,7 @@ export default function AnalyticsPage() {
                     <div className="text-6xl font-bold">
                       {stats?.following || 0}
                     </div>
-                    <div className="mt-2 text-muted-foreground">Following</div>
+                    <div className="mt-2 text-base-content/70">Following</div>
                   </div>
                 </div>
               </div>

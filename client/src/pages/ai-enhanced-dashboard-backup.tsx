@@ -222,12 +222,12 @@ function LinkCard({
             </div>
             
             <div className="min-w-0 flex-1">
-              <h3 className="font-medium text-card-foreground truncate">{link.title}</h3>
+              <h3 className="font-medium text-base-content truncate">{link.title}</h3>
               <a 
                 href={link.url} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-sm text-muted-foreground hover:underline truncate max-w-full inline-block"
+                className="text-sm text-base-content/70 hover:underline truncate max-w-full inline-block"
               >
                 {link.url}
               </a>
@@ -255,7 +255,7 @@ function LinkCard({
             <div className="relative z-30">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-8 w-8 bg-background hover:bg-muted rounded-md border-muted">
+                  <Button variant="outline" size="icon" className="h-8 w-8 bg-base-100 hover:bg-base-200 rounded-md border-muted">
                     <MoreVerticalIcon className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -306,13 +306,13 @@ function LinkCard({
         </div>
         
         {link.description && (
-          <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
+          <p className="mt-3 text-sm text-base-content/70 line-clamp-2">
             {link.description}
           </p>
         )}
         
         <div className="mt-3 flex flex-col">
-          <div className="flex items-center text-xs text-muted-foreground mb-2">
+          <div className="flex items-center text-xs text-base-content/70 mb-2">
             <Eye className="h-3 w-3 mr-1 flex-shrink-0" />
             <span>{link.views || 0} views</span>
             <span className="mx-2 flex-shrink-0">•</span>
@@ -406,19 +406,19 @@ function ProfileFeedItem({
           <div className="font-medium text-sm">
             {platform === 'twitter' ? 'Your X' : platform === 'instagram' ? 'Your Instagram' : 'Your Post'}
           </div>
-          <div className="text-xs text-muted-foreground">{date}</div>
+          <div className="text-xs text-base-content/70">{date}</div>
         </div>
       </div>
       
       <p className="text-sm mb-2">{content}</p>
       
       {image && (
-        <div className="rounded-md overflow-hidden mb-2 bg-muted h-32 flex items-center justify-center">
-          <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+        <div className="rounded-md overflow-hidden mb-2 bg-base-200 h-32 flex items-center justify-center">
+          <ImageIcon className="h-8 w-8 text-base-content/50" />
         </div>
       )}
       
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="flex items-center justify-between text-xs text-base-content/70">
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
             <Heart className="h-3 w-3 mr-1" />
@@ -543,9 +543,9 @@ function SmartLinkAI({ links, onApplySuggestions }: { links: Link[], onApplySugg
                     if (!link) return null;
                     
                     return (
-                      <div key={item.id} className="flex items-center justify-between bg-muted/30 rounded-md p-2">
+                      <div key={item.id} className="flex items-center justify-between bg-base-200/30 rounded-md p-2">
                         <div className="flex items-center">
-                          <div className="bg-muted w-5 h-5 rounded-full flex items-center justify-center text-xs mr-2">
+                          <div className="bg-base-200 w-5 h-5 rounded-full flex items-center justify-center text-xs mr-2">
                             {index + 1}
                           </div>
                           <div 
@@ -557,7 +557,7 @@ function SmartLinkAI({ links, onApplySuggestions }: { links: Link[], onApplySugg
                           <span className="text-sm font-medium">{link.title}</span>
                         </div>
                         <div className="text-xs flex items-center">
-                          <div className="w-8 h-4 bg-muted rounded-full overflow-hidden mr-2">
+                          <div className="w-8 h-4 bg-base-200 rounded-full overflow-hidden mr-2">
                             <div 
                               className="h-full rounded-full" 
                               style={{ 
@@ -649,23 +649,23 @@ function PitchModeCard() {
               {pitchOptions.map(option => (
                 <div 
                   key={option.id} 
-                  className={`border rounded-md p-2 cursor-pointer transition-colors ${currentPitch === option.id ? 'bg-primary/10 border-primary/20' : 'hover:bg-muted/50'}`}
+                  className={`border rounded-md p-2 cursor-pointer transition-colors ${currentPitch === option.id ? 'bg-primary/10 border-primary/20' : 'hover:bg-base-200/50'}`}
                   onClick={() => setCurrentPitch(option.id)}
                 >
                   <div className="flex items-center mb-1">
-                    <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center mr-2">
+                    <div className="w-6 h-6 rounded-full bg-base-200 flex items-center justify-center mr-2">
                       {option.icon}
                     </div>
                     <span className="text-sm font-medium">{option.name}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-base-content/70">
                     {option.description}
                   </p>
                 </div>
               ))}
             </div>
             
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-base-content/70">
               <p>Your profile is currently in <span className="font-medium text-primary">{pitchOptions.find(o => o.id === currentPitch)?.name}</span> pitch mode.</p>
             </div>
             
@@ -688,8 +688,8 @@ function PitchModeCard() {
           </div>
         ) : (
           <div className="py-4 text-center">
-            <Presentation className="h-10 w-10 mx-auto mb-2 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground mb-3">Toggle the switch to activate Pitch Mode and customize your profile for different audiences.</p>
+            <Presentation className="h-10 w-10 mx-auto mb-2 text-base-content/50" />
+            <p className="text-sm text-base-content/70 mb-3">Toggle the switch to activate Pitch Mode and customize your profile for different audiences.</p>
             <Button 
               variant="outline" 
               size="sm"
@@ -1881,15 +1881,15 @@ export default function AIEnhancedDashboard() {
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <p className="text-lg font-bold text-blue-600">{links?.length || 0}</p>
-                    <p className="text-xs text-muted-foreground">Links</p>
+                    <p className="text-xs text-base-content/70">Links</p>
                   </div>
                   <div>
                     <p className="text-lg font-bold text-green-600">{stats?.views || 0}</p>
-                    <p className="text-xs text-muted-foreground">Views</p>
+                    <p className="text-xs text-base-content/70">Views</p>
                   </div>
                   <div>
                     <p className="text-lg font-bold text-purple-600">{stats?.score || userData?.socialScore || 50}</p>
-                    <p className="text-xs text-muted-foreground">Score</p>
+                    <p className="text-xs text-base-content/70">Score</p>
                   </div>
                 </div>
               </div>
@@ -1913,7 +1913,7 @@ export default function AIEnhancedDashboard() {
                 {showShareOptions && (
                   <div className="space-y-3 px-1 animate-in fade-in slide-in-from-top-2 duration-300">
                     {/* Profile Link */}
-                    <div className="border rounded-md p-2 bg-muted/10">
+                    <div className="border rounded-md p-2 bg-base-200/10">
                       <p className="text-xs font-medium mb-1">Share Profile Link</p>
                       <div className="flex items-center">
                         <Input 
@@ -1942,14 +1942,14 @@ export default function AIEnhancedDashboard() {
                     </div>
                     
                     {/* QR Code */}
-                    <div className="border rounded-md p-3 bg-muted/10">
+                    <div className="border rounded-md p-3 bg-base-200/10">
                       <p className="text-xs font-medium mb-2">Profile QR Code</p>
                       <div className="flex justify-center mb-2">
                         <div className="bg-white p-2 rounded shadow-sm" style={{ minHeight: '188px', minWidth: '188px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {isGeneratingQRCode ? (
                             <div className="flex flex-col items-center justify-center">
                               <RefreshCw className="h-8 w-8 text-primary animate-spin mb-2" />
-                              <p className="text-xs text-muted-foreground">Generating QR code...</p>
+                              <p className="text-xs text-base-content/70">Generating QR code...</p>
                             </div>
                           ) : (
                             <canvas ref={qrCodeCanvasRef} width="180" height="180"></canvas>
@@ -2536,9 +2536,9 @@ export default function AIEnhancedDashboard() {
                 </div>
               </div>
               
-              <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+              <div className="mt-6 p-4 bg-base-200/30 rounded-lg">
                 <h4 className="font-medium text-sm mb-2">How Content Preview Works</h4>
-                <ul className="text-xs text-muted-foreground space-y-1">
+                <ul className="text-xs text-base-content/70 space-y-1">
                   <li>• Connect your social accounts to show latest posts on your profile</li>
                   <li>• Visitors can see your recent content without leaving your page</li>
                   <li>• Posts are clickable and link directly to the original content</li>
@@ -2827,14 +2827,14 @@ export default function AIEnhancedDashboard() {
                                 </a>
                                 
                                 {link.description && (
-                                  <p className="text-sm text-muted-foreground mb-5 overflow-hidden text-ellipsis"
+                                  <p className="text-sm text-base-content/70 mb-5 overflow-hidden text-ellipsis"
                                     style={{ maxHeight: '100px', overflow: 'auto' }}
                                   >
                                     {link.description}
                                   </p>
                                 )}
                                 
-                                <div className="text-sm text-muted-foreground mt-auto mb-4 flex items-center gap-6">
+                                <div className="text-sm text-base-content/70 mt-auto mb-4 flex items-center gap-6">
                                   <div className="flex items-center">
                                     <Eye className="h-4 w-4 mr-2" />
                                     <span>{link.views || 0} views</span>
@@ -2864,7 +2864,7 @@ export default function AIEnhancedDashboard() {
                         // Grid View
                         else if (viewMode === "grid") {
                           return (
-                            <div key={link.id} className="bg-card rounded-lg border shadow-sm overflow-hidden">
+                            <div key={link.id} className="bg-base-100 rounded-lg border shadow-sm overflow-hidden">
                               <div className="p-4">
                                 <div className="flex items-center justify-between mb-2">
                                   <div className="flex items-center">
@@ -2917,10 +2917,10 @@ export default function AIEnhancedDashboard() {
                                   </DropdownMenu>
                                 </div>
                                 
-                                <p className="text-sm line-clamp-2 text-muted-foreground mb-2">{link.description}</p>
+                                <p className="text-sm line-clamp-2 text-base-content/70 mb-2">{link.description}</p>
                                 
                                 <div className="flex items-center justify-between mt-3">
-                                  <div className="flex items-center text-xs text-muted-foreground">
+                                  <div className="flex items-center text-xs text-base-content/70">
                                     <Eye className="h-3 w-3 mr-1" /> {link.views || 0}
                                     <span className="mx-1">•</span>
                                     <ExternalLink className="h-3 w-3 mr-1" /> {link.clicks || 0}
@@ -2975,7 +2975,7 @@ export default function AIEnhancedDashboard() {
                   <CardDescription>Manage friend & sponsor links</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="text-sm text-muted-foreground mb-3">
+                  <p className="text-sm text-base-content/70 mb-3">
                     Add referral and sponsored links to your profile with tracking.
                   </p>
                   <Button 
@@ -2999,7 +2999,7 @@ export default function AIEnhancedDashboard() {
                   <CardDescription>Find people in your industry</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="text-sm text-muted-foreground mb-3">
+                  <p className="text-sm text-base-content/70 mb-3">
                     Connect with professionals in your industry and expand your network.
                   </p>
                   <Button 
@@ -3023,7 +3023,7 @@ export default function AIEnhancedDashboard() {
                   <CardDescription>Find perfect collaborators for your projects</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="text-sm text-muted-foreground mb-3">
+                  <p className="text-sm text-base-content/70 mb-3">
                     Connect with professionals who share your skills, industry, and interests for powerful collaborations.
                   </p>
                   <Button 
@@ -3307,7 +3307,7 @@ export default function AIEnhancedDashboard() {
           
           {currentOptimizeLink && (
             <div className="space-y-4 overflow-y-auto pr-1 flex-grow" style={{ maxHeight: "calc(80vh - 180px)" }}>
-              <div className="border rounded-md p-3 bg-muted/20">
+              <div className="border rounded-md p-3 bg-base-200/20">
                 <div className="flex items-center mb-2">
                   <div 
                     className="w-6 h-6 rounded-full flex items-center justify-center mr-2"
@@ -3317,16 +3317,16 @@ export default function AIEnhancedDashboard() {
                   </div>
                   <h4 className="font-medium text-sm">{currentOptimizeLink.title}</h4>
                 </div>
-                <p className="text-xs text-muted-foreground truncate">{currentOptimizeLink.url}</p>
+                <p className="text-xs text-base-content/70 truncate">{currentOptimizeLink.url}</p>
               </div>
               
               <div className="space-y-3">
                 <div>
                   <h4 className="font-medium text-sm mb-1">Title Improvement</h4>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs text-muted-foreground">Current quality score:</p>
+                    <p className="text-xs text-base-content/70">Current quality score:</p>
                     <div className="flex items-center">
-                      <div className="h-2 w-16 bg-muted rounded-full overflow-hidden mr-2">
+                      <div className="h-2 w-16 bg-base-200 rounded-full overflow-hidden mr-2">
                         <div 
                           className="h-full rounded-full" 
                           style={{ 
@@ -3339,11 +3339,11 @@ export default function AIEnhancedDashboard() {
                     </div>
                   </div>
                   <div className="border rounded-md p-2 text-sm mb-2">
-                    <span className="text-muted-foreground">Current: </span>
+                    <span className="text-base-content/70">Current: </span>
                     {currentOptimizeLink.title}
                   </div>
                   <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
-                    <span className="text-muted-foreground">Suggestion: </span>
+                    <span className="text-base-content/70">Suggestion: </span>
                     <span className="text-green-600 dark:text-green-400 font-medium">
                       {currentOptimizeLink.platform === "twitter" 
                         ? "Follow My Twitter for Tech Insights & Updates" 
@@ -3355,9 +3355,9 @@ export default function AIEnhancedDashboard() {
                 <div>
                   <h4 className="font-medium text-sm mb-1">Description Improvement</h4>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs text-muted-foreground">Current quality score:</p>
+                    <p className="text-xs text-base-content/70">Current quality score:</p>
                     <div className="flex items-center">
-                      <div className="h-2 w-16 bg-muted rounded-full overflow-hidden mr-2">
+                      <div className="h-2 w-16 bg-base-200 rounded-full overflow-hidden mr-2">
                         <div 
                           className="h-full rounded-full" 
                           style={{ 
@@ -3370,11 +3370,11 @@ export default function AIEnhancedDashboard() {
                     </div>
                   </div>
                   <div className="border rounded-md p-2 text-sm mb-2">
-                    <span className="text-muted-foreground">Current: </span>
+                    <span className="text-base-content/70">Current: </span>
                     {currentOptimizeLink.description || "No description provided."}
                   </div>
                   <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
-                    <span className="text-muted-foreground">Suggestion: </span>
+                    <span className="text-base-content/70">Suggestion: </span>
                     <span className="text-green-600 dark:text-green-400">
                       {currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
                         ? "Daily insights on web development, tech trends, and design. Join my 5K+ followers for practical tips and industry news!"
@@ -3406,7 +3406,7 @@ export default function AIEnhancedDashboard() {
                 </div>
               </div>
               
-              <DialogFooter className="pt-2 mt-4 sticky bottom-0 bg-background">
+              <DialogFooter className="pt-2 mt-4 sticky bottom-0 bg-base-100">
                 <Button 
                   variant="outline" 
                   onClick={() => setShowOptimizeDialog(false)}

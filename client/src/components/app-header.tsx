@@ -40,7 +40,7 @@ const AppHeader: React.FC = () => {
   ];
   
   return (
-    <header className="bg-background shadow-sm py-3 px-4 md:px-6 border-b">
+    <header className="bg-base-100 shadow-sm py-3 px-4 md:px-6 border-b">
       <div className="container mx-auto flex justify-between items-center">
         <WouterLink href="/" className="flex items-center gap-2">
           <img 
@@ -52,7 +52,7 @@ const AppHeader: React.FC = () => {
               const img = e.currentTarget as HTMLImageElement;
               img.style.display = 'none';
               const fallback = document.createElement('span');
-              fallback.className = 'font-heading font-semibold text-xl text-foreground';
+              fallback.className = 'font-heading font-semibold text-xl text-base-content';
               fallback.textContent = 'MyLinked';
               img.parentNode?.appendChild(fallback);
             }}
@@ -90,7 +90,7 @@ const AppHeader: React.FC = () => {
                           className={`flex items-center gap-3 py-2 px-4 rounded-lg ${
                             isActive
                               ? "text-primary font-medium bg-primary/10"
-                              : "text-muted-foreground hover:bg-muted"
+                              : "text-base-content/70 hover:bg-base-200"
                           }`}
                         >
                           <Icon className="h-5 w-5" />

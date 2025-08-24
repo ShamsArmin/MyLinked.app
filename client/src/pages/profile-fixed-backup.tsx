@@ -352,9 +352,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-base-200 text-base-content">
       {/* Header */}
-      <header className="border-b bg-card">
+      <header className="border-b bg-base-100">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-2">

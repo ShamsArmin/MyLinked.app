@@ -9,7 +9,7 @@ export function SpotlightCard() {
     <div className="text-center py-4">
       <GitBranch className="h-10 w-10 text-muted mx-auto mb-2" />
       <h4 className="text-sm font-medium mb-1">Collaborative Projects</h4>
-      <p className="text-xs text-muted-foreground mb-4">Showcase your work with others</p>
+      <p className="text-xs text-base-content/70 mb-4">Showcase your work with others</p>
       <Button 
         variant="outline" 
         size="sm" 

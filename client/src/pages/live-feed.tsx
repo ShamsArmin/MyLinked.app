@@ -137,7 +137,7 @@ export default function LiveFeedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-base-200 text-base-content">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="flex flex-col lg:flex-row gap-8">
@@ -229,7 +229,7 @@ export default function LiveFeedPage() {
               </div>
               <div className="flex-1 max-w-sm">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-base-content/70" />
                   <Input
                     placeholder="Search posts or users..."
                     value={searchQuery}
@@ -248,16 +248,16 @@ export default function LiveFeedPage() {
                     <Card key={i} className="animate-pulse">
                       <CardHeader>
                         <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 bg-muted rounded-full"></div>
+                          <div className="w-10 h-10 bg-base-200 rounded-full"></div>
                           <div className="space-y-2">
-                            <div className="h-4 bg-muted rounded w-32"></div>
-                            <div className="h-3 bg-muted rounded w-24"></div>
+                            <div className="h-4 bg-base-200 rounded w-32"></div>
+                            <div className="h-3 bg-base-200 rounded w-24"></div>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <div className="h-4 bg-muted rounded w-full mb-2"></div>
-                        <div className="h-4 bg-muted rounded w-3/4"></div>
+                        <div className="h-4 bg-base-200 rounded w-full mb-2"></div>
+                        <div className="h-4 bg-base-200 rounded w-3/4"></div>
                       </CardContent>
                     </Card>
                   ))}
@@ -281,12 +281,12 @@ export default function LiveFeedPage() {
                                 {platformIcons[post.platform]} {post.platform}
                               </Badge>
                             </div>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-base-content/70">
                               {post.user.profession || 'Professional'}
                             </p>
                           </div>
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-base-content/70">
                           <Calendar className="h-4 w-4 inline mr-1" />
                           {formatDistanceToNow(new Date(post.postedAt), { addSuffix: true })}
                         </div>
@@ -294,7 +294,7 @@ export default function LiveFeedPage() {
                     </CardHeader>
                     <CardContent>
                       {post.caption && (
-                        <p className="mb-4 text-foreground">{post.caption}</p>
+                        <p className="mb-4 text-base-content">{post.caption}</p>
                       )}
                       
                       {post.thumbnailUrl && (
@@ -335,7 +335,7 @@ export default function LiveFeedPage() {
               ) : (
                 <Card>
                   <CardContent className="py-12 text-center">
-                    <div className="text-muted-foreground">
+                    <div className="text-base-content/70">
                       <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
                       <p>Follow some users or add your own social media posts to see content here.</p>
@@ -369,14 +369,14 @@ export default function LiveFeedPage() {
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{user.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs text-base-content/70 truncate">
                             {user.profession || 'Professional'}
                           </p>
                         </div>
                       </div>
                     ))}
                     {followingUsers.length > 5 && (
-                      <p className="text-xs text-muted-foreground text-center pt-2">
+                      <p className="text-xs text-base-content/70 text-center pt-2">
                         +{followingUsers.length - 5} more
                       </p>
                     )}
@@ -404,7 +404,7 @@ export default function LiveFeedPage() {
                           </Avatar>
                           <div>
                             <p className="text-sm font-medium">{user.name}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-base-content/70">
                               {user.profession || 'Professional'}
                             </p>
                             {user.socialScore && (
@@ -436,15 +436,15 @@ export default function LiveFeedPage() {
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Total Posts</span>
+                    <span className="text-sm text-base-content/70">Total Posts</span>
                     <span className="text-sm font-medium">{filteredPosts.length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Following</span>
+                    <span className="text-sm text-base-content/70">Following</span>
                     <span className="text-sm font-medium">{followingUsers?.length || 0}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Your Score</span>
+                    <span className="text-sm text-base-content/70">Your Score</span>
                     <span className="text-sm font-medium">{user.socialScore || 50}</span>
                   </div>
                 </div>

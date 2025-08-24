@@ -17,7 +17,7 @@ export function StoryView({ links, onEdit, onDelete }: StoryViewProps) {
       {links.map((link) => (
         <div 
           key={link.id} 
-          className="bg-card rounded-xl shadow-md border p-6 min-h-[200px] flex flex-col justify-between"
+          className="bg-base-100 rounded-xl shadow-md border p-6 min-h-[200px] flex flex-col justify-between"
         >
           <div className="flex justify-between items-start">
             <div className="flex gap-4 items-center">
@@ -26,7 +26,7 @@ export function StoryView({ links, onEdit, onDelete }: StoryViewProps) {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">{link.title}</h3>
-                <p className="text-muted-foreground text-sm truncate max-w-[200px]">
+                <p className="text-base-content/70 text-sm truncate max-w-[200px]">
                   {link.url}
                 </p>
               </div>
@@ -38,7 +38,7 @@ export function StoryView({ links, onEdit, onDelete }: StoryViewProps) {
             />
           </div>
           <div className="mt-6 pt-4 border-t flex justify-between items-center">
-            <div className="flex gap-4 text-sm text-muted-foreground">
+            <div className="flex gap-4 text-sm text-base-content/70">
               <div className="flex items-center gap-1">
                 <Eye size={16} />
                 <span>{link.views || 0} views</span>

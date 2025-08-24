@@ -112,7 +112,7 @@ export function ProfilePitchDemoSimple() {
         
         <h3 className="text-xl font-semibold">See Pitch Mode in Action</h3>
         
-        <p className="text-muted-foreground max-w-md mx-auto">
+        <p className="text-base-content/70 max-w-md mx-auto">
           Experience how your profile would look in Pitch Mode - a professional layout 
           optimized for pitching your work to clients, employers, or collaborators.
         </p>

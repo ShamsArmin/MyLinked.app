@@ -781,7 +781,7 @@ export default function SpotlightPage() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Collaborative Spotlight</h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-base-content/70 mt-1">
               Showcase your projects and collaborations
             </p>
           </div>
@@ -818,7 +818,7 @@ export default function SpotlightPage() {
                     </CardHeader>
                     <CardContent className="pb-2">
                       {project.thumbnail && (
-                        <div className="aspect-video bg-muted rounded-md overflow-hidden mb-2">
+                        <div className="aspect-video bg-base-200 rounded-md overflow-hidden mb-2">
                           <img
                             src={project.thumbnail}
                             alt={project.title}
@@ -841,7 +841,7 @@ export default function SpotlightPage() {
                       
                       {/* Contributors */}
                       <div className="flex items-center mt-3">
-                        <Users className="h-3 w-3 mr-1 text-muted-foreground" />
+                        <Users className="h-3 w-3 mr-1 text-base-content/70" />
                         <div className="flex -space-x-2">
                           {project.contributors?.slice(0, 3).map((contributor) => (
                             <Tooltip key={contributor.id}>
@@ -955,12 +955,12 @@ export default function SpotlightPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : projects.length === 0 ? (
-          <div className="text-center p-12 border rounded-lg bg-muted/20">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
-              <AlertTriangle className="h-6 w-6 text-muted-foreground" />
+          <div className="text-center p-12 border rounded-lg bg-base-200/20">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-base-200 mb-4">
+              <AlertTriangle className="h-6 w-6 text-base-content/70" />
             </div>
             <h3 className="text-lg font-semibold">No Projects Yet</h3>
-            <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+            <p className="text-base-content/70 mb-4 max-w-md mx-auto">
               Start showcasing your collaborative projects by adding your first project.
             </p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
@@ -986,7 +986,7 @@ export default function SpotlightPage() {
                 </CardHeader>
                 <CardContent className="pb-2">
                   {project.thumbnail && (
-                    <div className="aspect-video bg-muted rounded-md overflow-hidden mb-2">
+                    <div className="aspect-video bg-base-200 rounded-md overflow-hidden mb-2">
                       <img
                         src={project.thumbnail}
                         alt={project.title}
@@ -1009,7 +1009,7 @@ export default function SpotlightPage() {
                   
                   {/* Contributors */}
                   <div className="flex items-center mt-3">
-                    <Users className="h-3 w-3 mr-1 text-muted-foreground" />
+                    <Users className="h-3 w-3 mr-1 text-base-content/70" />
                     <div className="flex -space-x-2">
                       {project.contributors?.slice(0, 3).map((contributor) => (
                         <Tooltip key={contributor.id}>

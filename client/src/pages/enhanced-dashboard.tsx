@@ -185,12 +185,12 @@ function LinkCard({
             </div>
             
             <div>
-              <h3 className="font-medium text-card-foreground">{link.title}</h3>
+              <h3 className="font-medium text-base-content">{link.title}</h3>
               <a 
                 href={link.url} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-sm text-muted-foreground hover:underline truncate max-w-[200px] inline-block"
+                className="text-sm text-base-content/70 hover:underline truncate max-w-[200px] inline-block"
               >
                 {link.url}
               </a>
@@ -266,12 +266,12 @@ function LinkCard({
         </div>
         
         {link.description && (
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-base-content/70">
             {link.description}
           </p>
         )}
         
-        <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
+        <div className="flex items-center justify-between mt-3 text-xs text-base-content/70">
           <div className="flex items-center">
             <Eye className="h-3 w-3 mr-1" />
             <span>{link.views || 0} views</span>
@@ -303,7 +303,7 @@ function ViewModeSelector({
   onModeChange: (mode: string) => void 
 }) {
   return (
-    <div className="inline-flex items-center rounded-md border border-input shadow-sm p-1 bg-card">
+    <div className="inline-flex items-center rounded-md border border-base-300 shadow-sm p-1 bg-base-100">
       <Button
         variant={currentMode === "list" ? "secondary" : "ghost"}
         size="sm"
@@ -617,7 +617,7 @@ export default function EnhancedDashboard() {
   ];
   
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-base-200 text-base-content">
       {/* Dashboard Header */}
       <header className="border-b shadow-sm">
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
@@ -693,7 +693,7 @@ export default function EnhancedDashboard() {
           {/* Page Title */}
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">
+            <p className="text-base-content/70">
               Manage your profile and monitor your performance.
             </p>
           </div>
@@ -708,13 +708,13 @@ export default function EnhancedDashboard() {
               <CardContent>
                 <div className="text-2xl font-bold">
                   {isLoadingStats ? (
-                    <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
+                    <div className="h-8 w-16 bg-base-200 animate-pulse rounded"></div>
                   ) : (
                     stats?.views || 0
                   )}
                 </div>
                 {!isLoadingStats && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-base-content/70">
                     <span className="text-green-500 dark:text-green-400">+12.5%</span> from last month
                   </p>
                 )}
@@ -729,13 +729,13 @@ export default function EnhancedDashboard() {
               <CardContent>
                 <div className="text-2xl font-bold">
                   {isLoadingStats ? (
-                    <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
+                    <div className="h-8 w-16 bg-base-200 animate-pulse rounded"></div>
                   ) : (
                     `${(stats?.ctr || 0).toFixed(1)}%`
                   )}
                 </div>
                 {!isLoadingStats && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-base-content/70">
                     <span className="text-green-500 dark:text-green-400">+2.3%</span> from last month
                   </p>
                 )}
@@ -751,7 +751,7 @@ export default function EnhancedDashboard() {
                 <div className="flex justify-between items-center">
                   <div className="text-2xl font-bold">
                     {isLoadingStats ? (
-                      <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
+                      <div className="h-8 w-16 bg-base-200 animate-pulse rounded"></div>
                     ) : (
                       stats?.score || 0
                     )}
@@ -796,7 +796,7 @@ export default function EnhancedDashboard() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="flex justify-between items-center mb-4">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-base-content/70">
                       {links.length} link{links.length !== 1 ? 's' : ''} total
                     </p>
                     
@@ -808,8 +808,8 @@ export default function EnhancedDashboard() {
                   
                   {isLoadingLinks ? (
                     <div className="space-y-4">
-                      <div className="h-28 bg-muted rounded animate-pulse"></div>
-                      <div className="h-28 bg-muted rounded animate-pulse"></div>
+                      <div className="h-28 bg-base-200 rounded animate-pulse"></div>
+                      <div className="h-28 bg-base-200 rounded animate-pulse"></div>
                     </div>
                   ) : isErrorLinks ? (
                     <div className="text-center py-8">
@@ -817,13 +817,13 @@ export default function EnhancedDashboard() {
                         <X className="h-8 w-8 mx-auto" />
                       </div>
                       <h3 className="font-medium">Error Loading Links</h3>
-                      <p className="text-sm text-muted-foreground">Could not load your links. Please try again.</p>
+                      <p className="text-sm text-base-content/70">Could not load your links. Please try again.</p>
                     </div>
                   ) : links.length === 0 ? (
-                    <div className="text-center py-8 bg-muted/10 rounded-lg border border-dashed">
-                      <FileText className="h-8 w-8 mx-auto text-muted-foreground" />
+                    <div className="text-center py-8 bg-base-200/10 rounded-lg border border-dashed">
+                      <FileText className="h-8 w-8 mx-auto text-base-content/70" />
                       <h3 className="mt-2 font-medium">No Links Yet</h3>
-                      <p className="text-sm text-muted-foreground">Add your first link to get started.</p>
+                      <p className="text-sm text-base-content/70">Add your first link to get started.</p>
                       <Button 
                         onClick={() => setShowAddLinkDialog(true)} 
                         className="mt-4"
@@ -1013,7 +1013,7 @@ export default function EnhancedDashboard() {
                     {user?.name ? user.name.charAt(0) : 'U'}
                   </div>
                   <h3 className="font-medium">{user?.name || 'User'}</h3>
-                  <p className="text-sm text-muted-foreground mb-3">{user?.bio || 'Your bio here'}</p>
+                  <p className="text-sm text-base-content/70 mb-3">{user?.bio || 'Your bio here'}</p>
                   
                   <div className="w-full grid grid-cols-2 gap-2 mt-2">
                     <Button 
@@ -1291,7 +1291,7 @@ export default function EnhancedDashboard() {
           
           {currentOptimizeLink && (
             <div className="space-y-4">
-              <div className="border rounded-md p-3 bg-muted/20">
+              <div className="border rounded-md p-3 bg-base-200/20">
                 <div className="flex items-center mb-2">
                   <div 
                     className="w-6 h-6 rounded-full flex items-center justify-center mr-2"
@@ -1301,16 +1301,16 @@ export default function EnhancedDashboard() {
                   </div>
                   <h4 className="font-medium text-sm">{currentOptimizeLink.title}</h4>
                 </div>
-                <p className="text-xs text-muted-foreground truncate">{currentOptimizeLink.url}</p>
+                <p className="text-xs text-base-content/70 truncate">{currentOptimizeLink.url}</p>
               </div>
               
               <div className="space-y-3">
                 <div>
                   <h4 className="font-medium text-sm mb-1">Title Improvement</h4>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs text-muted-foreground">Current quality score:</p>
+                    <p className="text-xs text-base-content/70">Current quality score:</p>
                     <div className="flex items-center">
-                      <div className="h-2 w-16 bg-muted rounded-full overflow-hidden mr-2">
+                      <div className="h-2 w-16 bg-base-200 rounded-full overflow-hidden mr-2">
                         <div 
                           className="h-full rounded-full" 
                           style={{ 
@@ -1323,11 +1323,11 @@ export default function EnhancedDashboard() {
                     </div>
                   </div>
                   <div className="border rounded-md p-2 text-sm mb-2">
-                    <span className="text-muted-foreground">Current: </span>
+                    <span className="text-base-content/70">Current: </span>
                     {currentOptimizeLink.title}
                   </div>
                   <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
-                    <span className="text-muted-foreground">Suggestion: </span>
+                    <span className="text-base-content/70">Suggestion: </span>
                     <span className="text-green-600 dark:text-green-400 font-medium">
                       {currentOptimizeLink.platform === "twitter" 
                         ? "Follow My Twitter for Tech Insights & Updates" 
@@ -1339,9 +1339,9 @@ export default function EnhancedDashboard() {
                 <div>
                   <h4 className="font-medium text-sm mb-1">Description Improvement</h4>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs text-muted-foreground">Current quality score:</p>
+                    <p className="text-xs text-base-content/70">Current quality score:</p>
                     <div className="flex items-center">
-                      <div className="h-2 w-16 bg-muted rounded-full overflow-hidden mr-2">
+                      <div className="h-2 w-16 bg-base-200 rounded-full overflow-hidden mr-2">
                         <div 
                           className="h-full rounded-full" 
                           style={{ 
@@ -1354,11 +1354,11 @@ export default function EnhancedDashboard() {
                     </div>
                   </div>
                   <div className="border rounded-md p-2 text-sm mb-2">
-                    <span className="text-muted-foreground">Current: </span>
+                    <span className="text-base-content/70">Current: </span>
                     {currentOptimizeLink.description || "No description provided."}
                   </div>
                   <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
-                    <span className="text-muted-foreground">Suggestion: </span>
+                    <span className="text-base-content/70">Suggestion: </span>
                     <span className="text-green-600 dark:text-green-400">
                       {currentOptimizeLink.platform === "twitter" 
                         ? "Daily insights on web development, tech trends, and design. Join my 5K+ followers for practical tips and industry news!"

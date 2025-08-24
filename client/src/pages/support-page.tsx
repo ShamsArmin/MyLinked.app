@@ -292,27 +292,27 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-base-200 text-base-content">
       {/* Header */}
       <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 border-b">
         <div className="container mx-auto px-4 py-12">
           <div className="relative">
             {/* Dynamic Back Button - Icon Only */}
             <RouterLink href={user ? "/dashboard" : "/"} className="absolute left-0 top-0">
-              <Button variant="ghost" size="sm" className="flex items-center hover:bg-background/50">
+              <Button variant="ghost" size="sm" className="flex items-center hover:bg-base-100/50">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </RouterLink>
             
             <div className="text-center space-y-4">
               <h1 className="text-4xl font-bold tracking-tight">Help Center</h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-xl text-base-content/70 max-w-2xl mx-auto">
                 Get the help you need to make the most of your MyLinked profile
               </p>
               
               {/* Search Bar */}
               <div className="relative max-w-md mx-auto mt-8">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-base-content/70" />
                 <Input
                   placeholder="Search for help..."
                   value={searchQuery}
@@ -353,11 +353,11 @@ export default function SupportPage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">
+                    <p className="text-sm text-base-content/70 mb-3">
                       {channel.description}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-base-content/70">
                         Response: {channel.responseTime}
                       </span>
                       <Button 
@@ -411,8 +411,8 @@ export default function SupportPage() {
 
             {/* Search Results Info */}
             {searchQuery && (
-              <div className="bg-muted/50 rounded-lg p-4 mb-6">
-                <p className="text-sm text-muted-foreground">
+              <div className="bg-base-200/50 rounded-lg p-4 mb-6">
+                <p className="text-sm text-base-content/70">
                   {searchResults.length === 0 
                     ? `No results found for "${searchQuery}". Try different keywords like "profile", "social", "theme", or "settings".`
                     : `Found ${searchResults.length} relevant result${searchResults.length === 1 ? '' : 's'} for "${searchQuery}" sorted by relevance`
@@ -427,7 +427,7 @@ export default function SupportPage() {
                     Clear search
                   </Button>
                   {searchQuery && searchResults.length > 0 && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-base-content/70">
                       Showing most relevant matches first
                     </span>
                   )}
@@ -439,8 +439,8 @@ export default function SupportPage() {
             {searchQuery && searchResults.length === 0 ? (
               <Card>
                 <CardContent className="py-8 text-center">
-                  <p className="text-muted-foreground mb-4">No help articles match your search terms.</p>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className="text-base-content/70 mb-4">No help articles match your search terms.</p>
+                  <p className="text-sm text-base-content/70 mb-4">
                     Try searching for: "profile", "social media", "theme", "username", "links", "settings"
                   </p>
                   <Button 
@@ -464,7 +464,7 @@ export default function SupportPage() {
                             {result.category.category}
                           </Badge>
                         </div>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-base-content/70">
                           Relevance: {Math.round(result.relevance)}%
                         </span>
                       </div>
@@ -475,7 +475,7 @@ export default function SupportPage() {
                           <AccordionTrigger className="text-left hover:no-underline">
                             {result.question.question}
                           </AccordionTrigger>
-                          <AccordionContent className="text-muted-foreground">
+                          <AccordionContent className="text-base-content/70">
                             {result.question.answer}
                           </AccordionContent>
                         </AccordionItem>
@@ -501,7 +501,7 @@ export default function SupportPage() {
                           <AccordionTrigger className="text-left hover:no-underline">
                             {faq.question}
                           </AccordionTrigger>
-                          <AccordionContent className="text-muted-foreground">
+                          <AccordionContent className="text-base-content/70">
                             {faq.answer}
                           </AccordionContent>
                         </AccordionItem>
@@ -627,7 +627,7 @@ export default function SupportPage() {
 
                     <div>
                       <select
-                        className="w-full p-2 border border-input rounded-md bg-background"
+                        className="w-full p-2 border border-base-300 rounded-md bg-base-100"
                         {...register("priority", { required: "Priority is required" })}
                       >
                         <option value="">Select priority</option>
@@ -677,10 +677,10 @@ export default function SupportPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center space-x-3">
-                      <Clock className="h-5 w-5 text-muted-foreground" />
+                      <Clock className="h-5 w-5 text-base-content/70" />
                       <div>
                         <p className="font-medium">Response Times</p>
-                        <p className="text-sm text-muted-foreground">Usually within 24 hours</p>
+                        <p className="text-sm text-base-content/70">Usually within 24 hours</p>
                       </div>
                     </div>
                     
@@ -688,10 +688,10 @@ export default function SupportPage() {
                     
                     <div className="flex items-center justify-between space-x-3">
                       <div className="flex items-center space-x-3">
-                        <MessageCircle className="h-5 w-5 text-muted-foreground" />
+                        <MessageCircle className="h-5 w-5 text-base-content/70" />
                         <div>
                           <p className="font-medium">Live Chat</p>
-                          <p className="text-sm text-muted-foreground">Available 24/7 for instant help</p>
+                          <p className="text-sm text-base-content/70">Available 24/7 for instant help</p>
                         </div>
                       </div>
                       <Button 
@@ -712,10 +712,10 @@ export default function SupportPage() {
                     
                     <div className="flex items-center justify-between space-x-3">
                       <div className="flex items-center space-x-3">
-                        <Phone className="h-5 w-5 text-muted-foreground" />
+                        <Phone className="h-5 w-5 text-base-content/70" />
                         <div>
                           <p className="font-medium">Phone Support</p>
-                          <p className="text-sm text-muted-foreground">Direct phone assistance</p>
+                          <p className="text-sm text-base-content/70">Direct phone assistance</p>
                         </div>
                       </div>
                       <Button 
@@ -769,7 +769,7 @@ export default function SupportPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-base-content/70 mb-4">
                     Complete guide to using MyLinked features
                   </p>
                   <Button 
@@ -790,7 +790,7 @@ export default function SupportPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-base-content/70 mb-4">
                     Step-by-step video tutorials
                   </p>
                   <Button 
@@ -817,7 +817,7 @@ export default function SupportPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-base-content/70 mb-4">
                     Manage your profile on the go
                   </p>
                   <Button 
@@ -843,7 +843,7 @@ export default function SupportPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-base-content/70 mb-4">
                     Integrate MyLinked with your tools
                   </p>
                   <Button 
@@ -869,7 +869,7 @@ export default function SupportPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-base-content/70 mb-4">
                     Connect with other MyLinked users
                   </p>
                   <Button 
@@ -895,7 +895,7 @@ export default function SupportPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-base-content/70 mb-4">
                     Current known issues and workarounds
                   </p>
                   <Button 
@@ -938,11 +938,11 @@ export default function SupportPage() {
                 <div className="space-y-3 ml-8">
                   <div>
                     <h4 className="font-medium">Creating Your Account</h4>
-                    <p className="text-sm text-muted-foreground">Sign up with your email and create a unique username that will become part of your MyLinked profile URL.</p>
+                    <p className="text-sm text-base-content/70">Sign up with your email and create a unique username that will become part of your MyLinked profile URL.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Setting Up Your Profile</h4>
-                    <p className="text-sm text-muted-foreground">Add your name, bio, and profile picture to make your page personal and professional.</p>
+                    <p className="text-sm text-base-content/70">Add your name, bio, and profile picture to make your page personal and professional.</p>
                   </div>
                 </div>
               </section>
@@ -956,15 +956,15 @@ export default function SupportPage() {
                 <div className="space-y-3 ml-8">
                   <div>
                     <h4 className="font-medium">Adding Social Media Links</h4>
-                    <p className="text-sm text-muted-foreground">Click "Add Link" and choose from popular platforms like Instagram, Twitter, LinkedIn, TikTok, or add custom URLs.</p>
+                    <p className="text-sm text-base-content/70">Click "Add Link" and choose from popular platforms like Instagram, Twitter, LinkedIn, TikTok, or add custom URLs.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Link Customization</h4>
-                    <p className="text-sm text-muted-foreground">Customize your link titles, descriptions, and order them by dragging and dropping.</p>
+                    <p className="text-sm text-base-content/70">Customize your link titles, descriptions, and order them by dragging and dropping.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Link Analytics</h4>
-                    <p className="text-sm text-muted-foreground">Track clicks, views, and engagement rates for each link in your Analytics dashboard.</p>
+                    <p className="text-sm text-base-content/70">Track clicks, views, and engagement rates for each link in your Analytics dashboard.</p>
                   </div>
                 </div>
               </section>
@@ -978,15 +978,15 @@ export default function SupportPage() {
                 <div className="space-y-3 ml-8">
                   <div>
                     <h4 className="font-medium">Connecting Accounts</h4>
-                    <p className="text-sm text-muted-foreground">Connect your Instagram, Facebook, Twitter, and TikTok accounts to display your latest content automatically.</p>
+                    <p className="text-sm text-base-content/70">Connect your Instagram, Facebook, Twitter, and TikTok accounts to display your latest content automatically.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Content Preview</h4>
-                    <p className="text-sm text-muted-foreground">Show your latest posts, follower counts, and profile information from connected social platforms.</p>
+                    <p className="text-sm text-base-content/70">Show your latest posts, follower counts, and profile information from connected social platforms.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Social Score</h4>
-                    <p className="text-sm text-muted-foreground">Get an AI-calculated social score based on your profile completeness and engagement metrics.</p>
+                    <p className="text-sm text-base-content/70">Get an AI-calculated social score based on your profile completeness and engagement metrics.</p>
                   </div>
                 </div>
               </section>
@@ -1000,15 +1000,15 @@ export default function SupportPage() {
                 <div className="space-y-3 ml-8">
                   <div>
                     <h4 className="font-medium">Theme Selection</h4>
-                    <p className="text-sm text-muted-foreground">Choose from 6 beautiful themes: Ocean Blue, Sunset Glow, Forest Green, Midnight Dark, Royal Purple, and Passion Red.</p>
+                    <p className="text-sm text-base-content/70">Choose from 6 beautiful themes: Ocean Blue, Sunset Glow, Forest Green, Midnight Dark, Royal Purple, and Passion Red.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Profile Customization</h4>
-                    <p className="text-sm text-muted-foreground">Customize your profile layout, colors, and styling to match your personal brand.</p>
+                    <p className="text-sm text-base-content/70">Customize your profile layout, colors, and styling to match your personal brand.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">View Modes</h4>
-                    <p className="text-sm text-muted-foreground">Switch between different view modes to optimize your profile for different audiences.</p>
+                    <p className="text-sm text-base-content/70">Switch between different view modes to optimize your profile for different audiences.</p>
                   </div>
                 </div>
               </section>
@@ -1022,15 +1022,15 @@ export default function SupportPage() {
                 <div className="space-y-3 ml-8">
                   <div>
                     <h4 className="font-medium">Profile Analytics</h4>
-                    <p className="text-sm text-muted-foreground">Track total profile views, unique visitors, and engagement over time.</p>
+                    <p className="text-sm text-base-content/70">Track total profile views, unique visitors, and engagement over time.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Link Performance</h4>
-                    <p className="text-sm text-muted-foreground">See which links perform best with click-through rates and detailed metrics.</p>
+                    <p className="text-sm text-base-content/70">See which links perform best with click-through rates and detailed metrics.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">AI Recommendations</h4>
-                    <p className="text-sm text-muted-foreground">Get personalized suggestions for improving your profile performance and engagement.</p>
+                    <p className="text-sm text-base-content/70">Get personalized suggestions for improving your profile performance and engagement.</p>
                   </div>
                 </div>
               </section>
@@ -1044,15 +1044,15 @@ export default function SupportPage() {
                 <div className="space-y-3 ml-8">
                   <div>
                     <h4 className="font-medium">Spotlight Projects</h4>
-                    <p className="text-sm text-muted-foreground">Showcase your best work, collaborations, and achievements with dedicated project pages.</p>
+                    <p className="text-sm text-base-content/70">Showcase your best work, collaborations, and achievements with dedicated project pages.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Collaboration Tools</h4>
-                    <p className="text-sm text-muted-foreground">Connect with other users, find collaboration opportunities, and build your network.</p>
+                    <p className="text-sm text-base-content/70">Connect with other users, find collaboration opportunities, and build your network.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Industry Discovery</h4>
-                    <p className="text-sm text-muted-foreground">Discover users in your industry and connect with like-minded professionals.</p>
+                    <p className="text-sm text-base-content/70">Discover users in your industry and connect with like-minded professionals.</p>
                   </div>
                 </div>
               </section>
@@ -1066,15 +1066,15 @@ export default function SupportPage() {
                 <div className="space-y-3 ml-8">
                   <div>
                     <h4 className="font-medium">Profile Optimization</h4>
-                    <p className="text-sm text-muted-foreground">Use a professional photo, write a compelling bio, and keep your links organized and up-to-date.</p>
+                    <p className="text-sm text-base-content/70">Use a professional photo, write a compelling bio, and keep your links organized and up-to-date.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Content Strategy</h4>
-                    <p className="text-sm text-muted-foreground">Regularly update your social media connections and showcase your best work through Spotlight Projects.</p>
+                    <p className="text-sm text-base-content/70">Regularly update your social media connections and showcase your best work through Spotlight Projects.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Engagement</h4>
-                    <p className="text-sm text-muted-foreground">Use analytics to understand what content resonates with your audience and optimize accordingly.</p>
+                    <p className="text-sm text-base-content/70">Use analytics to understand what content resonates with your audience and optimize accordingly.</p>
                   </div>
                 </div>
               </section>
@@ -1088,15 +1088,15 @@ export default function SupportPage() {
                 <div className="space-y-3 ml-8">
                   <div>
                     <h4 className="font-medium">Social Media Connection Issues</h4>
-                    <p className="text-sm text-muted-foreground">If you're having trouble connecting social accounts, try disconnecting and reconnecting, or check your account permissions.</p>
+                    <p className="text-sm text-base-content/70">If you're having trouble connecting social accounts, try disconnecting and reconnecting, or check your account permissions.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Profile Not Loading</h4>
-                    <p className="text-sm text-muted-foreground">Clear your browser cache or try accessing your profile in an incognito/private browsing window.</p>
+                    <p className="text-sm text-base-content/70">Clear your browser cache or try accessing your profile in an incognito/private browsing window.</p>
                   </div>
                   <div>
                     <h4 className="font-medium">Analytics Not Updating</h4>
-                    <p className="text-sm text-muted-foreground">Analytics data may take up to 24 hours to update. If issues persist, contact support.</p>
+                    <p className="text-sm text-base-content/70">Analytics data may take up to 24 hours to update. If issues persist, contact support.</p>
                   </div>
                 </div>
               </section>

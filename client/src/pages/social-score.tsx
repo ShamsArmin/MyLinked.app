@@ -147,7 +147,7 @@ function ScoreRecommendationCard({
         </div>
         <div className="flex-1">
           <h3 className="font-medium text-sm mb-1 dark:text-gray-200">{title}</h3>
-          <p className="text-xs text-muted-foreground dark:text-gray-400">{description}</p>
+          <p className="text-xs text-base-content/70 dark:text-gray-400">{description}</p>
           
           {action && (
             <Button 
@@ -346,9 +346,9 @@ export default function SocialScorePage() {
   }
   
   return (
-    <div className="bg-background min-h-screen">
+    <div className="min-h-screen bg-base-200 text-base-content">
       {/* Header */}
-      <header className="border-b bg-card">
+      <header className="border-b bg-base-100">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-2">
@@ -375,7 +375,7 @@ export default function SocialScorePage() {
           {/* Page Title */}
           <div>
             <h1 className="text-2xl font-bold">Social Score</h1>
-            <p className="text-muted-foreground">
+            <p className="text-base-content/70">
               Boost your profile's effectiveness with personalized recommendations
             </p>
           </div>
@@ -412,7 +412,7 @@ export default function SocialScorePage() {
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center flex-col">
                       <div className="text-5xl font-bold">{currentScore}</div>
-                      <div className="text-sm text-muted-foreground">out of 100</div>
+                      <div className="text-sm text-base-content/70">out of 100</div>
                     </div>
                   </div>
                   
@@ -434,7 +434,7 @@ export default function SocialScorePage() {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-center pb-4">
-                <p className="text-sm text-center text-muted-foreground max-w-xs">
+                <p className="text-sm text-center text-base-content/70 max-w-xs">
                   AI analysis uses engagement data, profile completeness, and optimization to generate your score.
                 </p>
               </CardFooter>
@@ -454,7 +454,7 @@ export default function SocialScorePage() {
                         <span className="text-sm">{item.category}</span>
                         <span className="text-sm font-medium">{item.userScore}</span>
                       </div>
-                      <div className="relative h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="relative h-2 w-full bg-base-200 rounded-full overflow-hidden">
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -472,7 +472,7 @@ export default function SocialScorePage() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div
-                                className="absolute left-0 top-0 h-full bg-muted-foreground/30"
+                                className="absolute left-0 top-0 h-full bg-base-200-foreground/30"
                                 style={{ width: `${item.avgScore}%` }}
                               />
                             </TooltipTrigger>
@@ -482,7 +482,7 @@ export default function SocialScorePage() {
                           </Tooltip>
                         </TooltipProvider>
                       </div>
-                      <div className="flex justify-between text-xs text-muted-foreground">
+                      <div className="flex justify-between text-xs text-base-content/70">
                         <div>Your score</div>
                         <div>Average</div>
                       </div>
@@ -638,7 +638,7 @@ export default function SocialScorePage() {
                             </AccordionTrigger>
                             <AccordionContent>
                               <div className="py-2">
-                                <p className="text-sm text-muted-foreground mb-2">
+                                <p className="text-sm text-base-content/70 mb-2">
                                   Link diversity measures how many different platforms you've connected.
                                 </p>
                                 <Progress 
@@ -723,7 +723,7 @@ export default function SocialScorePage() {
                           </ResponsiveContainer>
                           <div className="absolute inset-0 flex items-center justify-center flex-col">
                             <div className="text-4xl font-bold">{currentScore}</div>
-                            <div className="text-xs text-muted-foreground">out of 100</div>
+                            <div className="text-xs text-base-content/70">out of 100</div>
                           </div>
                         </div>
                       </div>
@@ -747,7 +747,7 @@ export default function SocialScorePage() {
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="text-sm text-muted-foreground mb-1">Views</p>
+                                  <p className="text-sm text-base-content/70 mb-1">Views</p>
                                   <h3 className="text-2xl font-bold">{data?.stats.views || 0}</h3>
                                 </div>
                                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -761,7 +761,7 @@ export default function SocialScorePage() {
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="text-sm text-muted-foreground mb-1">Clicks</p>
+                                  <p className="text-sm text-base-content/70 mb-1">Clicks</p>
                                   <h3 className="text-2xl font-bold">{data?.stats.clicks || 0}</h3>
                                 </div>
                                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -776,7 +776,7 @@ export default function SocialScorePage() {
                           <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="text-sm text-muted-foreground mb-1">Click-Through Rate</p>
+                                <p className="text-sm text-base-content/70 mb-1">Click-Through Rate</p>
                                 <h3 className="text-2xl font-bold">{data?.stats.ctr.toFixed(1) || 0}%</h3>
                               </div>
                               <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -790,14 +790,14 @@ export default function SocialScorePage() {
                           <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="text-sm text-muted-foreground mb-1">Network</p>
+                                <p className="text-sm text-base-content/70 mb-1">Network</p>
                                 <div className="flex space-x-4">
                                   <div>
-                                    <div className="text-xs text-muted-foreground">Followers</div>
+                                    <div className="text-xs text-base-content/70">Followers</div>
                                     <div className="font-medium">{data?.followers || 0}</div>
                                   </div>
                                   <div>
-                                    <div className="text-xs text-muted-foreground">Following</div>
+                                    <div className="text-xs text-base-content/70">Following</div>
                                     <div className="font-medium">{data?.following || 0}</div>
                                   </div>
                                 </div>
@@ -836,7 +836,7 @@ export default function SocialScorePage() {
                             </ResponsiveContainer>
                           ) : (
                             <div className="h-full w-full flex items-center justify-center flex-col">
-                              <p className="text-muted-foreground">No engagement data available yet</p>
+                              <p className="text-base-content/70">No engagement data available yet</p>
                             </div>
                           )}
                         </div>
@@ -886,7 +886,7 @@ export default function SocialScorePage() {
                         )}
                       </div>
                     </div>
-                    <div className="text-sm text-muted-foreground mt-1">Your new social score</div>
+                    <div className="text-sm text-base-content/70 mt-1">Your new social score</div>
                   </div>
                 </div>
                 

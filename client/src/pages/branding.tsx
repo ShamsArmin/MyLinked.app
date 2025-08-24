@@ -180,7 +180,7 @@ export default function BrandingPage() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">{label}</span>
-          <span className="text-xs text-muted-foreground">{color}</span>
+          <span className="text-xs text-base-content/70">{color}</span>
         </div>
         <div className="flex flex-col rounded-md overflow-hidden w-full">
           <div 
@@ -217,7 +217,7 @@ export default function BrandingPage() {
   };
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="min-h-screen bg-base-200 text-base-content">
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="flex flex-col space-y-8">
           {/* Header Section */}
@@ -228,7 +228,7 @@ export default function BrandingPage() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">AI Branding Boost</h1>
-                <p className="text-muted-foreground mt-1">
+                <p className="text-base-content/70 mt-1">
                   Get personalized brand suggestions to enhance your profile
                 </p>
               </div>
@@ -390,14 +390,14 @@ export default function BrandingPage() {
                             <CardContent>
                               <div className="space-y-4">
                                 <div>
-                                  <h4 className="text-sm text-muted-foreground mb-1">Header Example</h4>
+                                  <h4 className="text-sm text-base-content/70 mb-1">Header Example</h4>
                                   <p className="text-xl font-bold" style={{ fontFamily: font.toLowerCase().replace(' ', '-') }}>
                                     {user?.name || "Your Name"}
                                   </p>
                                 </div>
                                 
                                 <div>
-                                  <h4 className="text-sm text-muted-foreground mb-1">Body Text Example</h4>
+                                  <h4 className="text-sm text-base-content/70 mb-1">Body Text Example</h4>
                                   <p className="text-sm" style={{ fontFamily: font.toLowerCase().replace(' ', '-') }}>
                                     {brandingData.profileBio}
                                   </p>
@@ -417,9 +417,9 @@ export default function BrandingPage() {
                         ))}
                       </div>
                       
-                      <div className="bg-muted p-4 rounded-md">
+                      <div className="bg-base-200 p-4 rounded-md">
                         <h3 className="text-sm font-medium mb-2">Font Pairing Tip</h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-base-content/70">
                           For best results, use one font for headings and another for body text. This creates visual
                           hierarchy and improves readability.
                         </p>
@@ -443,7 +443,7 @@ export default function BrandingPage() {
                       {/* Tagline */}
                       <div>
                         <h3 className="text-lg font-medium mb-3">Professional Tagline</h3>
-                        <Card className="bg-muted/50">
+                        <Card className="bg-base-200/50">
                           <CardContent className="p-4">
                             <p className="text-lg italic text-center py-2">{brandingData.tagline}</p>
                           </CardContent>
@@ -469,7 +469,7 @@ export default function BrandingPage() {
                             value={brandingData.profileBio} 
                             readOnly 
                           />
-                          <div className="flex justify-between items-center text-xs text-muted-foreground">
+                          <div className="flex justify-between items-center text-xs text-base-content/70">
                             <span>{brandingData.profileBio.length} characters (max 160)</span>
                             <div>
                               <Button 
@@ -494,16 +494,16 @@ export default function BrandingPage() {
                       </div>
                       
                       {/* Voice Tips */}
-                      <div className="bg-muted p-4 rounded-md">
+                      <div className="bg-base-200 p-4 rounded-md">
                         <h3 className="text-sm font-medium mb-2">Brand Voice Recommendations</h3>
                         <div className="space-y-2">
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-base-content/70">
                             <strong>Tone:</strong> Professional yet approachable, confident, and authentic.
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-base-content/70">
                             <strong>Key messages:</strong> Emphasize your expertise, unique perspective, and the value you provide.
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-base-content/70">
                             <strong>Content focus:</strong> Share insights, accomplishments, and content that reinforces your personal brand.
                           </p>
                         </div>
@@ -550,7 +550,7 @@ export default function BrandingPage() {
                               <CardTitle className="text-sm">Profile Photos</CardTitle>
                             </CardHeader>
                             <CardContent className="px-4 pb-4 pt-0">
-                              <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
+                              <ul className="text-sm space-y-1 list-disc list-inside text-base-content/70">
                                 <li>Professional headshot</li>
                                 <li>Good lighting & clarity</li>
                                 <li>Neutral background</li>
@@ -564,7 +564,7 @@ export default function BrandingPage() {
                               <CardTitle className="text-sm">Content Photos</CardTitle>
                             </CardHeader>
                             <CardContent className="px-4 pb-4 pt-0">
-                              <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
+                              <ul className="text-sm space-y-1 list-disc list-inside text-base-content/70">
                                 <li>Consistent editing style</li>
                                 <li>Thematic color palette</li>
                                 <li>Balanced composition</li>
@@ -578,7 +578,7 @@ export default function BrandingPage() {
                               <CardTitle className="text-sm">Background Images</CardTitle>
                             </CardHeader>
                             <CardContent className="px-4 pb-4 pt-0">
-                              <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
+                              <ul className="text-sm space-y-1 list-disc list-inside text-base-content/70">
                                 <li>Subtle patterns or textures</li>
                                 <li>Abstract representations</li>
                                 <li>On-brand color gradients</li>
@@ -607,7 +607,7 @@ export default function BrandingPage() {
                                   style={{ background: `linear-gradient(to right, ${brandingData.colorPalette.primary}, ${brandingData.colorPalette.secondary})` }}
                                 />
                               </div>
-                              <p className="text-xs text-muted-foreground">Shapes</p>
+                              <p className="text-xs text-base-content/70">Shapes</p>
                             </div>
                             
                             <div className="space-y-2 text-center">
@@ -621,7 +621,7 @@ export default function BrandingPage() {
                                   <div className="h-1 rounded-full" style={{ backgroundColor: brandingData.colorPalette.secondary + "60" }} />
                                 </div>
                               </div>
-                              <p className="text-xs text-muted-foreground">Lines</p>
+                              <p className="text-xs text-base-content/70">Lines</p>
                             </div>
                             
                             <div className="space-y-2 text-center">
@@ -644,7 +644,7 @@ export default function BrandingPage() {
                                   />
                                 </div>
                               </div>
-                              <p className="text-xs text-muted-foreground">Patterns</p>
+                              <p className="text-xs text-base-content/70">Patterns</p>
                             </div>
                             
                             <div className="space-y-2 text-center">
@@ -656,7 +656,7 @@ export default function BrandingPage() {
                               >
                                 <div className="w-12 h-12 rounded-md border-2" style={{ borderColor: brandingData.colorPalette.primary }} />
                               </div>
-                              <p className="text-xs text-muted-foreground">Backgrounds</p>
+                              <p className="text-xs text-base-content/70">Backgrounds</p>
                             </div>
                           </div>
                         </CardContent>
@@ -672,9 +672,9 @@ export default function BrandingPage() {
           {!brandingData && !isGenerating && (
             <Card className="border-dashed mt-4">
               <CardContent className="p-8 flex flex-col items-center justify-center min-h-[400px] text-center">
-                <Paintbrush className="h-12 w-12 mb-4 text-muted-foreground" />
+                <Paintbrush className="h-12 w-12 mb-4 text-base-content/70" />
                 <h3 className="text-xl font-medium mb-2">Get AI Branding Recommendations</h3>
-                <p className="text-muted-foreground max-w-md mb-6">
+                <p className="text-base-content/70 max-w-md mb-6">
                   Our AI will analyze your profile and social links to generate personalized branding suggestions 
                   including color palette, typography, messaging, and visual style.
                 </p>

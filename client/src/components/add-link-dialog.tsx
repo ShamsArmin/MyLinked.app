@@ -201,7 +201,7 @@ const AddLinkDialog: React.FC<AddLinkDialogProps> = ({
             <Label htmlFor="linkUrl">{isPhone ? "Phone Number" : "URL"}</Label>
             {isPhone ? (
               <div className="flex items-center space-x-1">
-                <div className="bg-gray-100 px-3 py-2 rounded-l-md border border-r-0 border-input text-muted-foreground">
+                <div className="bg-gray-100 px-3 py-2 rounded-l-md border border-r-0 border-base-300 text-base-content/70">
                   tel:
                 </div>
                 <Input

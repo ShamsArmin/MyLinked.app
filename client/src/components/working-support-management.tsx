@@ -175,7 +175,7 @@ export function SupportManagement() {
               <Mail className="h-5 w-5 text-blue-500" />
               <div>
                 <p className="text-2xl font-bold">{stats.total}</p>
-                <p className="text-sm text-muted-foreground">Total Messages</p>
+                <p className="text-sm text-base-content/70">Total Messages</p>
               </div>
             </div>
           </CardContent>
@@ -187,7 +187,7 @@ export function SupportManagement() {
               <AlertCircle className="h-5 w-5 text-orange-500" />
               <div>
                 <p className="text-2xl font-bold">{stats.open}</p>
-                <p className="text-sm text-muted-foreground">Open</p>
+                <p className="text-sm text-base-content/70">Open</p>
               </div>
             </div>
           </CardContent>
@@ -199,7 +199,7 @@ export function SupportManagement() {
               <MessageSquare className="h-5 w-5 text-red-500" />
               <div>
                 <p className="text-2xl font-bold">{stats.unread}</p>
-                <p className="text-sm text-muted-foreground">Unread</p>
+                <p className="text-sm text-base-content/70">Unread</p>
               </div>
             </div>
           </CardContent>
@@ -211,7 +211,7 @@ export function SupportManagement() {
               <CheckCircle className="h-5 w-5 text-green-500" />
               <div>
                 <p className="text-2xl font-bold">{stats.resolved}</p>
-                <p className="text-sm text-muted-foreground">Resolved</p>
+                <p className="text-sm text-base-content/70">Resolved</p>
               </div>
             </div>
           </CardContent>
@@ -239,7 +239,7 @@ export function SupportManagement() {
                     <div className="flex items-start justify-between">
                       <div className="space-y-2 flex-1">
                         <div className="flex items-center space-x-2 flex-wrap gap-1">
-                          <User className="h-4 w-4 text-muted-foreground" />
+                          <User className="h-4 w-4 text-base-content/70" />
                           <span className="font-medium">{message.name}</span>
                           <Badge variant="outline" className="text-xs">{message.email}</Badge>
                           <Badge 
@@ -265,13 +265,13 @@ export function SupportManagement() {
                         {/* Subject and Message */}
                         <div>
                           <h4 className="font-medium text-sm">{message.subject}</h4>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <p className="text-sm text-base-content/70 mt-1 line-clamp-2">
                             {message.message}
                           </p>
                         </div>
                         
                         {/* Timestamp */}
-                        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                        <div className="flex items-center space-x-2 text-xs text-base-content/70">
                           <Clock className="h-3 w-3" />
                           <span>{new Date(message.createdAt).toLocaleString()}</span>
                           {message.resolvedAt && (
@@ -340,7 +340,7 @@ export function SupportManagement() {
             ))}
             
             {messages.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-12 text-base-content/70">
                 <Mail className="h-16 w-16 mx-auto mb-4 opacity-30" />
                 <p className="text-lg font-medium">No support messages</p>
                 <p className="text-sm">Messages from the contact form will appear here</p>

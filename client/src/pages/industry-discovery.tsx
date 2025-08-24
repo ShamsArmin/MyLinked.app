@@ -359,7 +359,7 @@ const IndustryDiscovery = () => {
         </div>
       </CardHeader>
       <CardContent className="pb-2">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-base-content/70">
           {user.bio || 'No bio available'}
         </p>
         <div className="flex flex-wrap gap-1 mt-2">
@@ -400,7 +400,7 @@ const IndustryDiscovery = () => {
         <div className="flex items-start justify-between">
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl font-bold tracking-tight">Industry Discovery</h1>
-            <p className="text-muted-foreground">
+            <p className="text-base-content/70">
               Connect with professionals across 25+ industries. Discover opportunities, build your network, and find like-minded collaborators.
             </p>
           </div>
@@ -422,7 +422,7 @@ const IndustryDiscovery = () => {
               <Building2 className="h-5 w-5 mr-2 text-primary" />
               Explore Industries
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-base-content/70">
               Select an industry to discover professionals and expand your network
             </p>
           </div>
@@ -445,7 +445,7 @@ const IndustryDiscovery = () => {
                       <h3 className="font-semibold text-sm mb-1 leading-tight">
                         {industry.name}
                       </h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
+                      <p className="text-xs text-base-content/70 line-clamp-2">
                         {industry.description}
                       </p>
                     </div>
@@ -562,9 +562,9 @@ const IndustryDiscovery = () => {
                     </>
                   ) : (
                     <div className="text-center py-8">
-                      <UserIcon className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                      <UserIcon className="h-12 w-12 mx-auto text-base-content/70 opacity-50" />
                       <h3 className="mt-4 text-lg font-medium">No similar professionals found</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
+                      <p className="mt-2 text-sm text-base-content/70">
                         {selectedIndustry 
                           ? "Try selecting a different industry or broadening your search criteria." 
                           : "Please select an industry to find similar professionals."}
@@ -607,9 +607,9 @@ const IndustryDiscovery = () => {
                     </>
                   ) : (
                     <div className="text-center py-8">
-                      <Search className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                      <Search className="h-12 w-12 mx-auto text-base-content/70 opacity-50" />
                       <h3 className="mt-4 text-lg font-medium">No results found</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
+                      <p className="mt-2 text-sm text-base-content/70">
                         Try adjusting your search filters to find more professionals.
                       </p>
                     </div>
