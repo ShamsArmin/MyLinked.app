@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { User } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/hooks/use-theme";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,6 +72,7 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("general");
+  const { setIsDarkMode } = useTheme();
 
   // Fetch user profile data
   const { data: profile, isLoading: isLoadingProfile } = useQuery<User>({
@@ -109,10 +111,8 @@ export default function ProfilePage() {
 
   // Profile update mutation
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: ProfileFormData) => {
-      const response = await apiRequest("PATCH", "/api/profile", data);
-      return response.json();
-    },
+    mutationFn: (data: ProfileFormData) =>
+      apiRequest("PATCH", "/api/profile", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
       toast({
@@ -329,9 +329,20 @@ export default function ProfilePage() {
                             </FormDescription>
                           </div>
                           <FormControl>
-                            <Switch
+                              <Switch
                               checked={field.value}
-                              onCheckedChange={field.onChange}
+                              onCheckedChange={(checked) => {
+                                field.onChange(checked);
+                                document.documentElement.classList.toggle(
+                                  "dark",
+                                  checked
+                                );
+                                document.body.classList.toggle(
+                                  "dark",
+                                  checked
+                                );
+                                setIsDarkMode(checked);
+                              }}
                             />
                           </FormControl>
                         </FormItem>
