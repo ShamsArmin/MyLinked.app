@@ -240,24 +240,45 @@ export default function MyLinksPage() {
     },
   });
 
+  const selectedPlatform = form.watch('platform');
+  const selectedEditPlatform = editForm.watch('platform');
+
   // Handle form submissions
+  const formatUrl = (platform: string, url: string) => {
+    if (platform === 'phone') {
+      return `tel:${url.replace(/[^\d+]/g, '')}`;
+    }
+    if (platform === 'whatsapp') {
+      return `https://wa.me/${url.replace(/[^\d+]/g, '')}`;
+    }
+    return url;
+  };
+
   const onSubmit = (data: LinkFormValues) => {
-    createLinkMutation.mutate(data);
+    const formatted = { ...data, url: formatUrl(data.platform, data.url) };
+    createLinkMutation.mutate(formatted);
   };
 
   const onEditSubmit = (data: LinkFormValues) => {
     if (currentLink) {
-      updateLinkMutation.mutate({ id: currentLink.id, data });
+      const formatted = { ...data, url: formatUrl(data.platform, data.url) };
+      updateLinkMutation.mutate({ id: currentLink.id, data: formatted });
     }
   };
 
   // Handle edit link
   const handleEditLink = (link: Link) => {
     setCurrentLink(link);
+    let url = link.url;
+    if (link.platform === 'phone') {
+      url = link.url.replace(/^tel:/, '');
+    } else if (link.platform === 'whatsapp') {
+      url = link.url.replace(/^https?:\/\/(?:wa\.me\/|api\.whatsapp\.com\/send\?phone=)/, '');
+    }
     editForm.reset({
       platform: link.platform,
       title: link.title,
-      url: link.url,
+      url,
       description: link.description || '',
       customIcon: link.customIcon || '',
     });
@@ -806,9 +827,19 @@ export default function MyLinksPage() {
                   name="url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL</FormLabel>
+                      <FormLabel>
+                        {selectedPlatform === 'phone' || selectedPlatform === 'whatsapp' ? 'Phone Number' : 'URL'}
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter URL" {...field} />
+                        <Input
+                          type={selectedPlatform === 'phone' || selectedPlatform === 'whatsapp' ? 'tel' : 'text'}
+                          placeholder={
+                            selectedPlatform === 'phone' || selectedPlatform === 'whatsapp'
+                              ? 'Enter phone number'
+                              : 'Enter URL'
+                          }
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1020,9 +1051,19 @@ export default function MyLinksPage() {
                   name="url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL</FormLabel>
+                      <FormLabel>
+                        {selectedEditPlatform === 'phone' || selectedEditPlatform === 'whatsapp' ? 'Phone Number' : 'URL'}
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter URL" {...field} />
+                        <Input
+                          type={selectedEditPlatform === 'phone' || selectedEditPlatform === 'whatsapp' ? 'tel' : 'text'}
+                          placeholder={
+                            selectedEditPlatform === 'phone' || selectedEditPlatform === 'whatsapp'
+                              ? 'Enter phone number'
+                              : 'Enter URL'
+                          }
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
