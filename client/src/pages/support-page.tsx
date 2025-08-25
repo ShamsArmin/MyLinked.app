@@ -298,7 +298,7 @@ export default function SupportPage() {
         <div className="container mx-auto px-4 py-12">
           <div className="relative">
             {/* Dynamic Back Button - Icon Only */}
-            <RouterLink href={user ? "/dashboard" : "/"} className="absolute left-0 top-0">
+            <RouterLink href="/" className="absolute left-0 top-0">
               <Button variant="ghost" size="sm" className="flex items-center hover:bg-background/50">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
