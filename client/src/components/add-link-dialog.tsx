@@ -15,6 +15,7 @@ import {
 } from "@/lib/links-api";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { formatLinkUrl, stripLinkUrl } from "@/lib/link-utils";
 
 type AddLinkDialogProps = {
   open: boolean;
@@ -53,36 +54,18 @@ const AddLinkDialog: React.FC<AddLinkDialogProps> = ({
   // Reset form when dialog opens/closes
   React.useEffect(() => {
     if (open) {
-        setPlatform(existingLink?.platform || "");
-        setTitle(existingLink?.title || "");
-        if (existingLink?.platform === "phone") {
-          setUrl(existingLink.url.replace(/^tel:/, ""));
-        } else if (existingLink?.platform === "whatsapp") {
-          setUrl(
-            existingLink.url.replace(
-              /^https?:\/\/(?:wa\.me\/|api\.whatsapp\.com\/send\?phone=)/,
-              ""
-            )
-          );
-        } else {
-          setUrl(existingLink?.url || "");
-        }
-        setFeatured(existingLink?.featured === true);
-        setIsPhone(
-          existingLink?.platform === "phone" || existingLink?.platform === "whatsapp"
-        );
-      }
-    }, [open, existingLink]);
+      setPlatform(existingLink?.platform || "");
+      setTitle(existingLink?.title || "");
+      setUrl(existingLink ? stripLinkUrl(existingLink.platform, existingLink.url) : "");
+      setFeatured(existingLink?.featured === true);
+      setIsPhone(existingLink?.platform === "phone" || existingLink?.platform === "whatsapp");
+    }
+  }, [open, existingLink]);
 
   // Update isPhone when platform changes
   React.useEffect(() => {
     setIsPhone(platform === "phone" || platform === "whatsapp");
-    if (platform === "phone") {
-      setUrl((prev) => prev.replace(/^tel:/, ""));
-    }
-    if (platform === "whatsapp") {
-      setUrl((prev) => prev.replace(/^https?:\/\/(?:wa\.me\/|api\.whatsapp\.com\/send\?phone=)/, ""));
-    }
+    setUrl((prev) => stripLinkUrl(platform, prev));
   }, [platform]);
   
   const addLinkMutation = useMutation({
@@ -139,16 +122,7 @@ const AddLinkDialog: React.FC<AddLinkDialogProps> = ({
     }
     
     // Format URL based on platform type
-    let formattedUrl = url;
-
-    if (platform === 'phone') {
-      formattedUrl = `tel:${url.replace(/[^\d+]/g, '')}`;
-    } else if (platform === 'whatsapp') {
-      formattedUrl = `https://wa.me/${url.replace(/[^\d+]/g, '')}`;
-    } else if (!/^https?:\/\//i.test(url)) {
-      // Add https:// to non-phone URLs if they don't have a protocol
-      formattedUrl = `https://${url}`;
-    }
+    const formattedUrl = formatLinkUrl(platform, url);
     
     const linkData = {
       platform,

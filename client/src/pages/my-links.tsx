@@ -18,6 +18,7 @@ import {
 import { z } from "zod";
 import { usePlatformIcons } from "@/hooks/use-platform-icons";
 import { useLocation } from "wouter";
+import { formatLinkUrl, stripLinkUrl } from "@/lib/link-utils";
 
 import {
   Plus,
@@ -244,24 +245,14 @@ export default function MyLinksPage() {
   const selectedEditPlatform = editForm.watch('platform');
 
   // Handle form submissions
-  const formatUrl = (platform: string, url: string) => {
-    if (platform === 'phone') {
-      return `tel:${url.replace(/[^\d+]/g, '')}`;
-    }
-    if (platform === 'whatsapp') {
-      return `https://wa.me/${url.replace(/[^\d+]/g, '')}`;
-    }
-    return url;
-  };
-
   const onSubmit = (data: LinkFormValues) => {
-    const formatted = { ...data, url: formatUrl(data.platform, data.url) };
+    const formatted = { ...data, url: formatLinkUrl(data.platform, data.url) };
     createLinkMutation.mutate(formatted);
   };
 
   const onEditSubmit = (data: LinkFormValues) => {
     if (currentLink) {
-      const formatted = { ...data, url: formatUrl(data.platform, data.url) };
+      const formatted = { ...data, url: formatLinkUrl(data.platform, data.url) };
       updateLinkMutation.mutate({ id: currentLink.id, data: formatted });
     }
   };
@@ -269,12 +260,7 @@ export default function MyLinksPage() {
   // Handle edit link
   const handleEditLink = (link: Link) => {
     setCurrentLink(link);
-    let url = link.url;
-    if (link.platform === 'phone') {
-      url = link.url.replace(/^tel:/, '');
-    } else if (link.platform === 'whatsapp') {
-      url = link.url.replace(/^https?:\/\/(?:wa\.me\/|api\.whatsapp\.com\/send\?phone=)/, '');
-    }
+    const url = stripLinkUrl(link.platform, link.url);
     editForm.reset({
       platform: link.platform,
       title: link.title,
