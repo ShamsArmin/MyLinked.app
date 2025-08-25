@@ -117,7 +117,7 @@ export default function MyLinksPage() {
   const { toast } = useToast();
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'title' | 'platform' | 'clicks' | 'createdAt'>('title');
+  const [sortBy, setSortBy] = useState<'order' | 'title' | 'platform' | 'clicks' | 'createdAt'>('order');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -449,19 +449,30 @@ export default function MyLinksPage() {
       return matchesSearch && matchesPlatform;
     })
     .sort((a, b) => {
+      if (sortBy === 'order') {
+        if (a.featured !== b.featured) {
+          return sortOrder === 'asc'
+            ? a.featured ? -1 : 1
+            : a.featured ? 1 : -1;
+        }
+        const aOrder = a.order ?? 0;
+        const bOrder = b.order ?? 0;
+        return sortOrder === 'asc' ? aOrder - bOrder : bOrder - aOrder;
+      }
+
       let aValue = a[sortBy];
       let bValue = b[sortBy];
-      
+
       if (sortBy === 'clicks') {
         aValue = a.clicks || 0;
         bValue = b.clicks || 0;
       }
-      
+
       if (sortBy === 'createdAt') {
         aValue = new Date(a.createdAt).getTime();
         bValue = new Date(b.createdAt).getTime();
       }
-      
+
       if (sortOrder === 'asc') {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       } else {
@@ -571,6 +582,7 @@ export default function MyLinksPage() {
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="order">Custom Order</SelectItem>
                     <SelectItem value="title">Title</SelectItem>
                     <SelectItem value="platform">Platform</SelectItem>
                     <SelectItem value="clicks">Clicks</SelectItem>
@@ -689,13 +701,31 @@ export default function MyLinksPage() {
                               >
                                 <Copy className="h-4 w-4" />
                               </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEditLink(link)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="sm" variant="outline">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem onClick={() => handlePinLink(link.id)}>
+                                    <Pin className="h-4 w-4 mr-2" />
+                                    {link.featured ? 'Unpin' : 'Pin'}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleMoveLinkUp(link.id)}>
+                                    <ArrowUp className="h-4 w-4 mr-2" />
+                                    Move Up
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleMoveLinkDown(link.id)}>
+                                    <ArrowDown className="h-4 w-4 mr-2" />
+                                    Move Down
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleEditLink(link)}>
+                                    <Pencil className="h-4 w-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                               <Button
                                 size="sm"
                                 variant="outline"
