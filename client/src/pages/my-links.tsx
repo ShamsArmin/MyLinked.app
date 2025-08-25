@@ -99,6 +99,7 @@ import {
 
 const linkFormSchema = insertLinkSchema.extend({
   customIcon: z.string().optional(),
+  username: z.string().optional(),
 });
 
 type LinkFormValues = z.infer<typeof linkFormSchema>;
@@ -123,6 +124,8 @@ export default function MyLinksPage() {
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [emailAddress, setEmailAddress] = useState("");
   
   const { getPlatformIcon } = usePlatformIcons();
   const [, navigate] = useLocation();
@@ -229,6 +232,7 @@ export default function MyLinksPage() {
       url: '',
       description: '',
       customIcon: '',
+      username: '',
     },
   });
 
@@ -240,21 +244,46 @@ export default function MyLinksPage() {
       url: '',
       description: '',
       customIcon: '',
+      username: '',
     },
   });
 
   const selectedAddPlatform = form.watch('platform');
   const selectedEditPlatform = editForm.watch('platform');
+  const addUsername = form.watch('username');
+  const editUsername = editForm.watch('username');
+
+  useEffect(() => {
+    if (selectedAddPlatform === 'telegram') {
+      form.setValue(
+        'url',
+        addUsername ? `https://t.me/${addUsername.replace(/^@/, '')}` : ''
+      );
+    }
+  }, [selectedAddPlatform, addUsername, form]);
+
+  useEffect(() => {
+    if (selectedEditPlatform === 'telegram') {
+      editForm.setValue(
+        'url',
+        editUsername ? `https://t.me/${editUsername.replace(/^@/, '')}` : ''
+      );
+    }
+  }, [selectedEditPlatform, editUsername, editForm]);
 
   // Handle form submissions
   const onSubmit = (data: LinkFormValues) => {
-    const formatted = { ...data, url: formatLinkUrl(data.platform, data.url) };
+    const { username, ...rest } = data;
+    const urlInput = rest.platform === 'telegram' ? username || rest.url : rest.url;
+    const formatted = { ...rest, url: formatLinkUrl(rest.platform, urlInput) };
     createLinkMutation.mutate(formatted);
   };
 
   const onEditSubmit = (data: LinkFormValues) => {
     if (currentLink) {
-      const formatted = { ...data, url: formatLinkUrl(data.platform, data.url) };
+      const { username, ...rest } = data;
+      const urlInput = rest.platform === 'telegram' ? username || rest.url : rest.url;
+      const formatted = { ...rest, url: formatLinkUrl(rest.platform, urlInput) };
       updateLinkMutation.mutate({ id: currentLink.id, data: formatted });
     }
   };
@@ -262,14 +291,25 @@ export default function MyLinksPage() {
   // Handle edit link
   const handleEditLink = (link: Link) => {
     setCurrentLink(link);
-    const url = stripLinkUrl(link.platform, link.url);
-    editForm.reset({
-      platform: link.platform,
-      title: link.title,
-      url,
-      description: link.description || '',
-      customIcon: link.customIcon || '',
-    });
+    const stripped = stripLinkUrl(link.platform, link.url);
+    if (link.platform === 'telegram') {
+      editForm.reset({
+        platform: link.platform,
+        title: link.title,
+        url: formatLinkUrl('telegram', stripped),
+        username: stripped,
+        description: link.description || '',
+        customIcon: link.customIcon || '',
+      });
+    } else {
+      editForm.reset({
+        platform: link.platform,
+        title: link.title,
+        url: stripped,
+        description: link.description || '',
+        customIcon: link.customIcon || '',
+      });
+    }
     setIsEditDialogOpen(true);
   };
 
@@ -297,10 +337,29 @@ export default function MyLinksPage() {
     }
   };
 
+  const handleCopyText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: 'Copied!',
+        description: 'Copied to clipboard',
+      });
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy to clipboard',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleVisitLink = (link: Link) => {
     if (link.platform === 'phone') {
       setPhoneNumber(stripLinkUrl(link.platform, link.url));
       setIsPhoneDialogOpen(true);
+    } else if (link.platform === 'email') {
+      setEmailAddress(stripLinkUrl(link.platform, link.url));
+      setIsEmailDialogOpen(true);
     } else {
       window.open(link.url, '_blank');
     }
@@ -821,18 +880,32 @@ export default function MyLinksPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="url"
+                  name={selectedAddPlatform === 'telegram' ? 'username' : 'url'}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {selectedAddPlatform === 'phone' || selectedAddPlatform === 'whatsapp' ? 'Phone Number' : 'URL'}
+                        {selectedAddPlatform === 'phone' || selectedAddPlatform === 'whatsapp'
+                          ? 'Phone Number'
+                          : selectedAddPlatform === 'email'
+                          ? 'Email Address'
+                          : selectedAddPlatform === 'telegram'
+                          ? 'Username'
+                          : 'URL'}
                       </FormLabel>
                       <FormControl>
                         <Input
-                          type={selectedAddPlatform === 'phone' || selectedAddPlatform === 'whatsapp' ? 'tel' : 'text'}
+                          type={selectedAddPlatform === 'phone' || selectedAddPlatform === 'whatsapp'
+                            ? 'tel'
+                            : selectedAddPlatform === 'email'
+                            ? 'email'
+                            : 'text'}
                           placeholder={
                             selectedAddPlatform === 'phone' || selectedAddPlatform === 'whatsapp'
                               ? 'Enter phone number'
+                              : selectedAddPlatform === 'email'
+                              ? 'Enter email address'
+                              : selectedAddPlatform === 'telegram'
+                              ? 'Enter username'
                               : 'Enter URL'
                           }
                           {...field}
@@ -842,6 +915,9 @@ export default function MyLinksPage() {
                     </FormItem>
                   )}
                 />
+                {selectedAddPlatform === 'telegram' && (
+                  <input type="hidden" {...form.register('url')} />
+                )}
                 <FormField
                   control={form.control}
                   name="description"
@@ -1045,18 +1121,32 @@ export default function MyLinksPage() {
                 />
                 <FormField
                   control={editForm.control}
-                  name="url"
+                  name={selectedEditPlatform === 'telegram' ? 'username' : 'url'}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {selectedEditPlatform === 'phone' || selectedEditPlatform === 'whatsapp' ? 'Phone Number' : 'URL'}
+                        {selectedEditPlatform === 'phone' || selectedEditPlatform === 'whatsapp'
+                          ? 'Phone Number'
+                          : selectedEditPlatform === 'email'
+                          ? 'Email Address'
+                          : selectedEditPlatform === 'telegram'
+                          ? 'Username'
+                          : 'URL'}
                       </FormLabel>
                       <FormControl>
                         <Input
-                          type={selectedEditPlatform === 'phone' || selectedEditPlatform === 'whatsapp' ? 'tel' : 'text'}
+                          type={selectedEditPlatform === 'phone' || selectedEditPlatform === 'whatsapp'
+                            ? 'tel'
+                            : selectedEditPlatform === 'email'
+                            ? 'email'
+                            : 'text'}
                           placeholder={
                             selectedEditPlatform === 'phone' || selectedEditPlatform === 'whatsapp'
                               ? 'Enter phone number'
+                              : selectedEditPlatform === 'email'
+                              ? 'Enter email address'
+                              : selectedEditPlatform === 'telegram'
+                              ? 'Enter username'
                               : 'Enter URL'
                           }
                           {...field}
@@ -1066,6 +1156,9 @@ export default function MyLinksPage() {
                     </FormItem>
                   )}
                 />
+                {selectedEditPlatform === 'telegram' && (
+                  <input type="hidden" {...editForm.register('url')} />
+                )}
                 <FormField
                   control={editForm.control}
                   name="description"
@@ -1096,11 +1189,47 @@ export default function MyLinksPage() {
             <DialogHeader>
               <DialogTitle>Phone Number</DialogTitle>
             </DialogHeader>
-            <div className="py-4 text-center">
-              <p className="text-xl font-semibold">{phoneNumber}</p>
+            <div className="py-4 text-center flex items-center justify-center gap-2">
+              <a href={`tel:${phoneNumber}`} className="text-xl font-semibold">
+                {phoneNumber}
+              </a>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleCopyText(phoneNumber)}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
             </div>
             <div className="flex justify-end">
               <Button variant="outline" onClick={() => setIsPhoneDialogOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
+          <DialogContent className="sm:max-w-[300px]">
+            <DialogHeader>
+              <DialogTitle>Email Address</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 text-center flex items-center justify-center gap-2">
+              <a
+                href={`mailto:${emailAddress}`}
+                className="text-xl font-semibold text-blue-600 underline"
+              >
+                {emailAddress}
+              </a>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleCopyText(emailAddress)}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={() => setIsEmailDialogOpen(false)}>
                 Close
               </Button>
             </div>
