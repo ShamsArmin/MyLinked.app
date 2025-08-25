@@ -265,10 +265,21 @@ export default function MyLinksPage() {
         return null;
       }
 
+      // Ensure numeric id and score values are sent to the API
       const linkScores = links.map((link, index) => {
-        if (index === linkIndex) return { id: link.id, score: links[newIndex].order ?? 0 };
-        if (index === newIndex) return { id: link.id, score: links[linkIndex].order ?? 0 };
-        return { id: link.id, score: link.order ?? 0 };
+        if (index === linkIndex) {
+          return {
+            id: Number(link.id),
+            score: Number(links[newIndex].order ?? 0),
+          };
+        }
+        if (index === newIndex) {
+          return {
+            id: Number(link.id),
+            score: Number(links[linkIndex].order ?? 0),
+          };
+        }
+        return { id: Number(link.id), score: Number(link.order ?? 0) };
       });
 
       return await apiRequest('POST', '/api/links/reorder', { linkScores });
