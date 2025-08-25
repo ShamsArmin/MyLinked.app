@@ -15,6 +15,7 @@ import {
 } from "@/lib/links-api";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { formatLinkUrl, stripLinkUrl } from "@/lib/link-utils";
 
 type AddLinkDialogProps = {
   open: boolean;
@@ -44,7 +45,9 @@ const AddLinkDialog: React.FC<AddLinkDialogProps> = ({
   const [title, setTitle] = useState(existingLink?.title || "");
   const [url, setUrl] = useState(existingLink?.url || "");
   const [featured, setFeatured] = useState(existingLink?.featured === true);
-  const [isPhone, setIsPhone] = useState(existingLink?.platform === "phone");
+  const [isPhone, setIsPhone] = useState(
+    existingLink?.platform === "phone" || existingLink?.platform === "whatsapp"
+  );
   
   const isEditing = !!existingLink;
   
@@ -53,20 +56,16 @@ const AddLinkDialog: React.FC<AddLinkDialogProps> = ({
     if (open) {
       setPlatform(existingLink?.platform || "");
       setTitle(existingLink?.title || "");
-      setUrl(existingLink?.url || "");
+      setUrl(existingLink ? stripLinkUrl(existingLink.platform, existingLink.url) : "");
       setFeatured(existingLink?.featured === true);
-      setIsPhone(existingLink?.platform === "phone");
+      setIsPhone(existingLink?.platform === "phone" || existingLink?.platform === "whatsapp");
     }
   }, [open, existingLink]);
-  
+
   // Update isPhone when platform changes
   React.useEffect(() => {
-    setIsPhone(platform === "phone");
-    
-    // For phone platform, we can preset the URL format
-    if (platform === "phone" && (!url || !url.includes("tel:"))) {
-      setUrl("tel:");
-    }
+    setIsPhone(platform === "phone" || platform === "whatsapp");
+    setUrl((prev) => stripLinkUrl(platform, prev));
   }, [platform]);
   
   const addLinkMutation = useMutation({
@@ -123,19 +122,7 @@ const AddLinkDialog: React.FC<AddLinkDialogProps> = ({
     }
     
     // Format URL based on platform type
-    let formattedUrl = url;
-    
-    if (isPhone) {
-      // Ensure phone numbers are properly formatted with tel: protocol
-      if (!url.startsWith('tel:')) {
-        formattedUrl = `tel:${url}`;
-      }
-      // Clean up the phone number (remove any non-numeric characters except the tel: prefix)
-      formattedUrl = 'tel:' + formattedUrl.replace('tel:', '').replace(/[^\d+]/g, '');
-    } else if (!/^https?:\/\//i.test(url)) {
-      // Add https:// to non-phone URLs if they don't have a protocol
-      formattedUrl = `https://${url}`;
-    }
+    const formattedUrl = formatLinkUrl(platform, url);
     
     const linkData = {
       platform,
@@ -196,10 +183,10 @@ const AddLinkDialog: React.FC<AddLinkDialogProps> = ({
               disabled={isPending}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="linkUrl">{isPhone ? "Phone Number" : "URL"}</Label>
-            {isPhone ? (
+            {platform === "phone" ? (
               <div className="flex items-center space-x-1">
                 <div className="bg-gray-100 px-3 py-2 rounded-l-md border border-r-0 border-input text-muted-foreground">
                   tel:
@@ -207,13 +194,22 @@ const AddLinkDialog: React.FC<AddLinkDialogProps> = ({
                 <Input
                   id="linkUrl"
                   type="tel"
-                  value={url.replace("tel:", "")}
-                  onChange={(e) => setUrl(`tel:${e.target.value}`)}
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
                   placeholder="Enter phone number"
                   className="rounded-l-none"
                   disabled={isPending}
                 />
               </div>
+            ) : isPhone ? (
+              <Input
+                id="linkUrl"
+                type="tel"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="Enter phone number"
+                disabled={isPending}
+              />
             ) : (
               <Input
                 id="linkUrl"

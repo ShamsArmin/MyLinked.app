@@ -18,6 +18,7 @@ import {
 import { z } from "zod";
 import { usePlatformIcons } from "@/hooks/use-platform-icons";
 import { useLocation } from "wouter";
+import { formatLinkUrl, stripLinkUrl } from "@/lib/link-utils";
 
 import {
   Plus,
@@ -240,24 +241,30 @@ export default function MyLinksPage() {
     },
   });
 
+  const selectedAddPlatform = form.watch('platform');
+  const selectedEditPlatform = editForm.watch('platform');
+
   // Handle form submissions
   const onSubmit = (data: LinkFormValues) => {
-    createLinkMutation.mutate(data);
+    const formatted = { ...data, url: formatLinkUrl(data.platform, data.url) };
+    createLinkMutation.mutate(formatted);
   };
 
   const onEditSubmit = (data: LinkFormValues) => {
     if (currentLink) {
-      updateLinkMutation.mutate({ id: currentLink.id, data });
+      const formatted = { ...data, url: formatLinkUrl(data.platform, data.url) };
+      updateLinkMutation.mutate({ id: currentLink.id, data: formatted });
     }
   };
 
   // Handle edit link
   const handleEditLink = (link: Link) => {
     setCurrentLink(link);
+    const url = stripLinkUrl(link.platform, link.url);
     editForm.reset({
       platform: link.platform,
       title: link.title,
-      url: link.url,
+      url,
       description: link.description || '',
       customIcon: link.customIcon || '',
     });
@@ -806,9 +813,19 @@ export default function MyLinksPage() {
                   name="url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL</FormLabel>
+                      <FormLabel>
+                        {selectedAddPlatform === 'phone' || selectedAddPlatform === 'whatsapp' ? 'Phone Number' : 'URL'}
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter URL" {...field} />
+                        <Input
+                          type={selectedAddPlatform === 'phone' || selectedAddPlatform === 'whatsapp' ? 'tel' : 'text'}
+                          placeholder={
+                            selectedAddPlatform === 'phone' || selectedAddPlatform === 'whatsapp'
+                              ? 'Enter phone number'
+                              : 'Enter URL'
+                          }
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1020,9 +1037,19 @@ export default function MyLinksPage() {
                   name="url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL</FormLabel>
+                      <FormLabel>
+                        {selectedEditPlatform === 'phone' || selectedEditPlatform === 'whatsapp' ? 'Phone Number' : 'URL'}
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter URL" {...field} />
+                        <Input
+                          type={selectedEditPlatform === 'phone' || selectedEditPlatform === 'whatsapp' ? 'tel' : 'text'}
+                          placeholder={
+                            selectedEditPlatform === 'phone' || selectedEditPlatform === 'whatsapp'
+                              ? 'Enter phone number'
+                              : 'Enter URL'
+                          }
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
