@@ -224,7 +224,7 @@ export default function SimpleThemesDemo() {
         </div>
       </div>
       
-      <h3 className="font-bold text-lg mb-1">Armin Shamseddini</h3>
+      <h3 className="font-bold text-lg mb-1">John Smith</h3>
       <p className="text-sm opacity-80 mb-3">Project Manager & Designer</p>
       
       <div className="space-y-2">
