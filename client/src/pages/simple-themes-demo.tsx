@@ -13,7 +13,6 @@ import {
   Waves, 
   Crown,
   Check,
-  Eye,
   Save,
   ArrowLeft
 } from "lucide-react";
@@ -137,7 +136,6 @@ export default function SimpleThemesDemo() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const { user } = useAuth();
-  const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
   const getStoredTheme = () => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') || 'ocean';
@@ -347,45 +345,18 @@ export default function SimpleThemesDemo() {
             <CardContent className="space-y-4">
               <PreviewCard theme={theme} />
               
-              <div className="flex space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setSelectedTheme(theme)}
-                >
-                  <Eye className="h-4 w-4 mr-1" />
-                  Preview
-                </Button>
-                
-                <Button 
-                  size="sm"
-                  onClick={() => handleApplyTheme(theme)}
-                  disabled={activeTheme === theme.id}
-                >
-                  <Save className="h-4 w-4 mr-1" />
-                  {activeTheme === theme.id ? "Applied" : "Apply"}
-                </Button>
-              </div>
+              <Button
+                size="sm"
+                onClick={() => handleApplyTheme(theme)}
+                disabled={activeTheme === theme.id}
+              >
+                <Save className="h-4 w-4 mr-1" />
+                {activeTheme === theme.id ? "Applied" : "Apply"}
+              </Button>
             </CardContent>
           </Card>
         ))}
       </div>
-
-      {/* Large Preview Section */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Theme Preview: {selectedTheme.name}</CardTitle>
-          <CardDescription>
-            See how your profile will look with the {selectedTheme.name} theme
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          <div className="max-w-md mx-auto">
-            <PreviewCard theme={selectedTheme} />
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

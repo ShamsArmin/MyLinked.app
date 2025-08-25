@@ -20,7 +20,6 @@ import {
   Zap,
   Crown,
   Check,
-  Eye,
   Save
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -138,7 +137,6 @@ const presetThemes: Theme[] = [
 
 export default function ThemesPage() {
   const { user } = useAuth();
-  const [selectedTheme, setSelectedTheme] = useState<Theme>(presetThemes[0]);
   const applyTheme = useApplyTheme();
   const [customColors, setCustomColors] = useState({
     primary: "#3b82f6",
@@ -276,26 +274,14 @@ export default function ThemesPage() {
                 
                 <CardContent className="space-y-4">
                   <PreviewCard theme={theme} />
-                  
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setSelectedTheme(theme)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Preview
-                    </Button>
-                    
-                    <Button 
-                      size="sm"
-                      onClick={() => handleSaveTheme(theme)}
-                      disabled={applyTheme.isPending}
-                    >
-                      <Save className="h-4 w-4 mr-1" />
-                      Apply
-                    </Button>
-                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => handleSaveTheme(theme)}
+                    disabled={applyTheme.isPending}
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    Apply
+                  </Button>
                 </CardContent>
               </Card>
             ))}
