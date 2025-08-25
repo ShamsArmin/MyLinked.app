@@ -42,6 +42,8 @@ import {
   Calendar,
   Activity,
   ArrowLeft,
+  MoreVertical,
+  Pin,
 } from "lucide-react";
 
 import {
@@ -223,6 +225,66 @@ export default function MyLinksPage() {
     },
   });
 
+  // Pin link mutation
+  const pinLinkMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const link = links.find(l => l.id === id);
+      if (!link) throw new Error("Link not found");
+      return await apiRequest('PATCH', `/api/links/${id}`, {
+        featured: !link.featured,
+      });
+    },
+    onSuccess: () => {
+      invalidateLinks();
+      toast({
+        title: 'Success',
+        description: 'Link updated successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to update link: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Reorder links mutation
+  const reorderLinksMutation = useMutation({
+    mutationFn: async ({ id, direction }: { id: number; direction: 'up' | 'down' }) => {
+      const linkIndex = links.findIndex(l => l.id === id);
+      if (linkIndex === -1) throw new Error('Link not found');
+
+      let newIndex = linkIndex;
+      if (direction === 'up' && linkIndex > 0) {
+        newIndex = linkIndex - 1;
+      } else if (direction === 'down' && linkIndex < links.length - 1) {
+        newIndex = linkIndex + 1;
+      } else {
+        return null;
+      }
+
+      const linkScores = links.map((link, index) => {
+        if (index === linkIndex) return { id: link.id, score: links[newIndex].order ?? 0 };
+        if (index === newIndex) return { id: link.id, score: links[linkIndex].order ?? 0 };
+        return { id: link.id, score: link.order ?? 0 };
+      });
+
+      return await apiRequest('POST', '/api/links/reorder', { linkScores });
+    },
+    onSuccess: () => {
+      invalidateLinks();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to reorder links',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Forms
   const form = useForm<LinkFormValues>({
     resolver: zodResolver(linkFormSchema),
@@ -363,6 +425,18 @@ export default function MyLinksPage() {
     } else {
       window.open(link.url, '_blank');
     }
+  };
+
+  const handlePinLink = (id: number) => {
+    pinLinkMutation.mutate(id);
+  };
+
+  const handleMoveLinkUp = (id: number) => {
+    reorderLinksMutation.mutate({ id, direction: 'up' });
+  };
+
+  const handleMoveLinkDown = (id: number) => {
+    reorderLinksMutation.mutate({ id, direction: 'down' });
   };
 
   // Filter and sort links
@@ -652,21 +726,25 @@ export default function MyLinksPage() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm">
-                            <Pencil className="h-4 w-4" />
+                            <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handlePinLink(link.id)}>
+                            <Pin className="h-4 w-4 mr-2" />
+                            {link.featured ? 'Unpin' : 'Pin'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleMoveLinkUp(link.id)}>
+                            <ArrowUp className="h-4 w-4 mr-2" />
+                            Move Up
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleMoveLinkDown(link.id)}>
+                            <ArrowDown className="h-4 w-4 mr-2" />
+                            Move Down
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditLink(link)}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleCopyLink(link)}>
-                            <Copy className="h-4 w-4 mr-2" />
-                            Copy URL
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDeleteLink(link.id)}>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
