@@ -121,6 +121,8 @@ export default function MyLinksPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentLink, setCurrentLink] = useState<Link | null>(null);
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
   
   const { getPlatformIcon } = usePlatformIcons();
   const [, navigate] = useLocation();
@@ -292,6 +294,15 @@ export default function MyLinksPage() {
         description: 'Failed to copy link to clipboard',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleVisitLink = (link: Link) => {
+    if (link.platform === 'phone') {
+      setPhoneNumber(stripLinkUrl(link.platform, link.url));
+      setIsPhoneDialogOpen(true);
+    } else {
+      window.open(link.url, '_blank');
     }
   };
 
@@ -620,7 +631,7 @@ export default function MyLinksPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => window.open(link.url, '_blank')}
+                        onClick={() => handleVisitLink(link)}
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Visit
@@ -1078,6 +1089,21 @@ export default function MyLinksPage() {
                 </div>
               </form>
             </Form>
+          </DialogContent>
+        </Dialog>
+        <Dialog open={isPhoneDialogOpen} onOpenChange={setIsPhoneDialogOpen}>
+          <DialogContent className="sm:max-w-[300px]">
+            <DialogHeader>
+              <DialogTitle>Phone Number</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 text-center">
+              <p className="text-xl font-semibold">{phoneNumber}</p>
+            </div>
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={() => setIsPhoneDialogOpen(false)}>
+                Close
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
