@@ -42,6 +42,8 @@ import {
   Calendar,
   Activity,
   ArrowLeft,
+  MoreVertical,
+  Pin,
 } from "lucide-react";
 
 import {
@@ -115,7 +117,7 @@ export default function MyLinksPage() {
   const { toast } = useToast();
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'title' | 'platform' | 'clicks' | 'createdAt'>('title');
+  const [sortBy, setSortBy] = useState<'order' | 'title' | 'platform' | 'clicks' | 'createdAt'>('order');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -220,6 +222,77 @@ export default function MyLinksPage() {
         variant: 'destructive',
       });
       invalidateLinks();
+    },
+  });
+
+  // Pin link mutation
+  const pinLinkMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const link = links.find(l => l.id === id);
+      if (!link) throw new Error("Link not found");
+      return await apiRequest('PATCH', `/api/links/${id}`, {
+        featured: !link.featured,
+      });
+    },
+    onSuccess: () => {
+      invalidateLinks();
+      toast({
+        title: 'Success',
+        description: 'Link updated successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to update link: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Reorder links mutation
+  const reorderLinksMutation = useMutation({
+    mutationFn: async ({ id, direction }: { id: number; direction: 'up' | 'down' }) => {
+      const linkIndex = links.findIndex(l => l.id === id);
+      if (linkIndex === -1) throw new Error('Link not found');
+
+      let newIndex = linkIndex;
+      if (direction === 'up' && linkIndex > 0) {
+        newIndex = linkIndex - 1;
+      } else if (direction === 'down' && linkIndex < links.length - 1) {
+        newIndex = linkIndex + 1;
+      } else {
+        return null;
+      }
+
+      // Ensure numeric id and score values are sent to the API
+      const linkScores = links.map((link, index) => {
+        if (index === linkIndex) {
+          return {
+            id: Number(link.id),
+            score: Number(links[newIndex].order ?? 0),
+          };
+        }
+        if (index === newIndex) {
+          return {
+            id: Number(link.id),
+            score: Number(links[linkIndex].order ?? 0),
+          };
+        }
+        return { id: Number(link.id), score: Number(link.order ?? 0) };
+      });
+
+      return await apiRequest('POST', '/api/links/reorder', { linkScores });
+    },
+    onSuccess: () => {
+      invalidateLinks();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to reorder links',
+        description: error.message,
+        variant: 'destructive',
+      });
     },
   });
 
@@ -365,6 +438,18 @@ export default function MyLinksPage() {
     }
   };
 
+  const handlePinLink = (id: number) => {
+    pinLinkMutation.mutate(id);
+  };
+
+  const handleMoveLinkUp = (id: number) => {
+    reorderLinksMutation.mutate({ id, direction: 'up' });
+  };
+
+  const handleMoveLinkDown = (id: number) => {
+    reorderLinksMutation.mutate({ id, direction: 'down' });
+  };
+
   // Filter and sort links
   const filteredLinks = links
     .filter(link => {
@@ -375,19 +460,30 @@ export default function MyLinksPage() {
       return matchesSearch && matchesPlatform;
     })
     .sort((a, b) => {
+      if (sortBy === 'order') {
+        if (a.featured !== b.featured) {
+          return sortOrder === 'asc'
+            ? a.featured ? -1 : 1
+            : a.featured ? 1 : -1;
+        }
+        const aOrder = a.order ?? 0;
+        const bOrder = b.order ?? 0;
+        return sortOrder === 'asc' ? aOrder - bOrder : bOrder - aOrder;
+      }
+
       let aValue = a[sortBy];
       let bValue = b[sortBy];
-      
+
       if (sortBy === 'clicks') {
         aValue = a.clicks || 0;
         bValue = b.clicks || 0;
       }
-      
+
       if (sortBy === 'createdAt') {
         aValue = new Date(a.createdAt).getTime();
         bValue = new Date(b.createdAt).getTime();
       }
-      
+
       if (sortOrder === 'asc') {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       } else {
@@ -497,6 +593,7 @@ export default function MyLinksPage() {
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="order">Custom Order</SelectItem>
                     <SelectItem value="title">Title</SelectItem>
                     <SelectItem value="platform">Platform</SelectItem>
                     <SelectItem value="clicks">Clicks</SelectItem>
@@ -615,13 +712,31 @@ export default function MyLinksPage() {
                               >
                                 <Copy className="h-4 w-4" />
                               </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEditLink(link)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="sm" variant="outline">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem onClick={() => handlePinLink(link.id)}>
+                                    <Pin className="h-4 w-4 mr-2" />
+                                    {link.featured ? 'Unpin' : 'Pin'}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleMoveLinkUp(link.id)}>
+                                    <ArrowUp className="h-4 w-4 mr-2" />
+                                    Move Up
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleMoveLinkDown(link.id)}>
+                                    <ArrowDown className="h-4 w-4 mr-2" />
+                                    Move Down
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleEditLink(link)}>
+                                    <Pencil className="h-4 w-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -652,21 +767,25 @@ export default function MyLinksPage() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm">
-                            <Pencil className="h-4 w-4" />
+                            <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handlePinLink(link.id)}>
+                            <Pin className="h-4 w-4 mr-2" />
+                            {link.featured ? 'Unpin' : 'Pin'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleMoveLinkUp(link.id)}>
+                            <ArrowUp className="h-4 w-4 mr-2" />
+                            Move Up
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleMoveLinkDown(link.id)}>
+                            <ArrowDown className="h-4 w-4 mr-2" />
+                            Move Down
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditLink(link)}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleCopyLink(link)}>
-                            <Copy className="h-4 w-4 mr-2" />
-                            Copy URL
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDeleteLink(link.id)}>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
