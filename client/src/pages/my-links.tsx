@@ -240,7 +240,7 @@ export default function MyLinksPage() {
     },
   });
 
-  const selectedPlatform = form.watch('platform');
+  const selectedAddPlatform = form.watch('platform');
   const selectedEditPlatform = editForm.watch('platform');
 
   // Handle form submissions
@@ -828,13 +828,13 @@ export default function MyLinksPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {selectedPlatform === 'phone' || selectedPlatform === 'whatsapp' ? 'Phone Number' : 'URL'}
+                        {selectedAddPlatform === 'phone' || selectedAddPlatform === 'whatsapp' ? 'Phone Number' : 'URL'}
                       </FormLabel>
                       <FormControl>
                         <Input
-                          type={selectedPlatform === 'phone' || selectedPlatform === 'whatsapp' ? 'tel' : 'text'}
+                          type={selectedAddPlatform === 'phone' || selectedAddPlatform === 'whatsapp' ? 'tel' : 'text'}
                           placeholder={
-                            selectedPlatform === 'phone' || selectedPlatform === 'whatsapp'
+                            selectedAddPlatform === 'phone' || selectedAddPlatform === 'whatsapp'
                               ? 'Enter phone number'
                               : 'Enter URL'
                           }
