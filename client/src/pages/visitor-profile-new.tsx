@@ -996,8 +996,8 @@ export default function VisitorProfileNew() {
 
               <Dialog open={showReferralDialog} onOpenChange={setShowReferralDialog}>
                 <DialogTrigger asChild>
-                  <Button 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                  <Button
+                    className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] hover:opacity-90 text-primary-foreground"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Request to Add My Link
@@ -1183,7 +1183,7 @@ export default function VisitorProfileNew() {
                 {/* Collaboration Request Button */}
                 <Dialog open={showCollaborationDialog} onOpenChange={setShowCollaborationDialog}>
                   <DialogTrigger asChild>
-                    <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                    <Button className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] hover:opacity-90 text-primary-foreground">
                       <Send className="h-4 w-4 mr-2" />
                       {currentUser ? 'Send Collaboration Request' : 'Login to Collaborate'}
                     </Button>
