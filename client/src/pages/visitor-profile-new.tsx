@@ -996,8 +996,8 @@ export default function VisitorProfileNew() {
 
               <Dialog open={showReferralDialog} onOpenChange={setShowReferralDialog}>
                 <DialogTrigger asChild>
-                  <Button 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                  <Button
+                    className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] hover:opacity-90 text-primary-foreground"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Request to Add My Link
@@ -1100,9 +1100,9 @@ export default function VisitorProfileNew() {
                       />
                     </div>
 
-                    <Button 
+                    <Button
                       onClick={handleReferralSubmit}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] hover:opacity-90 text-primary-foreground"
                     >
                       <Send className="h-4 w-4 mr-2" />
                       Submit Request
@@ -1183,7 +1183,7 @@ export default function VisitorProfileNew() {
                 {/* Collaboration Request Button */}
                 <Dialog open={showCollaborationDialog} onOpenChange={setShowCollaborationDialog}>
                   <DialogTrigger asChild>
-                    <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                    <Button className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] hover:opacity-90 text-primary-foreground">
                       <Send className="h-4 w-4 mr-2" />
                       {currentUser ? 'Send Collaboration Request' : 'Login to Collaborate'}
                     </Button>
@@ -1270,9 +1270,9 @@ export default function VisitorProfileNew() {
                             >
                               Cancel
                             </Button>
-                            <Button 
+                            <Button
                               onClick={handleSubmitCollaborationRequest}
-                              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                              className="flex-1 bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] hover:opacity-90 text-primary-foreground"
                               disabled={!collaborationForm.name.trim() || !collaborationForm.email.trim() || !collaborationForm.fieldOfWork.trim() || !collaborationForm.message.trim()}
                             >
                               <Send className="h-4 w-4 mr-2" />
@@ -1294,12 +1294,12 @@ export default function VisitorProfileNew() {
                             >
                               Cancel
                             </Button>
-                            <Button 
+                            <Button
                               onClick={() => {
                                 setShowCollaborationDialog(false);
                                 navigate('/auth');
                               }}
-                              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                              className="flex-1 bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] hover:opacity-90 text-primary-foreground"
                             >
                               <User className="h-4 w-4 mr-2" />
                               Go to Login

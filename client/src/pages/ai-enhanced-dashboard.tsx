@@ -617,9 +617,9 @@ function PitchModeCard() {
             </p>
           </div>
           
-          <Button 
+          <Button
             onClick={() => navigate("/settings?tab=pitch-mode")}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+            className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] hover:opacity-90 text-primary-foreground"
           >
             <Settings className="h-4 w-4 mr-2" />
             Configure Pitch Mode
@@ -2028,9 +2028,9 @@ export default function AIEnhancedDashboard() {
                       ></div>
                     </div>
                   )}
-                  <Button 
+                  <Button
                     size="sm"
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                    className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] hover:opacity-90 text-primary-foreground"
                     onClick={() => navigate("/social-score")}
                   >
                     View Details
