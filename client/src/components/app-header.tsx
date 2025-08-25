@@ -22,7 +22,7 @@ import { SocialScoreMini } from "./social-score-mini";
 
 const AppHeader: React.FC = () => {
   const { user, logoutMutation } = useAuth();
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   
@@ -233,11 +233,11 @@ const AppHeader: React.FC = () => {
               {dropdownOpen && (
                   <div className="absolute right-0 top-full mt-2 w-64 bg-card border border-border rounded-lg shadow-lg z-50">
                   <div className="py-1">
-                    <div 
+                    <div
                       className="flex items-center w-full p-3 text-left hover:bg-muted cursor-pointer border-b border-border"
                       onClick={() => {
                         setDropdownOpen(false);
-                        window.location.href = `/profile/${user.username}`;
+                        navigate('/profile');
                       }}
                     >
                       <User className="mr-3 h-4 w-4" />
