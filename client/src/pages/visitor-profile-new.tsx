@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { usePlatformIcons } from "@/hooks/use-platform-icons";
 import { getThemeColors } from "@/hooks/use-theme";
+import { stripLinkUrl } from "@/lib/link-utils";
 
 import {
   ExternalLink,
@@ -67,6 +68,11 @@ export default function VisitorProfileNew() {
   const [showSocialScoreDialog, setShowSocialScoreDialog] = useState(false);
   const [showWelcomeMessageDialog, setShowWelcomeMessageDialog] = useState(false);
   const [showReferralDialog, setShowReferralDialog] = useState(false);
+
+  const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [emailAddress, setEmailAddress] = useState("");
 
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [bioDetailsExpanded, setBioDetailsExpanded] = useState(false);
@@ -251,46 +257,55 @@ export default function VisitorProfileNew() {
     }
   };
 
-  const handleLinkClick = async (linkId: number, url: string) => {
-    console.log('Link clicked:', { linkId, url });
-
-    // Ensure URL has proper protocol, but don't modify special protocols
-    let finalUrl = url;
-    if (url && !url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('mailto:') && !url.startsWith('tel:')) {
-      finalUrl = `https://${url}`;
-    }
-
-    console.log('Final URL:', finalUrl);
+  const handleLinkClick = async (linkId: number, url: string, platform: string) => {
+    console.log('Link clicked:', { linkId, url, platform });
 
     try {
       await fetch(`/api/links/${linkId}/click`, { method: 'POST' });
-      if (finalUrl) {
-        // For mobile compatibility, use location.href for special protocols
-        if (finalUrl.startsWith('mailto:') || finalUrl.startsWith('tel:')) {
-          window.location.href = finalUrl;
-        } else {
-          // For regular links, use window.open with proper fallback
-          const newWindow = window.open(finalUrl, '_blank');
-          if (!newWindow) {
-            // Fallback for mobile browsers that block popups
-            window.location.href = finalUrl;
-          }
-        }
-      } else {
-        console.error('No URL provided for link');
-      }
     } catch (error) {
       console.error('Failed to record click:', error);
-      if (finalUrl) {
-        if (finalUrl.startsWith('mailto:') || finalUrl.startsWith('tel:')) {
-          window.location.href = finalUrl;
-        } else {
-          const newWindow = window.open(finalUrl, '_blank');
-          if (!newWindow) {
-            window.location.href = finalUrl;
-          }
-        }
+    }
+
+    if (platform === 'phone') {
+      setPhoneNumber(stripLinkUrl(platform, url));
+      setIsPhoneDialogOpen(true);
+      return;
+    }
+
+    if (platform === 'email') {
+      setEmailAddress(stripLinkUrl(platform, url));
+      setIsEmailDialogOpen(true);
+      return;
+    }
+
+    let finalUrl = url;
+    if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+      finalUrl = `https://${url}`;
+    }
+
+    if (finalUrl) {
+      const newWindow = window.open(finalUrl, '_blank');
+      if (!newWindow) {
+        window.location.href = finalUrl;
       }
+    } else {
+      console.error('No URL provided for link');
+    }
+  };
+
+  const handleCopyText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: 'Copied!',
+        description: 'Copied to clipboard',
+      });
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy to clipboard',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -697,7 +712,7 @@ export default function VisitorProfileNew() {
                         key={link.id}
                         variant="outline"
                         className="h-20 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                        onClick={() => handleLinkClick(link.id, link.url)}
+                        onClick={() => handleLinkClick(link.id, link.url, link.platform)}
                       >
                         {IconComponent && React.createElement(IconComponent, {
                           className: "h-8 w-8",
@@ -750,7 +765,7 @@ export default function VisitorProfileNew() {
                         key={link.id}
                         variant="outline"
                         className="h-20 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                        onClick={() => handleLinkClick(link.id, link.url)}
+                        onClick={() => handleLinkClick(link.id, link.url, link.platform)}
                       >
                         {IconComponent && React.createElement(IconComponent, {
                           className: "h-8 w-8",
@@ -800,7 +815,7 @@ export default function VisitorProfileNew() {
                         key={link.id}
                         variant="outline"
                         className="h-20 w-20 flex flex-col items-center justify-center gap-1 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                        onClick={() => handleLinkClick(link.id, link.url)}
+                        onClick={() => handleLinkClick(link.id, link.url, link.platform)}
                       >
                         {IconComponent && React.createElement(IconComponent, {
                           className: "h-6 w-6",
@@ -859,7 +874,7 @@ export default function VisitorProfileNew() {
                         return (
                           <DropdownMenuItem
                             key={link.id}
-                            onClick={() => handleLinkClick(link.id, link.url)}
+                            onClick={() => handleLinkClick(link.id, link.url, link.platform)}
                             className="flex items-center gap-2 cursor-pointer hover:bg-blue-50"
                           >
                             {IconComponent && React.createElement(IconComponent, {
@@ -1549,11 +1564,63 @@ export default function VisitorProfileNew() {
       </div>
 
       {/* Share Profile Dialog - Using proper ShareProfileDialog component */}
-      <ShareProfileDialog 
-        open={showShareDialog} 
-        onOpenChange={setShowShareDialog} 
-        username={username || ''} 
+      <ShareProfileDialog
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+        username={username || ''}
       />
+
+      {/* Phone Dialog */}
+      <Dialog open={isPhoneDialogOpen} onOpenChange={setIsPhoneDialogOpen}>
+        <DialogContent className="sm:max-w-[300px]">
+          <DialogHeader>
+            <DialogTitle>Phone Number</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center flex items-center justify-center gap-2">
+            <a href={`tel:${phoneNumber}`} className="text-xl font-semibold">
+              {phoneNumber}
+            </a>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleCopyText(phoneNumber)}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={() => setIsPhoneDialogOpen(false)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Dialog */}
+      <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
+        <DialogContent className="sm:max-w-[300px]">
+          <DialogHeader>
+            <DialogTitle>Email Address</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center flex items-center justify-center gap-2">
+            <a href={`mailto:${emailAddress}`} className="text-xl font-semibold">
+              {emailAddress}
+            </a>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleCopyText(emailAddress)}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={() => setIsEmailDialogOpen(false)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Social Score Dialog - Only show if user has enabled it */}
       {profile.showSocialScore && (
