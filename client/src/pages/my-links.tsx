@@ -399,7 +399,7 @@ export default function MyLinksPage() {
   const uniquePlatforms = [...new Set(links.map(link => link.platform))];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-black dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
 
         {/* Header Section */}
@@ -419,7 +419,7 @@ export default function MyLinksPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-white/70 backdrop-blur-lg border-0 shadow-md dark:bg-gray-900/70">
+          <Card className="bg-card/70 backdrop-blur-lg border-0 shadow-md">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Links</CardTitle>
             </CardHeader>
@@ -428,7 +428,7 @@ export default function MyLinksPage() {
             </CardContent>
           </Card>
           
-          <Card className="bg-white/70 backdrop-blur-lg border-0 shadow-md dark:bg-gray-900/70">
+          <Card className="bg-card/70 backdrop-blur-lg border-0 shadow-md">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Clicks</CardTitle>
             </CardHeader>
@@ -439,7 +439,7 @@ export default function MyLinksPage() {
             </CardContent>
           </Card>
           
-          <Card className="bg-white/70 backdrop-blur-lg border-0 shadow-md dark:bg-gray-900/70">
+          <Card className="bg-card/70 backdrop-blur-lg border-0 shadow-md">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">Platforms</CardTitle>
             </CardHeader>
@@ -448,7 +448,7 @@ export default function MyLinksPage() {
             </CardContent>
           </Card>
           
-          <Card className="bg-white/70 backdrop-blur-lg border-0 shadow-md dark:bg-gray-900/70">
+          <Card className="bg-card/70 backdrop-blur-lg border-0 shadow-md">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">Avg. Clicks</CardTitle>
             </CardHeader>
@@ -461,7 +461,7 @@ export default function MyLinksPage() {
         </div>
 
         {/* Controls */}
-        <Card className="bg-white/70 backdrop-blur-lg border-0 shadow-md dark:bg-gray-900/70 mb-6">
+        <Card className="bg-card/70 backdrop-blur-lg border-0 shadow-md mb-6">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="flex flex-col md:flex-row gap-4 items-center">
@@ -543,7 +543,7 @@ export default function MyLinksPage() {
             <div className="text-gray-500">Loading links...</div>
           </div>
         ) : filteredLinks.length === 0 ? (
-          <Card className="bg-white/70 backdrop-blur-lg border-0 shadow-md dark:bg-gray-900/70">
+          <Card className="bg-card/70 backdrop-blur-lg border-0 shadow-md">
             <CardContent className="p-12 text-center">
               <Globe className="h-12 w-12 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No links found</h3>
@@ -567,7 +567,7 @@ export default function MyLinksPage() {
               viewMode === 'list' ? 'space-y-4' : ''}
           `}>
             {viewMode === 'table' ? (
-              <Card className="bg-white/70 backdrop-blur-lg border-0 shadow-md dark:bg-gray-900/70">
+              <Card className="bg-card/70 backdrop-blur-lg border-0 shadow-md">
                 <CardContent className="p-0">
                   <Table>
                     <TableHeader>
@@ -639,7 +639,7 @@ export default function MyLinksPage() {
               </Card>
             ) : (
               filteredLinks.map((link) => (
-                <Card key={link.id} className="bg-white/70 backdrop-blur-lg border-0 shadow-md dark:bg-gray-900/70 hover:shadow-lg transition-shadow">
+                <Card key={link.id} className="bg-card/70 backdrop-blur-lg border-0 shadow-md hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
