@@ -219,7 +219,7 @@ export default function SpotlightPage() {
   });
   
   // Fetch user's spotlight projects with proper configuration
-  const { data: projects = [], isLoading: isLoadingProjects, refetch: refetchProjects } = useQuery<SpotlightProject[]>({
+  const { data: projects = [], isLoading: isLoadingProjects } = useQuery<SpotlightProject[]>({
     queryKey: ["/api/spotlight/projects"],
     enabled: !!user,
     staleTime: 1000, // Short stale time to force frequent refetches
@@ -250,8 +250,6 @@ export default function SpotlightPage() {
               type: t.type || 'tag'
             })) || [],
         };
-        
-        console.log("Creating project with data:", JSON.stringify(filtered, null, 2));
         
         // Send all project data including contributors and tags
         try {
@@ -289,6 +287,7 @@ export default function SpotlightPage() {
       createProjectForm.reset();
       setContributorFields([{ id: Date.now() }]);
       setTagFields([{ id: Date.now() }]);
+      setThumbnailPreview("");
       toast({
         title: "Project created",
         description: "Your spotlight project has been created successfully.",
@@ -546,12 +545,6 @@ export default function SpotlightPage() {
       return;
     }
     
-    // Show loading toast
-    toast({
-      title: "Creating project...",
-      description: "Please wait while we save your project"
-    });
-    
     // Process contributors from the form
     const contributors: any[] = [];
     const contributorNameElements = document.querySelectorAll('input[id^="contributor-name-"]');
@@ -604,56 +597,8 @@ export default function SpotlightPage() {
       contributors: contributors,
       tags: tags.slice(0, 3) // Limit to maximum 3 tags
     };
-    
-    // Direct API request for better project creation
-    fetch("/api/spotlight/projects", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include", // Include credentials for authentication
-      body: JSON.stringify(projectData)
-    })
-    .then(response => {
-      if (!response.ok) {
-        return response.text().then(text => {
-          console.error("Server response:", text);
-          throw new Error("Server error: " + response.status);
-        });
-      }
-      return response.json();
-    })
-    .then(newProject => {
-      console.log("Project created successfully:", newProject);
-      
-      // Show success toast
-      toast({
-        title: "Project created!",
-        description: "Your project has been added to your profile"
-      });
-      
-      // Reset form and close dialog
-      setIsCreateDialogOpen(false);
-      setThumbnailPreview("");
-      
-      // Add the new project directly to the query cache
-      const existingProjects = queryClient.getQueryData(["/api/spotlight/projects"]) || [];
-      queryClient.setQueryData(["/api/spotlight/projects"], [
-        ...existingProjects,
-        newProject
-      ]);
-      
-      // Also trigger a refetch to ensure consistency
-      refetchProjects();
-    })
-    .catch(err => {
-      console.error("Failed to create project:", err);
-      toast({
-        title: "Error creating project",
-        description: "There was a problem saving your project. Please try again later.",
-        variant: "destructive"
-      });
-    });
+    // Use the mutation to create the project
+    createProjectMutation.mutate(projectData);
   };
   
   const handleEditProject = async (data: z.infer<typeof createProjectSchema>) => {
@@ -675,8 +620,6 @@ export default function SpotlightPage() {
         });
         return;
       }
-      
-      console.log("Edit form data being submitted:", data);
       
       // Prepare project basic details
       const projectUpdate = {
