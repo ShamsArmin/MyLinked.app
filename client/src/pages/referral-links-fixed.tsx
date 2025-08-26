@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -132,10 +132,25 @@ const ReferralLinks = () => {
   // States for dialogs
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [currentLink, setCurrentLink] = useState<ReferralLink | null>(null);
-  const [copiedId, setCopiedId] = useState<number | null>(null);
-  const [imageUploadType, setImageUploadType] = useState<'url' | 'file'>('url');
-  const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('url');
+const [currentLink, setCurrentLink] = useState<ReferralLink | null>(null);
+const [copiedId, setCopiedId] = useState<number | null>(null);
+const [imageUploadType, setImageUploadType] = useState<'url' | 'file'>('url');
+const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('url');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (imageUploadType === 'file') {
+      fileInputRef.current?.click();
+    }
+  }, [imageUploadType]);
+
+  useEffect(() => {
+    if (editImageUploadType === 'file') {
+      editFileInputRef.current?.click();
+    }
+  }, [editImageUploadType]);
 
   // Handle file upload for images
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, formField: any) => {
@@ -879,11 +894,12 @@ const ReferralLinks = () => {
                               accept="image/*"
                               onChange={(e) => handleImageUpload(e, field)}
                               className="cursor-pointer"
+                              ref={fileInputRef}
                             />
                             {field.value && field.value.startsWith('data:') && (
                               <div className="mt-2">
-                                <img 
-                                  src={field.value} 
+                                <img
+                                  src={field.value}
                                   alt="Preview" 
                                   className="h-16 w-16 object-cover rounded border"
                                 />
@@ -1086,11 +1102,12 @@ const ReferralLinks = () => {
                               accept="image/*"
                               onChange={(e) => handleImageUpload(e, field)}
                               className="cursor-pointer"
+                              ref={editFileInputRef}
                             />
                             {field.value && field.value.startsWith('data:') && (
                               <div className="mt-2">
-                                <img 
-                                  src={field.value} 
+                                <img
+                                  src={field.value}
                                   alt="Preview" 
                                   className="h-16 w-16 object-cover rounded border"
                                 />
