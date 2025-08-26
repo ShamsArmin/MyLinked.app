@@ -341,29 +341,50 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
     }
   };
   
+  // Copy to clipboard with graceful fallback for older browsers or insecure contexts
+  const copyTextToClipboard = async (text: string) => {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.setAttribute('readonly', '');
+    textArea.style.position = 'absolute';
+    textArea.style.left = '-9999px';
+    textArea.style.top = (document.body.scrollTop || 0) + 'px';
+    document.body.appendChild(textArea);
+    textArea.select();
+    textArea.setSelectionRange(0, textArea.value.length);
+
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+
+    if (!successful) {
+      throw new Error('Copy command was unsuccessful');
+    }
+  };
+
   // Handle copy referral URL to clipboard
-  const handleCopyLink = (id: number) => {
-    const baseUrl = window.location.origin;
-    const referralUrl = `${baseUrl}/api/r/${id}`;
-    
-    navigator.clipboard.writeText(referralUrl)
-      .then(() => {
-        setCopiedId(id);
-        toast({
-          title: 'Copied!',
-          description: 'Referral link copied to clipboard',
-        });
-        
-        // Reset copied state after 2 seconds
-        setTimeout(() => setCopiedId(null), 2000);
-      })
-      .catch(err => {
-        toast({
-          title: 'Error',
-          description: 'Failed to copy link to clipboard',
-          variant: 'destructive',
-        });
+  const handleCopyLink = async (link: ReferralLink) => {
+    try {
+      await copyTextToClipboard(link.url);
+      setCopiedId(link.id);
+      toast({
+        title: 'Copied!',
+        description: 'Referral link copied to clipboard',
       });
+
+      // Reset copied state after 2 seconds
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy link to clipboard',
+        variant: 'destructive',
+      });
+    }
   };
   
   // Handle delete referral link
@@ -506,10 +527,10 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                   ) : referralLinks && referralLinks.length > 0 ? (
                     <div className="space-y-4 max-w-full">
                       {referralLinks.map((link) => (
-                        <ReferralLinkCard 
+                        <ReferralLinkCard
                           key={link.id}
                           link={link}
-                          onCopy={() => handleCopyLink(link.id)}
+                          onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
                           isCopied={copiedId === link.id}
@@ -554,10 +575,10 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                   ) : getFriendLinks().length > 0 ? (
                     <div className="space-y-4 max-w-full">
                       {getFriendLinks().map((link) => (
-                        <ReferralLinkCard 
+                        <ReferralLinkCard
                           key={link.id}
                           link={link}
-                          onCopy={() => handleCopyLink(link.id)}
+                          onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
                           isCopied={copiedId === link.id}
@@ -605,10 +626,10 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                   ) : getSponsorLinks().length > 0 ? (
                     <div className="space-y-4 max-w-full">
                       {getSponsorLinks().map((link) => (
-                        <ReferralLinkCard 
+                        <ReferralLinkCard
                           key={link.id}
                           link={link}
-                          onCopy={() => handleCopyLink(link.id)}
+                          onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
                           isCopied={copiedId === link.id}
@@ -656,10 +677,10 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                   ) : getAffiliateLinks().length > 0 ? (
                     <div className="space-y-4 max-w-full">
                       {getAffiliateLinks().map((link) => (
-                        <ReferralLinkCard 
+                        <ReferralLinkCard
                           key={link.id}
                           link={link}
-                          onCopy={() => handleCopyLink(link.id)}
+                          onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
                           isCopied={copiedId === link.id}
@@ -1211,16 +1232,16 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
 };
 
 // Referral Link Card Component
-const ReferralLinkCard = ({ 
-  link, 
-  onCopy, 
-  onEdit, 
+const ReferralLinkCard = ({
+  link,
+  onCopy,
+  onEdit,
   onDelete,
   isCopied
-}: { 
-  link: ReferralLink; 
-  onCopy: () => void; 
-  onEdit: () => void; 
+}: {
+  link: ReferralLink;
+  onCopy: (link: ReferralLink) => void;
+  onEdit: () => void;
   onDelete: () => void;
   isCopied: boolean;
 }) => {
@@ -1325,7 +1346,7 @@ const ReferralLinkCard = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={onCopy}>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onCopy(link); }}>
                 {isCopied ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
@@ -1378,7 +1399,7 @@ const ReferralLinkCard = ({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                onCopy();
+                onCopy(link);
               }}
               className="h-6 w-6 p-0"
             >
