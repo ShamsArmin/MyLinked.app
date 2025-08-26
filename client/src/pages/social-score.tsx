@@ -82,6 +82,8 @@ import {
 // Types
 interface SocialScoreData {
   currentScore: number;
+  previousScore: number;
+  change: number;
   stats: {
     views: number;
     clicks: number;

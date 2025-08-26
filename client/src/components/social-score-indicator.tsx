@@ -94,6 +94,7 @@ type SocialScoreIndicatorProps = {
 export function SocialScoreIndicator({ className = '', showDetails = true, showRefresh = true }: SocialScoreIndicatorProps) {
   const { data: socialScore, isLoading } = useQuery<{
     currentScore: number;
+    previousScore?: number;
     change?: number;
     stats: { views: number; clicks: number; ctr: number };
     historicalData?: any[];

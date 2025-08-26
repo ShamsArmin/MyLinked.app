@@ -170,14 +170,16 @@ const getSocialScoreData = (socialScore: any) => {
   }
 
   const previousScore =
+    socialScore.previousScore ??
     socialScore.historicalData?.[
-      socialScore.historicalData.length - 1
-    ]?.score || 0;
+      socialScore.historicalData.length - 2
+    ]?.score ?? 0;
+  const change = socialScore.change ?? (socialScore.currentScore || 0) - previousScore;
 
   return {
     score: socialScore.currentScore || 0,
     previousScore,
-    change: (socialScore.currentScore || 0) - previousScore,
+    change,
     scores:
       socialScore.compareData?.map((item: any) => ({
         category: item.category,

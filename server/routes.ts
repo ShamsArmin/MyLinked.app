@@ -1317,13 +1317,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
 
-    // Generate historical data
+    // Generate historical data with the current score as the latest entry
     const historicalData = [];
-    let baseScore = Math.max(30, (user.socialScore || 75) - 20);
+    const currentScore = user.socialScore || 75;
+    const baseScore = Math.max(30, currentScore - 20);
 
-    for (let i = 7; i >= 0; i--) {
-      const weekNumber = 8 - i;
-      const scoreIncrease = Math.floor(i * 3);
+    for (let i = 0; i < 8; i++) {
+      const weekNumber = i + 1;
+      const scoreIncrease = Math.floor((i / 7) * 20); // gradually increase score
       const weekScore = Math.min(100, baseScore + scoreIncrease);
 
       historicalData.push({
@@ -1333,6 +1334,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         clicks: Math.floor((stats.clicks * (0.7 + Math.random() * 0.3)) / 8),
       });
     }
+
+    const previousScore =
+      historicalData.length > 1
+        ? historicalData[historicalData.length - 2].score
+        : currentScore;
+    const change = currentScore - previousScore;
 
     // Get comparative data
     const compareData = [
@@ -1364,7 +1371,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ];
 
     res.json({
-      currentScore: user.socialScore || 75,
+      currentScore,
+      previousScore,
+      change,
       stats,
       historicalData,
       compareData,
