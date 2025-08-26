@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
@@ -40,7 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Link, Users, UserPlus, ExternalLink, Copy, Check, Trash2,
   Edit, Heart, Award, Gift, User, Briefcase, BarChart3, Plus, ArrowLeft, X,
-  Phone, Globe, Mail, Calendar
+  Phone, Globe, Mail, Calendar, Pin, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
@@ -78,6 +78,7 @@ interface ReferralLink {
   clicks: number;
   createdAt: string;
   updatedAt?: string;
+  pinned?: boolean;
 }
 
 // Create form schema
@@ -103,15 +104,22 @@ const ReferralLinks = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [currentLink, setCurrentLink] = useState<ReferralLink | null>(null);
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [links, setLinks] = useState<ReferralLink[]>([]);
   
   // Get all referral links
-  const { 
-    data: referralLinks, 
-    isLoading: isLoadingLinks 
+  const {
+    data: referralLinks,
+    isLoading: isLoadingLinks
   } = useQuery({
     queryKey: ['/api/referral-links'],
     select: (data: ReferralLink[]) => data,
   });
+
+  useEffect(() => {
+    if (referralLinks) {
+      setLinks(referralLinks);
+    }
+  }, [referralLinks]);
 
   // Get all referral requests
   const { 
@@ -321,6 +329,49 @@ const ReferralLinks = () => {
     });
     setEditDialogOpen(true);
   };
+
+  const handlePinLink = (id: number) => {
+    setLinks(prev => {
+      const updated = prev.map(l =>
+        l.id === id ? { ...l, pinned: !l.pinned } : l
+      );
+      const sorted = [...updated].sort(
+        (a, b) => Number(b.pinned) - Number(a.pinned)
+      );
+      const isPinned = sorted.find(l => l.id === id)?.pinned;
+      toast({
+        title: 'Success',
+        description: isPinned ? 'Link pinned' : 'Link unpinned',
+      });
+      return sorted;
+    });
+  };
+
+  const handleMoveLinkUp = (id: number) => {
+    setLinks(prev => {
+      const index = prev.findIndex(l => l.id === id);
+      if (index > 0) {
+        const newLinks = [...prev];
+        [newLinks[index - 1], newLinks[index]] = [newLinks[index], newLinks[index - 1]];
+        return newLinks;
+      }
+      return prev;
+    });
+    toast({ title: 'Reordered', description: 'Link moved up' });
+  };
+
+  const handleMoveLinkDown = (id: number) => {
+    setLinks(prev => {
+      const index = prev.findIndex(l => l.id === id);
+      if (index !== -1 && index < prev.length - 1) {
+        const newLinks = [...prev];
+        [newLinks[index + 1], newLinks[index]] = [newLinks[index], newLinks[index + 1]];
+        return newLinks;
+      }
+      return prev;
+    });
+    toast({ title: 'Reordered', description: 'Link moved down' });
+  };
   
   // Get icon based on link type
   const getLinkTypeIcon = (type: string) => {
@@ -356,9 +407,9 @@ const ReferralLinks = () => {
   };
   
   // Filter links by type
-  const getFriendLinks = () => referralLinks?.filter(link => link.linkType === 'friend') || [];
-  const getSponsorLinks = () => referralLinks?.filter(link => link.linkType === 'sponsor') || [];
-  const getAffiliateLinks = () => referralLinks?.filter(link => link.linkType === 'affiliate') || [];
+  const getFriendLinks = () => links.filter(link => link.linkType === 'friend');
+  const getSponsorLinks = () => links.filter(link => link.linkType === 'sponsor');
+  const getAffiliateLinks = () => links.filter(link => link.linkType === 'affiliate');
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-black dark:via-gray-900 dark:to-gray-800">
@@ -440,15 +491,18 @@ const ReferralLinks = () => {
                     <div className="flex justify-center p-8">
                       <p>Loading referral links...</p>
                     </div>
-                  ) : referralLinks && referralLinks.length > 0 ? (
+                  ) : links && links.length > 0 ? (
                     <div className="space-y-4">
-                      {referralLinks.map((link) => (
+                      {links.map((link) => (
                         <ReferralLinkCard
                           key={link.id}
                           link={link}
                           onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
+                          onPin={() => handlePinLink(link.id)}
+                          onMoveUp={() => handleMoveLinkUp(link.id)}
+                          onMoveDown={() => handleMoveLinkDown(link.id)}
                           isCopied={copiedId === link.id}
                         />
                       ))}
@@ -497,6 +551,9 @@ const ReferralLinks = () => {
                           onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
+                          onPin={() => handlePinLink(link.id)}
+                          onMoveUp={() => handleMoveLinkUp(link.id)}
+                          onMoveDown={() => handleMoveLinkDown(link.id)}
                           isCopied={copiedId === link.id}
                         />
                       ))}
@@ -548,6 +605,9 @@ const ReferralLinks = () => {
                           onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
+                          onPin={() => handlePinLink(link.id)}
+                          onMoveUp={() => handleMoveLinkUp(link.id)}
+                          onMoveDown={() => handleMoveLinkDown(link.id)}
                           isCopied={copiedId === link.id}
                         />
                       ))}
@@ -599,6 +659,9 @@ const ReferralLinks = () => {
                           onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
+                          onPin={() => handlePinLink(link.id)}
+                          onMoveUp={() => handleMoveLinkUp(link.id)}
+                          onMoveDown={() => handleMoveLinkDown(link.id)}
                           isCopied={copiedId === link.id}
                         />
                       ))}
@@ -1153,12 +1216,18 @@ const ReferralLinkCard = ({
   onCopy,
   onEdit,
   onDelete,
+  onPin,
+  onMoveUp,
+  onMoveDown,
   isCopied
 }: {
   link: ReferralLink;
   onCopy: (link: ReferralLink) => void;
   onEdit: () => void;
   onDelete: () => void;
+  onPin: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
   isCopied: boolean;
 }) => {
   // Get icon based on link type
@@ -1258,6 +1327,19 @@ const ReferralLinkCard = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={onPin}>
+                <Pin className="h-4 w-4 mr-2" />
+                {link.pinned ? 'Unpin' : 'Pin'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onMoveUp}>
+                <ArrowUp className="h-4 w-4 mr-2" />
+                Move Up
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onMoveDown}>
+                <ArrowDown className="h-4 w-4 mr-2" />
+                Move Down
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onCopy(link); }}>
                 {isCopied ? (
                   <>
@@ -1276,7 +1358,7 @@ const ReferralLinkCard = ({
                 Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={onDelete}
                 className="text-red-600 focus:text-red-600"
               >
