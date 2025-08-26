@@ -342,28 +342,47 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
   };
   
   // Handle copy referral URL to clipboard
-  const handleCopyLink = (id: number) => {
+  const handleCopyLink = async (id: number) => {
     const baseUrl = window.location.origin;
     const referralUrl = `${baseUrl}/api/r/${id}`;
-    
-    navigator.clipboard.writeText(referralUrl)
-      .then(() => {
-        setCopiedId(id);
-        toast({
-          title: 'Copied!',
-          description: 'Referral link copied to clipboard',
-        });
-        
-        // Reset copied state after 2 seconds
-        setTimeout(() => setCopiedId(null), 2000);
-      })
-      .catch(err => {
-        toast({
-          title: 'Error',
-          description: 'Failed to copy link to clipboard',
-          variant: 'destructive',
-        });
+
+    try {
+      // Use modern clipboard API when available
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(referralUrl);
+      } else {
+        // Fallback for older browsers and non-secure contexts
+        const textarea = document.createElement('textarea');
+        textarea.value = referralUrl;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (!successful) {
+          throw new Error('Fallback copy command failed');
+        }
+      }
+
+      setCopiedId(id);
+      toast({
+        title: 'Copied!',
+        description: 'Referral link copied to clipboard',
       });
+
+      // Reset copied state after 2 seconds
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Copy failed', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to copy link to clipboard',
+        variant: 'destructive',
+      });
+    }
   };
   
   // Handle delete referral link
