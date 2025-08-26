@@ -1304,8 +1304,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const followers = await storage.getFollowers(userId);
     const following = await storage.getFollowing(userId);
 
-    // Calculate social score if not already present
-    if (!user.socialScore && process.env.OPENAI_API_KEY) {
+    // Calculate social score if not already present (fallback if OpenAI unavailable)
+    if (!user.socialScore) {
       try {
         const socialScoreResult = await generateSocialScore(user, links, stats);
         if (socialScoreResult) {
@@ -1376,12 +1376,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Calculate social score
   app.post("/api/social-score/calculate", isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.id;
-
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(401).json({
-        message: "OpenAI API key not configured. Please set the OPENAI_API_KEY environment variable.",
-      });
-    }
 
     const user = await storage.getUser(userId);
     if (!user) {

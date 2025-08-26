@@ -326,7 +326,7 @@ export default function AnalyticsPage() {
   });
 
   // Query to fetch social score
-  const { data: socialScore, isLoading: isLoadingSocialScore } = useQuery<any>({
+  const { data: socialScore } = useQuery<any>({
     queryKey: ["/api/social-score"],
     enabled: !!user,
   });
