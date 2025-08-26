@@ -254,38 +254,30 @@ export default function SpotlightPage() {
         console.log("Creating project with data:", JSON.stringify(filtered, null, 2));
         
         // Send all project data including contributors and tags
-        const response = await apiRequest("POST", "/api/spotlight/projects", {
-          title: filtered.title,
-          url: filtered.url,
-          description: filtered.description || '',
-          thumbnail: filtered.thumbnail || '',
-          isPinned: filtered.isPinned,
-          contributors: filtered.contributors,
-          tags: filtered.tags
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
-          console.error("Project creation failed with status:", response.status, errorData);
-          // Create project with just basic details if there's an error with contributors/tags
-          if (response.status === 400) {
-            // Try again without contributors and tags
-            const basicResponse = await apiRequest("POST", "/api/spotlight/projects", {
+        try {
+          return await apiRequest("POST", "/api/spotlight/projects", {
+            title: filtered.title,
+            url: filtered.url,
+            description: filtered.description || '',
+            thumbnail: filtered.thumbnail || '',
+            isPinned: filtered.isPinned,
+            contributors: filtered.contributors,
+            tags: filtered.tags
+          });
+        } catch (error) {
+          // If we get a 400 error, try again without contributors and tags
+          const message = error instanceof Error ? error.message : "";
+          if (message.includes("400")) {
+            return await apiRequest("POST", "/api/spotlight/projects", {
               title: filtered.title,
               url: filtered.url,
               description: filtered.description || '',
               thumbnail: filtered.thumbnail || '',
               isPinned: filtered.isPinned
             });
-            
-            if (basicResponse.ok) {
-              return await basicResponse.json();
-            }
           }
-          throw new Error(errorData?.message || `Server error: ${response.status}`);
+          throw error;
         }
-        
-        return await response.json();
       } catch (err) {
         console.error("Error in project creation:", err);
         throw err;
@@ -343,8 +335,7 @@ export default function SpotlightPage() {
       } 
     }) => {
       // Use a more generic payload type to avoid type issues
-      const response = await apiRequest("PATCH", `/api/spotlight/projects/${data.projectId}`, data.updates);
-      return await response.json();
+      return await apiRequest("PATCH", `/api/spotlight/projects/${data.projectId}`, data.updates);
     },
     onSuccess: () => {
       // Force a refetch to get the updated data including contributors and tags
@@ -394,8 +385,7 @@ export default function SpotlightPage() {
   // Toggle pin status mutation
   const togglePinMutation = useMutation({
     mutationFn: async ({ projectId, isPinned }: { projectId: number; isPinned: boolean }) => {
-      const response = await apiRequest("POST", `/api/spotlight/projects/${projectId}/pin`, { isPinned });
-      return await response.json();
+      return await apiRequest("POST", `/api/spotlight/projects/${projectId}/pin`, { isPinned });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/spotlight/projects"] });
@@ -416,8 +406,7 @@ export default function SpotlightPage() {
   // Add contributor mutation
   const addContributorMutation = useMutation({
     mutationFn: async (data: { projectId: number; contributor: any }) => {
-      const response = await apiRequest("POST", `/api/spotlight/projects/${data.projectId}/contributors`, data.contributor);
-      return await response.json();
+      return await apiRequest("POST", `/api/spotlight/projects/${data.projectId}/contributors`, data.contributor);
     },
     onSuccess: () => {
       if (selectedProject) {
@@ -467,8 +456,7 @@ export default function SpotlightPage() {
   // Add tag mutation
   const addTagMutation = useMutation({
     mutationFn: async (data: { projectId: number; tag: any }) => {
-      const response = await apiRequest("POST", `/api/spotlight/projects/${data.projectId}/tags`, data.tag);
-      return await response.json();
+      return await apiRequest("POST", `/api/spotlight/projects/${data.projectId}/tags`, data.tag);
     },
     onSuccess: () => {
       if (selectedProject) {
