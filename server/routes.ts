@@ -1385,20 +1385,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const links = await storage.getLinks(userId);
     const stats = await storage.getUserStats(userId);
 
-    const result = await generateSocialScore(user, links, stats);
-
-    if (result) {
+    try {
+      const result = await generateSocialScore(user, links, stats);
       const previousScore = user.socialScore || 0;
       await storage.updateSocialScore(userId, result.score);
 
       res.json({
         score: result.score,
-        previousScore: previousScore,
+        previousScore,
         change: result.score - previousScore,
         insights: result.insights,
       });
-    } else {
-      res.status(400).json({ message: "Failed to calculate social score" });
+    } catch (err) {
+      console.error("Failed to calculate social score:", err);
+      res.status(500).json({ message: "Failed to calculate social score" });
     }
   }));
 
