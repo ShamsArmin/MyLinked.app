@@ -36,10 +36,10 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
+import {
   Link, Users, UserPlus, ExternalLink, Copy, Check, Trash2,
-  Edit, Heart, Award, Gift, User, Briefcase, BarChart3, Plus,
-  Upload, Image as ImageIcon
+  Edit, Award, Gift, Briefcase, BarChart3, Plus,
+  Upload, Pin, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -73,6 +73,7 @@ interface ReferralLink {
   referenceCompany?: string;
   clicks: number;
   createdAt: string;
+  pinned?: boolean;
 }
 
 // Create form schema
@@ -87,43 +88,6 @@ const referralLinkSchema = z.object({
 
 type ReferralLinkFormValues = z.infer<typeof referralLinkSchema>;
 
-// Sample data for demo
-const sampleLinks: ReferralLink[] = [
-  {
-    id: 1,
-    userId: 1,
-    title: 'My Designer Friend',
-    url: 'https://example.com/designer',
-    description: 'Check out my friend\'s amazing design portfolio',
-    linkType: 'friend',
-    clicks: 24,
-    createdAt: '2024-05-01T10:30:00Z'
-  },
-  {
-    id: 2,
-    userId: 1,
-    title: 'Acme Design Tools',
-    url: 'https://acmedesign.com',
-    description: 'The best design tools I use every day',
-    linkType: 'sponsor',
-    referenceCompany: 'Acme Design',
-    image: 'https://placehold.co/50x50',
-    clicks: 47,
-    createdAt: '2024-05-05T14:22:00Z'
-  },
-  {
-    id: 3,
-    userId: 1,
-    title: 'Premium Hosting Service',
-    url: 'https://hostingservice.com/ref123',
-    description: 'Get 20% off your first month of hosting with my code',
-    linkType: 'affiliate',
-    referenceCompany: 'Premium Hosting',
-    clicks: 12,
-    createdAt: '2024-05-10T09:15:00Z'
-  }
-];
-
 const ReferralLinks = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -132,10 +96,11 @@ const ReferralLinks = () => {
   // States for dialogs
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-const [currentLink, setCurrentLink] = useState<ReferralLink | null>(null);
-const [copiedId, setCopiedId] = useState<number | null>(null);
-const [imageUploadType, setImageUploadType] = useState<'url' | 'file'>('url');
-const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('url');
+  const [currentLink, setCurrentLink] = useState<ReferralLink | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [imageUploadType, setImageUploadType] = useState<'url' | 'file'>('url');
+  const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('url');
+  const [links, setLinks] = useState<ReferralLink[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
@@ -186,13 +151,19 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
   };
   
   // Get all referral links
-  const { 
-    data: referralLinks, 
-    isLoading: isLoadingLinks 
+  const {
+    data: referralLinks,
+    isLoading: isLoadingLinks
   } = useQuery({
     queryKey: ['/api/referral-links'],
     select: (data: ReferralLink[]) => data,
   });
+
+  useEffect(() => {
+    if (referralLinks) {
+      setLinks(referralLinks);
+    }
+  }, [referralLinks]);
 
   // Get all referral requests
   const { 
@@ -343,33 +314,48 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
   
   // Copy to clipboard with graceful fallback for older browsers or insecure contexts
   const copyTextToClipboard = async (text: string) => {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return;
-    }
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      // Fallback
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.setAttribute('readonly', '');
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      textArea.style.top = '0';
+      document.body.appendChild(textArea);
+      if (textArea.focus) {
+        // @ts-ignore - older TS lib may not include FocusOptions
+        textArea.focus({ preventScroll: true });
+      }
+      textArea.select();
+      textArea.setSelectionRange(0, textArea.value.length);
 
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.setAttribute('readonly', '');
-    textArea.style.position = 'absolute';
-    textArea.style.left = '-9999px';
-    textArea.style.top = (document.body.scrollTop || 0) + 'px';
-    document.body.appendChild(textArea);
-    textArea.select();
-    textArea.setSelectionRange(0, textArea.value.length);
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
 
-    const successful = document.execCommand('copy');
-    document.body.removeChild(textArea);
-
-    if (!successful) {
-      throw new Error('Copy command was unsuccessful');
+      if (!successful) {
+        throw new Error('Copy command was unsuccessful');
+      }
+    } catch {
+      // Re-throw to be handled by caller
+      throw new Error('Failed to copy to clipboard');
     }
   };
 
-  // Handle copy referral URL to clipboard
-  const handleCopyLink = async (id: number) => {
-    const baseUrl = window.location.origin;
-    const referralUrl = `${baseUrl}/api/r/${id}`;
+  // Handle copy referral URL to clipboard (supports either full link or id)
+  const handleCopyLink = async (linkOrId: ReferralLink | number) => {
+    const id = typeof linkOrId === 'number' ? linkOrId : linkOrId.id;
+    const providedUrl =
+      typeof linkOrId === 'number' ? undefined : (linkOrId.url?.trim() || undefined);
+
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const referralUrl = providedUrl && providedUrl !== ''
+      ? providedUrl
+      : `${baseUrl}/api/r/${id}`;
 
     try {
       await copyTextToClipboard(referralUrl);
@@ -378,7 +364,6 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
         title: 'Copied!',
         description: 'Referral link copied to clipboard',
       });
-
       // Reset copied state after 2 seconds
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
@@ -407,6 +392,58 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
       referenceCompany: link.referenceCompany || '',
     });
     setEditDialogOpen(true);
+  };
+
+  const handlePinLink = (id: number) => {
+    setLinks(prev => {
+      const index = prev.findIndex(l => l.id === id);
+      if (index === -1) return prev;
+
+      const link = { ...prev[index], pinned: !prev[index].pinned };
+      const newLinks = [...prev];
+      newLinks.splice(index, 1);
+
+      if (link.pinned) {
+        newLinks.unshift(link);
+      } else {
+        const firstUnpinned = newLinks.findIndex(l => !l.pinned);
+        if (firstUnpinned === -1) newLinks.push(link);
+        else newLinks.splice(firstUnpinned, 0, link);
+      }
+
+      toast({
+        title: 'Success',
+        description: link.pinned ? 'Link pinned' : 'Link unpinned',
+      });
+
+      return newLinks;
+    });
+  };
+
+  const handleMoveLinkUp = (id: number) => {
+    setLinks(prev => {
+      const index = prev.findIndex(l => l.id === id);
+      if (index > 0) {
+        const newLinks = [...prev];
+        [newLinks[index - 1], newLinks[index]] = [newLinks[index], newLinks[index - 1]];
+        return newLinks;
+      }
+      return prev;
+    });
+    toast({ title: 'Reordered', description: 'Link moved up' });
+  };
+
+  const handleMoveLinkDown = (id: number) => {
+    setLinks(prev => {
+      const index = prev.findIndex(l => l.id === id);
+      if (index !== -1 && index < prev.length - 1) {
+        const newLinks = [...prev];
+        [newLinks[index + 1], newLinks[index]] = [newLinks[index], newLinks[index + 1]];
+        return newLinks;
+      }
+      return prev;
+    });
+    toast({ title: 'Reordered', description: 'Link moved down' });
   };
   
   // Get icon based on link type
@@ -443,9 +480,9 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
   };
   
   // Filter links by type
-  const getFriendLinks = () => referralLinks?.filter(link => link.linkType === 'friend') || [];
-  const getSponsorLinks = () => referralLinks?.filter(link => link.linkType === 'sponsor') || [];
-  const getAffiliateLinks = () => referralLinks?.filter(link => link.linkType === 'affiliate') || [];
+  const getFriendLinks = () => links.filter(link => link.linkType === 'friend');
+  const getSponsorLinks = () => links.filter(link => link.linkType === 'sponsor');
+  const getAffiliateLinks = () => links.filter(link => link.linkType === 'affiliate');
   
   return (
     <div className="container mx-auto max-w-3xl py-6 px-4 overflow-x-hidden">
@@ -527,15 +564,18 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                     <div className="flex justify-center p-8">
                       <p>Loading referral links...</p>
                     </div>
-                  ) : referralLinks && referralLinks.length > 0 ? (
+                  ) : links && links.length > 0 ? (
                     <div className="space-y-4 max-w-full">
-                      {referralLinks.map((link) => (
+                      {links.map((link) => (
                         <ReferralLinkCard
                           key={link.id}
                           link={link}
                           onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
+                          onPin={() => handlePinLink(link.id)}
+                          onMoveUp={() => handleMoveLinkUp(link.id)}
+                          onMoveDown={() => handleMoveLinkDown(link.id)}
                           isCopied={copiedId === link.id}
                         />
                       ))}
@@ -584,6 +624,9 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                           onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
+                          onPin={() => handlePinLink(link.id)}
+                          onMoveUp={() => handleMoveLinkUp(link.id)}
+                          onMoveDown={() => handleMoveLinkDown(link.id)}
                           isCopied={copiedId === link.id}
                         />
                       ))}
@@ -635,6 +678,9 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                           onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
+                          onPin={() => handlePinLink(link.id)}
+                          onMoveUp={() => handleMoveLinkUp(link.id)}
+                          onMoveDown={() => handleMoveLinkDown(link.id)}
                           isCopied={copiedId === link.id}
                         />
                       ))}
@@ -686,6 +732,9 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                           onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
+                          onPin={() => handlePinLink(link.id)}
+                          onMoveUp={() => handleMoveLinkUp(link.id)}
+                          onMoveDown={() => handleMoveLinkDown(link.id)}
                           isCopied={copiedId === link.id}
                         />
                       ))}
@@ -1033,7 +1082,7 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
             </DialogDescription>
           </DialogHeader>
           
-          <Form {...editForm}>
+        <Form {...editForm}>
             <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
               <FormField
                 control={editForm.control}
@@ -1240,12 +1289,18 @@ const ReferralLinkCard = ({
   onCopy,
   onEdit,
   onDelete,
+  onPin,
+  onMoveUp,
+  onMoveDown,
   isCopied
 }: {
   link: ReferralLink;
-  onCopy: (id: number) => void;
+  onCopy: (link: ReferralLink) => void;
   onEdit: () => void;
   onDelete: () => void;
+  onPin: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
   isCopied: boolean;
 }) => {
   // Function to handle link click - opens the link in a new tab
@@ -1349,7 +1404,20 @@ const ReferralLinkCard = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onCopy(link.id); }}>
+              <DropdownMenuItem onClick={onPin}>
+                <Pin className="h-4 w-4 mr-2" />
+                {link.pinned ? 'Unpin' : 'Pin'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onMoveUp}>
+                <ArrowUp className="h-4 w-4 mr-2" />
+                Move Up
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onMoveDown}>
+                <ArrowDown className="h-4 w-4 mr-2" />
+                Move Down
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onCopy(link)}>
                 {isCopied ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
@@ -1367,7 +1435,7 @@ const ReferralLinkCard = ({
                 Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={onDelete}
                 className="text-red-600 focus:text-red-600"
               >
@@ -1384,8 +1452,10 @@ const ReferralLinkCard = ({
             {link.description}
           </p>
         )}
-        <div className="flex items-center gap-1 bg-muted p-1.5 rounded-md cursor-pointer overflow-hidden hover:bg-muted/80 transition-colors" 
-          onClick={() => handleLinkClick(link.url)}>
+        <div
+          className="flex items-center gap-1 bg-muted p-1.5 rounded-md cursor-pointer overflow-hidden hover:bg-muted/80 transition-colors" 
+          onClick={() => handleLinkClick(link.url)}
+        >
           <ExternalLink className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
           <a 
             href={link.url}
@@ -1402,7 +1472,7 @@ const ReferralLinkCard = ({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                onCopy(link.id);
+                onCopy(link);
               }}
               className="h-6 w-6 p-0"
             >
