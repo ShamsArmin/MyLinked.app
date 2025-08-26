@@ -159,6 +159,59 @@ export async function suggestLinkPriority(
 }
 
 /**
+ * Generate AI suggestions to improve a single link's title and description
+ */
+export async function generateLinkContentSuggestions(
+  link: Link
+): Promise<{ title: string; description: string; aiScore: number }> {
+  try {
+    const systemPrompt = `You are an AI copywriter for a link-in-bio tool.
+Generate a more compelling and unique title and description for the provided link.
+Return JSON with { "title": string, "description": string, "aiScore": number }.
+Title must be different from the original and 5 words or fewer.
+Description must be under 20 words and not repeat the title.`;
+
+    const completion = await openai.chat.completions.create({
+      model: OPENAI_MODEL,
+      messages: [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content: JSON.stringify({
+            title: link.title,
+            description: link.description || "",
+            platform: link.platform,
+            url: link.url,
+          }),
+        },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.8,
+    });
+
+    const content = completion.choices[0].message.content || "{}";
+    const data = JSON.parse(content);
+
+    if (!data.title || !data.description) {
+      throw new Error("Invalid response format from OpenAI");
+    }
+
+    return {
+      title: data.title,
+      description: data.description,
+      aiScore: typeof data.aiScore === "number" ? data.aiScore : 80,
+    };
+  } catch (error) {
+    console.error("generateLinkContentSuggestions error:", error);
+    const fallbackTitle = `Improved ${link.title}`;
+    const fallbackDescription = link.description
+      ? `${link.description} (updated)`
+      : `Learn more about ${link.platform}`;
+    return { title: fallbackTitle, description: fallbackDescription, aiScore: 70 };
+  }
+}
+
+/**
  * Generate personalized branding suggestions based on user profile and links
  */
 export async function generateBrandingSuggestions(

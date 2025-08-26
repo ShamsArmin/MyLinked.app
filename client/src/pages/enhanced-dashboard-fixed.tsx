@@ -509,11 +509,8 @@ export default function EnhancedDashboardFixed() {
   
   // Optimize link mutation
   const optimizeLinkMutation = useMutation({
-    mutationFn: async ({ id, improvements }: { id: number; improvements: Partial<Link> }) => {
-      const response = await apiRequest("PATCH", `/api/links/${id}/optimize`, improvements);
-      const result = await response.json();
-      return result;
-    },
+    mutationFn: ({ id, improvements }: { id: number; improvements: Partial<Link> }) =>
+      apiRequest("PATCH", `/api/links/${id}/optimize`, improvements),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/links"] });
       setShowOptimizeDialog(false);

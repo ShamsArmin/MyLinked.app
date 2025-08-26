@@ -2,6 +2,7 @@ import { Router } from "express";
 import { isAuthenticated } from "../auth";
 import { storage } from "../db-storage-enhanced";
 import { z } from "zod";
+import { generateLinkContentSuggestions } from "../openai";
 
 export const linksRouter = Router();
 
@@ -72,6 +73,82 @@ linksRouter.delete("/:id", isAuthenticated, async (req, res) => {
   } catch (e) {
     console.error("DELETE /api/links/:id error:", e);
     return res.status(500).json({ message: "Failed to delete link" });
+  }
+});
+
+// Generate AI suggestions for a link's title and description
+linksRouter.post("/:id/optimize", isAuthenticated, async (req, res) => {
+  try {
+    const userId = String((req as any).user.id);
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ message: "Invalid link id" });
+    }
+
+    const link = await storage.getLinkById(id);
+    if (!link) {
+      return res.status(404).json({ message: "Link not found" });
+    }
+
+    if (String(link.userId) !== userId) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this link" });
+    }
+
+    const suggestions = await generateLinkContentSuggestions(link);
+    return res.json(suggestions);
+  } catch (e) {
+    console.error("POST /api/links/:id/optimize error:", e);
+    return res
+      .status(500)
+      .json({ message: "Failed to generate link suggestions" });
+  }
+});
+
+// OPTIMIZE a link's content and AI score
+linksRouter.patch("/:id/optimize", isAuthenticated, async (req, res) => {
+  try {
+    const userId = String((req as any).user.id);
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ message: "Invalid link id" });
+    }
+
+    const link = await storage.getLinkById(id);
+    if (!link) {
+      return res.status(404).json({ message: "Link not found" });
+    }
+
+    if (String(link.userId) !== userId) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this link" });
+    }
+
+    const optimizeSchema = z.object({
+      title: z.string().min(1).optional(),
+      description: z.string().optional(),
+      aiScore: z.number().int().min(0).max(100).optional(),
+    });
+
+    const improvements = optimizeSchema.parse(req.body);
+    const { aiScore, ...updates } = improvements;
+
+    let updatedLink = link;
+
+    if (Object.keys(updates).length > 0) {
+      updatedLink = (await storage.updateLink(id, updates)) ?? link;
+    }
+    if (typeof aiScore === "number") {
+      updatedLink =
+        (await storage.updateLinkAiScore(id, aiScore)) ?? updatedLink;
+    }
+
+    return res.json(updatedLink);
+  } catch (e) {
+    console.error("PATCH /api/links/:id/optimize error:", e);
+    return res.status(500).json({ message: "Failed to optimize link" });
   }
 });
 

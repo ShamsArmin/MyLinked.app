@@ -65,6 +65,8 @@ export default function OptimizeLinksPage() {
   const [, navigate] = useLocation();
   const [showOptimizeDialog, setShowOptimizeDialog] = useState(false);
   const [currentOptimizeLink, setCurrentOptimizeLink] = useState<Link | null>(null);
+  const [suggestions, setSuggestions] = useState<{ title: string; description: string; aiScore: number } | null>(null);
+  const [loadingSuggestion, setLoadingSuggestion] = useState(false);
   
   // Fetch all links
   const { data: links, isLoading } = useQuery<Link[]>({
@@ -77,18 +79,29 @@ export default function OptimizeLinksPage() {
   };
   
   // Handle optimize link
-  const handleOptimizeLink = (link: Link) => {
+  const handleOptimizeLink = async (link: Link) => {
     setCurrentOptimizeLink(link);
     setShowOptimizeDialog(true);
+    setLoadingSuggestion(true);
+    setSuggestions(null);
+    try {
+      const data = await apiRequest("POST", `/api/links/${link.id}/optimize`, {});
+      setSuggestions(data);
+    } catch (error: any) {
+      toast({
+        title: "Failed to load suggestions",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingSuggestion(false);
+    }
   };
   
   // Optimize link mutation
   const optimizeLinkMutation = useMutation({
-    mutationFn: async ({ id, improvements }: { id: number; improvements: Partial<Link> }) => {
-      const response = await apiRequest("PATCH", `/api/links/${id}/optimize`, improvements);
-      const result = await response.json();
-      return result;
-    },
+    mutationFn: ({ id, improvements }: { id: number; improvements: Partial<Link> }) =>
+      apiRequest("PATCH", `/api/links/${id}/optimize`, improvements),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/links"] });
       setShowOptimizeDialog(false);
@@ -107,11 +120,11 @@ export default function OptimizeLinksPage() {
   });
   
   // Handle optimize submit
-  const handleOptimizeSubmit = (improvements: Partial<Link>) => {
-    if (currentOptimizeLink) {
+  const handleOptimizeSubmit = () => {
+    if (currentOptimizeLink && suggestions) {
       optimizeLinkMutation.mutate({
         id: currentOptimizeLink.id,
-        improvements,
+        improvements: suggestions,
       });
     }
   };
@@ -170,7 +183,9 @@ export default function OptimizeLinksPage() {
                     <Button 
                       variant="default" 
                       size="sm" 
-                      onClick={() => handleOptimizeLink(link)}
+                      onClick={() => {
+                        void handleOptimizeLink(link);
+                      }}
                     >
                       Optimize Content
                     </Button>
@@ -215,116 +230,50 @@ export default function OptimizeLinksPage() {
               
               <div className="space-y-3">
                 <div>
-                  <h4 className="font-medium text-sm mb-1">Title Improvement</h4>
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs text-muted-foreground">Current quality score:</p>
-                    <div className="flex items-center">
-                      <div className="h-2 w-16 bg-muted rounded-full overflow-hidden mr-2">
-                        <div 
-                          className="h-full rounded-full" 
-                          style={{ 
-                            width: `${70}%`,
-                            backgroundColor: 70 > 70 ? "#10b981" : 70 > 40 ? "#f59e0b" : "#ef4444"
-                          }}
-                        ></div>
-                      </div>
-                      <span className="text-xs font-medium">70%</span>
-                    </div>
-                  </div>
+                  <h4 className="font-medium text-sm mb-1">Title Suggestion</h4>
                   <div className="border rounded-md p-2 text-sm mb-2">
                     <span className="text-muted-foreground">Current: </span>
                     {currentOptimizeLink.title}
                   </div>
                   <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
                     <span className="text-muted-foreground">Suggestion: </span>
-                    <span className="text-green-600 dark:text-green-400 font-medium">
-                      {currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
-                        ? "Follow My X for Tech Insights & Updates" 
-                        : `Improved ${currentOptimizeLink.title} with Better Keywords`}
-                    </span>
+                    {loadingSuggestion ? (
+                      <span>Generating...</span>
+                    ) : (
+                      <span className="text-green-600 dark:text-green-400 font-medium">{suggestions?.title}</span>
+                    )}
                   </div>
                 </div>
-                
+
                 <div>
-                  <h4 className="font-medium text-sm mb-1">Description Improvement</h4>
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs text-muted-foreground">Current quality score:</p>
-                    <div className="flex items-center">
-                      <div className="h-2 w-16 bg-muted rounded-full overflow-hidden mr-2">
-                        <div 
-                          className="h-full rounded-full" 
-                          style={{ 
-                            width: `${45}%`,
-                            backgroundColor: 45 > 70 ? "#10b981" : 45 > 40 ? "#f59e0b" : "#ef4444"
-                          }}
-                        ></div>
-                      </div>
-                      <span className="text-xs font-medium">45%</span>
-                    </div>
-                  </div>
+                  <h4 className="font-medium text-sm mb-1">Description Suggestion</h4>
                   <div className="border rounded-md p-2 text-sm mb-2">
                     <span className="text-muted-foreground">Current: </span>
                     {currentOptimizeLink.description || "No description provided."}
                   </div>
                   <div className="border rounded-md p-2 text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
                     <span className="text-muted-foreground">Suggestion: </span>
-                    <span className="text-green-600 dark:text-green-400">
-                      {currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
-                        ? "Daily insights on web development, tech trends, and design. Join my 5K+ followers for practical tips and industry news!"
-                        : "Join our community of professionals for exclusive insights, resources, and networking opportunities. Stay ahead in your career with our expert-curated content."}
-                    </span>
+                    {loadingSuggestion ? (
+                      <span>Generating...</span>
+                    ) : (
+                      <span className="text-green-600 dark:text-green-400">{suggestions?.description}</span>
+                    )}
                   </div>
                 </div>
-                
-                <div>
-                  <h4 className="font-medium text-sm mb-1">Key Improvement Tips</h4>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex items-start">
-                      <span className="text-green-500 mr-2">✓</span>
-                      <span>
-                        {currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
-                        ? "Include specific numbers for credibility."
-                        : "Use action verbs to enhance engagement."}
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-green-500 mr-2">✓</span>
-                      <span>
-                        {currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
-                        ? "Add hashtags to increase visibility."
-                        : "Include your unique value proposition."}
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-green-500 mr-2">✓</span>
-                      <span>
-                        {currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
-                        ? "Post consistently to maximize profile visits."
-                        : "Use keywords relevant to your target audience."}
-                      </span>
-                    </li>
-                  </ul>
-                </div>
               </div>
-              
+
               <DialogFooter className="pt-2 mt-4 sticky bottom-0 bg-background">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setShowOptimizeDialog(false)}
                 >
                   Cancel
                 </Button>
                 <Button
-                  onClick={() => handleOptimizeSubmit({
-                    title: currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
-                      ? "Follow My X for Tech Insights & Updates" 
-                      : `Improved ${currentOptimizeLink.title} with Better Keywords`,
-                    description: currentOptimizeLink.platform === "twitter" || currentOptimizeLink.platform === "x"
-                      ? "Daily insights on web development, tech trends, and design. Join my 5K+ followers for practical tips and industry news!"
-                      : "Join our community of professionals for exclusive insights, resources, and networking opportunities. Stay ahead in your career with our expert-curated content.",
-                    aiScore: 85
-                  })}
-                  disabled={optimizeLinkMutation.isPending}
+                  onClick={handleOptimizeSubmit}
+                  disabled={
+                    optimizeLinkMutation.isPending || loadingSuggestion || !suggestions
+                  }
                 >
                   {optimizeLinkMutation.isPending ? (
                     <div className="flex items-center">
