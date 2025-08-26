@@ -206,8 +206,7 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
   // Create a new referral link
   const createLinkMutation = useMutation({
     mutationFn: async (data: Partial<ReferralLinkFormValues>) => {
-      const res = await apiRequest('POST', '/api/referral-links', data);
-      return await res.json();
+      return await apiRequest('POST', '/api/referral-links', data);
     },
     onSuccess: () => {
       toast({
@@ -230,8 +229,7 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
   // Update a referral link
   const updateLinkMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number, data: Partial<ReferralLinkFormValues> }) => {
-      const res = await apiRequest('PATCH', `/api/referral-links/${id}`, data);
-      return await res.json();
+      return await apiRequest('PATCH', `/api/referral-links/${id}`, data);
     },
     onSuccess: () => {
       toast({
@@ -255,8 +253,7 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
   // Delete a referral link
   const deleteLinkMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest('DELETE', `/api/referral-links/${id}`);
-      return await res.json();
+      return await apiRequest('DELETE', `/api/referral-links/${id}`);
     },
     onSuccess: () => {
       toast({
@@ -277,8 +274,7 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
   // Update referral request status
   const updateRequestStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number, status: string }) => {
-      const res = await apiRequest('PATCH', `/api/referral-requests/${id}/status`, { status });
-      return await res.json();
+      return await apiRequest('PATCH', `/api/referral-requests/${id}/status`, { status });
     },
     onSuccess: () => {
       toast({
@@ -994,8 +990,8 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                 >
                   Cancel
                 </Button>
-                <Button type="submit">
-                  Create Link
+                <Button type="submit" disabled={createLinkMutation.isPending}>
+                  {createLinkMutation.isPending ? 'Creating...' : 'Create Link'}
                 </Button>
               </DialogFooter>
             </form>
@@ -1202,8 +1198,8 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                 >
                   Cancel
                 </Button>
-                <Button type="submit">
-                  Update Link
+                <Button type="submit" disabled={updateLinkMutation.isPending}>
+                  {updateLinkMutation.isPending ? 'Updating...' : 'Update Link'}
                 </Button>
               </DialogFooter>
             </form>
