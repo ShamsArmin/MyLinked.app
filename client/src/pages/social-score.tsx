@@ -82,6 +82,8 @@ import {
 // Types
 interface SocialScoreData {
   currentScore: number;
+  previousScore: number;
+  change: number;
   stats: {
     views: number;
     clicks: number;
@@ -180,28 +182,8 @@ export default function SocialScorePage() {
   // Calculate score mutation
   const calculateScoreMutation = useMutation<AIScoreResult>({
     mutationFn: async () => {
-      try {
-        const response = await apiRequest(
-          "POST", 
-          "/api/social-score/calculate"
-        );
-        
-        // Check if the response indicates a rate limit or quota error
-        if (response.status === 429) {
-          throw new Error("AI service is currently busy due to high demand. Please try again later.");
-        }
-        
-        // Check for successful response
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || "Failed to calculate social score");
-        }
-        
-        return await response.json();
-      } catch (error) {
-        // Rethrow the error to be handled by onError
-        throw error;
-      }
+      // apiRequest throws on non-2xx responses and returns parsed JSON
+      return await apiRequest("POST", "/api/social-score/calculate");
     },
     onSuccess: (data) => {
       toast({
@@ -214,23 +196,27 @@ export default function SocialScorePage() {
     },
     onError: (error: any) => {
       const errorMsg = error instanceof Error ? error.message : "An error occurred";
-      
+
       // Handle rate limit or quota exceeded errors
-      if (error.response?.status === 429 || errorMsg.includes('quota') || errorMsg.includes('rate limit')) {
+      if (
+        errorMsg.includes('429') ||
+        errorMsg.toLowerCase().includes('quota') ||
+        errorMsg.toLowerCase().includes('rate limit')
+      ) {
         toast({
           title: "Service Temporarily Unavailable",
           description: "Our AI service is currently busy. Please try again in a few minutes.",
           variant: "destructive",
         });
-      } 
+      }
       // Handle API key errors
-      else if (errorMsg.includes("API key")) {
+      else if (errorMsg.toLowerCase().includes("api key")) {
         toast({
           title: "API Key Required",
           description: "OpenAI API key is required to calculate social score.",
           variant: "destructive",
         });
-      } 
+      }
       // Generic error fallback
       else {
         toast({

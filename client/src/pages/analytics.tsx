@@ -154,18 +154,40 @@ const getTopLinks = (userLinksData: any[] | undefined) => {
     }));
 };
 
-const getSocialScoreData = () => ({
-  score: 78,
-  previousScore: 72,
-  change: 6,
-  scores: [
-    { category: "Profile Completeness", score: 85, avgScore: 65 },
-    { category: "Link Diversity", score: 70, avgScore: 60 },
-    { category: "Content Freshness", score: 65, avgScore: 50 },
-    { category: "Engagement Rate", score: 90, avgScore: 55 },
-    { category: "Feature Utilization", score: 80, avgScore: 40 },
-  ],
-});
+// Map API response to the shape expected by the Social Score card
+const getSocialScoreData = (socialScore: any) => {
+  if (!socialScore) {
+    return {
+      score: 0,
+      previousScore: 0,
+      change: 0,
+      scores: [] as {
+        category: string;
+        score: number;
+        avgScore: number;
+      }[],
+    };
+  }
+
+  const previousScore =
+    socialScore.previousScore ??
+    socialScore.historicalData?.[
+      socialScore.historicalData.length - 2
+    ]?.score ?? 0;
+  const change = socialScore.change ?? (socialScore.currentScore || 0) - previousScore;
+
+  return {
+    score: socialScore.currentScore || 0,
+    previousScore,
+    change,
+    scores:
+      socialScore.compareData?.map((item: any) => ({
+        category: item.category,
+        score: item.userScore,
+        avgScore: item.avgScore,
+      })) || [],
+  };
+};
 
 // Stat Card Component
 interface StatCardProps {
@@ -306,7 +328,7 @@ export default function AnalyticsPage() {
   });
 
   // Query to fetch social score
-  const { data: socialScore, isLoading: isLoadingSocialScore } = useQuery<any>({
+  const { data: socialScore } = useQuery<any>({
     queryKey: ["/api/social-score"],
     enabled: !!user,
   });
@@ -334,7 +356,7 @@ export default function AnalyticsPage() {
   const historicalData = getHistoricalData();
   const platformData = getPlatformData(userLinks);
   const topLinks = getTopLinks(userLinks);
-  const socialScoreData = getSocialScoreData();
+  const socialScoreData = getSocialScoreData(socialScore);
 
   // Handle refresh
   const handleRefresh = async () => {

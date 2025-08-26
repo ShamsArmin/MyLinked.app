@@ -1304,8 +1304,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const followers = await storage.getFollowers(userId);
     const following = await storage.getFollowing(userId);
 
-    // Calculate social score if not already present
-    if (!user.socialScore && process.env.OPENAI_API_KEY) {
+    // Calculate social score if not already present (fallback if OpenAI unavailable)
+    if (!user.socialScore) {
       try {
         const socialScoreResult = await generateSocialScore(user, links, stats);
         if (socialScoreResult) {
@@ -1317,13 +1317,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
 
-    // Generate historical data
+    // Generate historical data with the current score as the latest entry
     const historicalData = [];
-    let baseScore = Math.max(30, (user.socialScore || 75) - 20);
+    const currentScore = user.socialScore || 75;
+    const baseScore = Math.max(30, currentScore - 20);
 
-    for (let i = 7; i >= 0; i--) {
-      const weekNumber = 8 - i;
-      const scoreIncrease = Math.floor(i * 3);
+    for (let i = 0; i < 8; i++) {
+      const weekNumber = i + 1;
+      const scoreIncrease = Math.floor((i / 7) * 20); // gradually increase score
       const weekScore = Math.min(100, baseScore + scoreIncrease);
 
       historicalData.push({
@@ -1333,6 +1334,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         clicks: Math.floor((stats.clicks * (0.7 + Math.random() * 0.3)) / 8),
       });
     }
+
+    const previousScore =
+      historicalData.length > 1
+        ? historicalData[historicalData.length - 2].score
+        : currentScore;
+    const change = currentScore - previousScore;
 
     // Get comparative data
     const compareData = [
@@ -1364,7 +1371,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ];
 
     res.json({
-      currentScore: user.socialScore || 75,
+      currentScore,
+      previousScore,
+      change,
       stats,
       historicalData,
       compareData,
@@ -1377,12 +1386,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/social-score/calculate", isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.id;
 
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(401).json({
-        message: "OpenAI API key not configured. Please set the OPENAI_API_KEY environment variable.",
-      });
-    }
-
     const user = await storage.getUser(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -1391,20 +1394,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const links = await storage.getLinks(userId);
     const stats = await storage.getUserStats(userId);
 
-    const result = await generateSocialScore(user, links, stats);
-
-    if (result) {
+    try {
+      const result = await generateSocialScore(user, links, stats);
       const previousScore = user.socialScore || 0;
       await storage.updateSocialScore(userId, result.score);
 
       res.json({
         score: result.score,
-        previousScore: previousScore,
+        previousScore,
         change: result.score - previousScore,
         insights: result.insights,
       });
-    } else {
-      res.status(400).json({ message: "Failed to calculate social score" });
+    } catch (err) {
+      console.error("Failed to calculate social score:", err);
+      res.status(500).json({ message: "Failed to calculate social score" });
     }
   }));
 

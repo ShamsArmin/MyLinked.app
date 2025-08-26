@@ -94,6 +94,7 @@ type SocialScoreIndicatorProps = {
 export function SocialScoreIndicator({ className = '', showDetails = true, showRefresh = true }: SocialScoreIndicatorProps) {
   const { data: socialScore, isLoading } = useQuery<{
     currentScore: number;
+    previousScore?: number;
     change?: number;
     stats: { views: number; clicks: number; ctr: number };
     historicalData?: any[];
@@ -110,8 +111,8 @@ export function SocialScoreIndicator({ className = '', showDetails = true, showR
   
   const calculateMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/social-score/calculate');
-      return await response.json();
+      // apiRequest already returns parsed JSON
+      return await apiRequest('POST', '/api/social-score/calculate');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/social-score'] });

@@ -433,6 +433,121 @@ export async function generateSocialScore(
       views: link.views || 0,
       featured: link.featured || false,
     }));
+    const calculateFallbackScore = () => {
+      let score = 0;
+      const strengths: string[] = [];
+      const weaknesses: string[] = [];
+      const recommendations: string[] = [];
+
+      // Profile completeness scoring (40 points max)
+      if (userData.name) {
+        score += 8;
+        strengths.push("Complete name field enhances credibility");
+      } else {
+        weaknesses.push("Missing name reduces professional appearance");
+        recommendations.push("Add your full name to increase trust");
+      }
+
+      if (userData.bio) {
+        score += 10;
+        strengths.push("Bio provides clear value proposition");
+      } else {
+        weaknesses.push("Missing bio leaves visitors unclear about your purpose");
+        recommendations.push("Write a compelling bio describing what you do");
+      }
+
+      if (userData.profession) {
+        score += 8;
+        strengths.push("Professional title helps visitors understand your expertise");
+      } else {
+        weaknesses.push("Missing profession makes it harder to understand your role");
+        recommendations.push("Add your professional title or industry");
+      }
+
+      if (userData.hasProfileImage) {
+        score += 10;
+        strengths.push("Profile image creates personal connection");
+      } else {
+        weaknesses.push("Missing profile image reduces personal connection");
+        recommendations.push("Upload a professional profile photo");
+      }
+
+      if (userData.hasProfileBackground) {
+        score += 4;
+      } else {
+        recommendations.push("Consider adding a background image for visual appeal");
+      }
+
+      // Link diversity and engagement (35 points max)
+      const totalLinks = linksData.length;
+      if (totalLinks > 0) {
+        score += Math.min(15, totalLinks * 3);
+
+        if (totalLinks >= 5) {
+          strengths.push(`Good link diversity with ${totalLinks} connections`);
+        } else if (totalLinks >= 3) {
+          strengths.push(`Decent link collection with ${totalLinks} platforms`);
+        } else {
+          weaknesses.push(`Limited links - only ${totalLinks} connections`);
+          recommendations.push("Add more social media and website links");
+        }
+      } else {
+        weaknesses.push("No links added yet");
+        recommendations.push("Start adding your social media and website links");
+      }
+
+      // Engagement metrics (20 points max)
+      const totalClicks = linksData.reduce((sum, link) => sum + link.clicks, 0);
+      const totalViews = linksData.reduce((sum, link) => sum + link.views, 0);
+
+      if (totalClicks > 0) {
+        score += Math.min(10, totalClicks / 2);
+        strengths.push(`Active engagement with ${totalClicks} total clicks`);
+      } else if (totalLinks > 0) {
+        weaknesses.push("Links aren't generating clicks yet");
+        recommendations.push("Share your profile more to drive traffic");
+      }
+
+      if (totalViews > 0) {
+        score += Math.min(10, totalViews / 5);
+      }
+
+      // Additional features (5 points max)
+      if (userData.hasWelcomeMessage) {
+        score += 3;
+        strengths.push("Welcome message creates engaging first impression");
+      }
+
+      if (userData.hasPitchMode) {
+        score += 2;
+        strengths.push("Pitch mode showcases your key value proposition");
+      }
+
+      // Ensure score is within bounds
+      score = Math.max(15, Math.min(100, Math.round(score)));
+
+      // Add general recommendations if score is low
+      if (score < 50) {
+        recommendations.push("Focus on completing your profile basics first");
+      } else if (score < 75) {
+        recommendations.push("Consider adding more engagement features");
+      } else {
+        recommendations.push("Great profile! Keep sharing to increase engagement");
+      }
+
+      return {
+        score,
+        insights: {
+          strengths: strengths.slice(0, 4),
+          weaknesses: weaknesses.slice(0, 3),
+          recommendations: recommendations.slice(0, 4)
+        }
+      };
+    };
+
+    if (!process.env.OPENAI_API_KEY) {
+      return calculateFallbackScore();
+    }
 
     // Try OpenAI API first
     try {
@@ -472,118 +587,8 @@ export async function generateSocialScore(
         },
       };
     } catch (apiError) {
-      // If OpenAI API fails, use intelligent fallback logic
       console.log("OpenAI API unavailable, using smart fallback for social score");
-      
-      let score = 0;
-      const strengths = [];
-      const weaknesses = [];
-      const recommendations = [];
-      
-      // Profile completeness scoring (40 points max)
-      if (userData.name) {
-        score += 8;
-        strengths.push("Complete name field enhances credibility");
-      } else {
-        weaknesses.push("Missing name reduces professional appearance");
-        recommendations.push("Add your full name to increase trust");
-      }
-      
-      if (userData.bio) {
-        score += 10;
-        strengths.push("Bio provides clear value proposition");
-      } else {
-        weaknesses.push("Missing bio leaves visitors unclear about your purpose");
-        recommendations.push("Write a compelling bio describing what you do");
-      }
-      
-      if (userData.profession) {
-        score += 8;
-        strengths.push("Professional title helps visitors understand your expertise");
-      } else {
-        weaknesses.push("Missing profession makes it harder to understand your role");
-        recommendations.push("Add your professional title or industry");
-      }
-      
-      if (userData.hasProfileImage) {
-        score += 10;
-        strengths.push("Profile image creates personal connection");
-      } else {
-        weaknesses.push("Missing profile image reduces personal connection");
-        recommendations.push("Upload a professional profile photo");
-      }
-      
-      if (userData.hasProfileBackground) {
-        score += 4;
-      } else {
-        recommendations.push("Consider adding a background image for visual appeal");
-      }
-      
-      // Link diversity and engagement (35 points max)
-      const totalLinks = linksData.length;
-      if (totalLinks > 0) {
-        score += Math.min(15, totalLinks * 3);
-        
-        if (totalLinks >= 5) {
-          strengths.push(`Good link diversity with ${totalLinks} connections`);
-        } else if (totalLinks >= 3) {
-          strengths.push(`Decent link collection with ${totalLinks} platforms`);
-        } else {
-          weaknesses.push(`Limited links - only ${totalLinks} connections`);
-          recommendations.push("Add more social media and website links");
-        }
-      } else {
-        weaknesses.push("No links added yet");
-        recommendations.push("Start adding your social media and website links");
-      }
-      
-      // Engagement metrics (20 points max)
-      const totalClicks = linksData.reduce((sum, link) => sum + link.clicks, 0);
-      const totalViews = linksData.reduce((sum, link) => sum + link.views, 0);
-      
-      if (totalClicks > 0) {
-        score += Math.min(10, totalClicks / 2);
-        strengths.push(`Active engagement with ${totalClicks} total clicks`);
-      } else if (totalLinks > 0) {
-        weaknesses.push("Links aren't generating clicks yet");
-        recommendations.push("Share your profile more to drive traffic");
-      }
-      
-      if (totalViews > 0) {
-        score += Math.min(10, totalViews / 5);
-      }
-      
-      // Additional features (5 points max)
-      if (userData.hasWelcomeMessage) {
-        score += 3;
-        strengths.push("Welcome message creates engaging first impression");
-      }
-      
-      if (userData.hasPitchMode) {
-        score += 2;
-        strengths.push("Pitch mode showcases your key value proposition");
-      }
-      
-      // Ensure score is within bounds
-      score = Math.max(15, Math.min(100, Math.round(score)));
-      
-      // Add general recommendations if score is low
-      if (score < 50) {
-        recommendations.push("Focus on completing your profile basics first");
-      } else if (score < 75) {
-        recommendations.push("Consider adding more engagement features");
-      } else {
-        recommendations.push("Great profile! Keep sharing to increase engagement");
-      }
-      
-      return {
-        score,
-        insights: {
-          strengths: strengths.slice(0, 4),
-          weaknesses: weaknesses.slice(0, 3),
-          recommendations: recommendations.slice(0, 4)
-        }
-      };
+      return calculateFallbackScore();
     }
   } catch (error) {
     console.error("Error generating social score:", error);
