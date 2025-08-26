@@ -42,12 +42,11 @@ export function BrandingSuggester({ className = '', userId, username }: Branding
   // Handle generating branding suggestions
   const brandingMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/branding/suggest', {
+      return await apiRequest('POST', '/api/branding/suggest', {
         profession,
         interests,
         socialAccounts,
       });
-      return await response.json();
     },
     onSuccess: () => {
       toast({

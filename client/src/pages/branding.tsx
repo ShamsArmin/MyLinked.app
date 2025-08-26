@@ -66,8 +66,7 @@ export default function BrandingPage() {
   // Branding generation mutation
   const generateBrandingMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/branding/suggest", data);
-      return await response.json();
+      return await apiRequest("POST", "/api/branding/suggest", data);
     },
     onSuccess: (data) => {
       setBrandingData(data.suggestions);
