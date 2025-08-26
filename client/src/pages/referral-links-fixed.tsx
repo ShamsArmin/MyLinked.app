@@ -533,10 +533,10 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                   ) : referralLinks && referralLinks.length > 0 ? (
                     <div className="space-y-4 max-w-full">
                       {referralLinks.map((link) => (
-                        <ReferralLinkCard 
+                        <ReferralLinkCard
                           key={link.id}
                           link={link}
-                          onCopy={() => handleCopyLink(link.id)}
+                          onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
                           isCopied={copiedId === link.id}
@@ -581,10 +581,10 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                   ) : getFriendLinks().length > 0 ? (
                     <div className="space-y-4 max-w-full">
                       {getFriendLinks().map((link) => (
-                        <ReferralLinkCard 
+                        <ReferralLinkCard
                           key={link.id}
                           link={link}
-                          onCopy={() => handleCopyLink(link.id)}
+                          onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
                           isCopied={copiedId === link.id}
@@ -632,10 +632,10 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                   ) : getSponsorLinks().length > 0 ? (
                     <div className="space-y-4 max-w-full">
                       {getSponsorLinks().map((link) => (
-                        <ReferralLinkCard 
+                        <ReferralLinkCard
                           key={link.id}
                           link={link}
-                          onCopy={() => handleCopyLink(link.id)}
+                          onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
                           isCopied={copiedId === link.id}
@@ -683,10 +683,10 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
                   ) : getAffiliateLinks().length > 0 ? (
                     <div className="space-y-4 max-w-full">
                       {getAffiliateLinks().map((link) => (
-                        <ReferralLinkCard 
+                        <ReferralLinkCard
                           key={link.id}
                           link={link}
-                          onCopy={() => handleCopyLink(link.id)}
+                          onCopy={handleCopyLink}
                           onEdit={() => handleEditLink(link)}
                           onDelete={() => handleDeleteLink(link.id)}
                           isCopied={copiedId === link.id}
@@ -1238,16 +1238,16 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
 };
 
 // Referral Link Card Component
-const ReferralLinkCard = ({ 
-  link, 
-  onCopy, 
-  onEdit, 
+const ReferralLinkCard = ({
+  link,
+  onCopy,
+  onEdit,
   onDelete,
   isCopied
-}: { 
-  link: ReferralLink; 
-  onCopy: () => void; 
-  onEdit: () => void; 
+}: {
+  link: ReferralLink;
+  onCopy: (id: number) => void;
+  onEdit: () => void;
   onDelete: () => void;
   isCopied: boolean;
 }) => {
@@ -1352,7 +1352,7 @@ const ReferralLinkCard = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={onCopy}>
+              <DropdownMenuItem onClick={() => onCopy(link.id)}>
                 {isCopied ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
@@ -1405,7 +1405,7 @@ const ReferralLinkCard = ({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                onCopy();
+                onCopy(link.id);
               }}
               className="h-6 w-6 p-0"
             >
