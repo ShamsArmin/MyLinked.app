@@ -253,30 +253,57 @@ const ReferralLinks = () => {
       updateLinkMutation.mutate({ id: currentLink.id, data });
     }
   };
-  
+
+  // Copy text to clipboard with fallback for unsupported browsers
+  const copyTextToClipboard = async (text: string) => {
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return;
+      } catch {
+        // ignore and fallback to execCommand
+      }
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-99999px';
+    textArea.style.top = '-99999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    const successful = document.execCommand('copy');
+    textArea.remove();
+
+    if (!successful) {
+      throw new Error('Copy command was unsuccessful');
+    }
+  };
+
   // Handle copy referral URL to clipboard
-  const handleCopyLink = (id: number) => {
+  const handleCopyLink = async (id: number) => {
     const baseUrl = window.location.origin;
     const referralUrl = `${baseUrl}/api/r/${id}`;
-    
-    navigator.clipboard.writeText(referralUrl)
-      .then(() => {
-        setCopiedId(id);
-        toast({
-          title: 'Copied!',
-          description: 'Referral link copied to clipboard',
-        });
-        
-        // Reset copied state after 2 seconds
-        setTimeout(() => setCopiedId(null), 2000);
-      })
-      .catch(err => {
-        toast({
-          title: 'Error',
-          description: 'Failed to copy link to clipboard',
-          variant: 'destructive',
-        });
+
+    try {
+      await copyTextToClipboard(referralUrl);
+      setCopiedId(id);
+      toast({
+        title: 'Copied!',
+        description: 'Referral link copied to clipboard',
       });
+
+      // Reset copied state after 2 seconds
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy link to clipboard',
+        variant: 'destructive',
+      });
+    }
   };
   
   // Handle delete referral link
