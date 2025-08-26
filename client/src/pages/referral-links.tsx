@@ -256,26 +256,23 @@ const ReferralLinks = () => {
 
   // Copy text to clipboard with fallback for unsupported browsers
   const copyTextToClipboard = async (text: string) => {
-    if (navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText(text);
-        return;
-      } catch {
-        // ignore and fallback to execCommand
-      }
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
     }
 
     const textArea = document.createElement('textarea');
     textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-99999px';
-    textArea.style.top = '-99999px';
+    textArea.setAttribute('readonly', '');
+    textArea.style.position = 'absolute';
+    textArea.style.left = '-9999px';
+    textArea.style.top = (document.body.scrollTop || 0) + 'px';
     document.body.appendChild(textArea);
-    textArea.focus();
     textArea.select();
+    textArea.setSelectionRange(0, textArea.value.length);
 
     const successful = document.execCommand('copy');
-    textArea.remove();
+    document.body.removeChild(textArea);
 
     if (!successful) {
       throw new Error('Copy command was unsuccessful');
@@ -1264,7 +1261,7 @@ const ReferralLinkCard = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => onCopy(link.id)}>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onCopy(link.id); }}>
                 {isCopied ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
@@ -1307,7 +1304,7 @@ const ReferralLinkCard = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onCopy(link.id)}
+            onClick={(e) => { e.stopPropagation(); onCopy(link.id); }}
             className="h-7 px-2"
           >
             {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
