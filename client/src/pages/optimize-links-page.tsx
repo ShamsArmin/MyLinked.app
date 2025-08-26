@@ -84,10 +84,8 @@ export default function OptimizeLinksPage() {
   
   // Optimize link mutation
   const optimizeLinkMutation = useMutation({
-    mutationFn: async ({ id, improvements }: { id: number; improvements: Partial<Link> }) => {
-      // apiRequest returns the parsed JSON response
-      return await apiRequest("PATCH", `/api/links/${id}/optimize`, improvements);
-    },
+    mutationFn: ({ id, improvements }: { id: number; improvements: Partial<Link> }) =>
+      apiRequest("PATCH", `/api/links/${id}/optimize`, improvements),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/links"] });
       setShowOptimizeDialog(false);
