@@ -264,34 +264,39 @@ const ReferralLinks = () => {
 
   // Copy text to clipboard with fallback for unsupported browsers
   const copyTextToClipboard = async (text: string) => {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return;
-    }
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      throw new Error('Clipboard API not available');
+    } catch {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.setAttribute('readonly', '');
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
 
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.setAttribute('readonly', '');
-    textArea.style.position = 'absolute';
-    textArea.style.left = '-9999px';
-    textArea.style.top = (document.body.scrollTop || 0) + 'px';
-    document.body.appendChild(textArea);
-    textArea.select();
-    textArea.setSelectionRange(0, textArea.value.length);
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
 
-    const successful = document.execCommand('copy');
-    document.body.removeChild(textArea);
-
-    if (!successful) {
-      throw new Error('Copy command was unsuccessful');
+      if (!successful) {
+        throw new Error('Copy command was unsuccessful');
+      }
     }
   };
 
   // Handle copy referral URL to clipboard
-  const handleCopyLink = async (link: ReferralLink) => {
+  const handleCopyLink = async (id: number) => {
+    const baseUrl = window.location.origin;
+    const referralUrl = `${baseUrl}/api/r/${id}`;
+
     try {
-      await copyTextToClipboard(link.url);
-      setCopiedId(link.id);
+      await copyTextToClipboard(referralUrl);
+      setCopiedId(id);
       toast({
         title: 'Copied!',
         description: 'Referral link copied to clipboard',
@@ -1231,7 +1236,7 @@ const ReferralLinkCard = ({
   isCopied
 }: {
   link: ReferralLink;
-  onCopy: (link: ReferralLink) => void;
+  onCopy: (id: number) => void;
   onEdit: () => void;
   onDelete: () => void;
   onPin: () => void;
@@ -1349,7 +1354,7 @@ const ReferralLinkCard = ({
                 Move Down
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onCopy(link); }}>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onCopy(link.id); }}>
                 {isCopied ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
@@ -1392,7 +1397,7 @@ const ReferralLinkCard = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={(e) => { e.stopPropagation(); onCopy(link); }}
+            onClick={(e) => { e.stopPropagation(); onCopy(link.id); }}
             className="h-7 px-2"
           >
             {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
