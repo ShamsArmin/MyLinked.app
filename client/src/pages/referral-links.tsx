@@ -262,30 +262,28 @@ const ReferralLinks = () => {
     }
   };
 
-  // Copy text to clipboard with fallback for unsupported browsers
+  // Copy text to clipboard with graceful fallback
   const copyTextToClipboard = async (text: string) => {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        return;
-      }
-      throw new Error('Clipboard API not available');
-    } catch {
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      textArea.setAttribute('readonly', '');
-      textArea.style.position = 'fixed';
-      textArea.style.left = '-9999px';
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
 
-      const successful = document.execCommand('copy');
-      document.body.removeChild(textArea);
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.setAttribute('readonly', '');
+    textArea.style.position = 'absolute';
+    textArea.style.left = '-9999px';
+    textArea.style.top = '0';
+    document.body.appendChild(textArea);
+    textArea.select();
+    textArea.setSelectionRange(0, textArea.value.length);
 
-      if (!successful) {
-        throw new Error('Copy command was unsuccessful');
-      }
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+
+    if (!successful) {
+      throw new Error('Copy command was unsuccessful');
     }
   };
 
@@ -1351,7 +1349,7 @@ const ReferralLinkCard = ({
                 Move Down
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onCopy(link); }}>
+              <DropdownMenuItem onClick={() => onCopy(link)}>
                 {isCopied ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
