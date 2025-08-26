@@ -264,26 +264,30 @@ const ReferralLinks = () => {
 
   // Copy text to clipboard with graceful fallback
   const copyTextToClipboard = async (text: string) => {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return;
-    }
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      throw new Error('Clipboard API not available');
+    } catch {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.setAttribute('readonly', '');
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      textArea.style.top = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      textArea.setSelectionRange(0, textArea.value.length);
 
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.setAttribute('readonly', '');
-    textArea.style.position = 'absolute';
-    textArea.style.left = '-9999px';
-    textArea.style.top = '0';
-    document.body.appendChild(textArea);
-    textArea.select();
-    textArea.setSelectionRange(0, textArea.value.length);
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
 
-    const successful = document.execCommand('copy');
-    document.body.removeChild(textArea);
-
-    if (!successful) {
-      throw new Error('Copy command was unsuccessful');
+      if (!successful) {
+        throw new Error('Copy command was unsuccessful');
+      }
     }
   };
 
