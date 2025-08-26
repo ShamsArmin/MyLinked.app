@@ -377,13 +377,10 @@ const [links, setLinks] = useState<ReferralLink[]>([]);
   };
 
   // Handle copy referral URL to clipboard
-  const handleCopyLink = async (id: number) => {
-    const baseUrl = window.location.origin;
-    const referralUrl = `${baseUrl}/api/r/${id}`;
-
+  const handleCopyLink = async (link: ReferralLink) => {
     try {
-      await copyTextToClipboard(referralUrl);
-      setCopiedId(id);
+      await copyTextToClipboard(link.url);
+      setCopiedId(link.id);
       toast({
         title: 'Copied!',
         description: 'Referral link copied to clipboard',
@@ -1320,7 +1317,7 @@ const ReferralLinkCard = ({
   isCopied
 }: {
   link: ReferralLink;
-  onCopy: (id: number) => void;
+  onCopy: (link: ReferralLink) => void;
   onEdit: () => void;
   onDelete: () => void;
   onPin: () => void;
@@ -1442,7 +1439,7 @@ const ReferralLinkCard = ({
                 Move Down
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onCopy(link.id); }}>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onCopy(link); }}>
                 {isCopied ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
@@ -1495,7 +1492,7 @@ const ReferralLinkCard = ({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                onCopy(link.id);
+                onCopy(link);
               }}
               className="h-6 w-6 p-0"
             >
