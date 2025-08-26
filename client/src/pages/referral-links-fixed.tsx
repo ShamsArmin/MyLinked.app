@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -132,10 +132,25 @@ const ReferralLinks = () => {
   // States for dialogs
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [currentLink, setCurrentLink] = useState<ReferralLink | null>(null);
-  const [copiedId, setCopiedId] = useState<number | null>(null);
-  const [imageUploadType, setImageUploadType] = useState<'url' | 'file'>('url');
-  const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('url');
+const [currentLink, setCurrentLink] = useState<ReferralLink | null>(null);
+const [copiedId, setCopiedId] = useState<number | null>(null);
+const [imageUploadType, setImageUploadType] = useState<'url' | 'file'>('url');
+const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('url');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (imageUploadType === 'file') {
+      fileInputRef.current?.click();
+    }
+  }, [imageUploadType]);
+
+  useEffect(() => {
+    if (editImageUploadType === 'file') {
+      editFileInputRef.current?.click();
+    }
+  }, [editImageUploadType]);
 
   // Handle file upload for images
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, formField: any) => {
@@ -190,9 +205,8 @@ const ReferralLinks = () => {
 
   // Create a new referral link
   const createLinkMutation = useMutation({
-    mutationFn: async (data: ReferralLinkFormValues) => {
-      const res = await apiRequest('POST', '/api/referral-links', data);
-      return await res.json();
+    mutationFn: async (data: Partial<ReferralLinkFormValues>) => {
+      return await apiRequest('POST', '/api/referral-links', data);
     },
     onSuccess: () => {
       toast({
@@ -215,8 +229,7 @@ const ReferralLinks = () => {
   // Update a referral link
   const updateLinkMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number, data: Partial<ReferralLinkFormValues> }) => {
-      const res = await apiRequest('PATCH', `/api/referral-links/${id}`, data);
-      return await res.json();
+      return await apiRequest('PATCH', `/api/referral-links/${id}`, data);
     },
     onSuccess: () => {
       toast({
@@ -240,8 +253,7 @@ const ReferralLinks = () => {
   // Delete a referral link
   const deleteLinkMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest('DELETE', `/api/referral-links/${id}`);
-      return await res.json();
+      return await apiRequest('DELETE', `/api/referral-links/${id}`);
     },
     onSuccess: () => {
       toast({
@@ -262,8 +274,7 @@ const ReferralLinks = () => {
   // Update referral request status
   const updateRequestStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number, status: string }) => {
-      const res = await apiRequest('PATCH', `/api/referral-requests/${id}/status`, { status });
-      return await res.json();
+      return await apiRequest('PATCH', `/api/referral-requests/${id}/status`, { status });
     },
     onSuccess: () => {
       toast({
@@ -309,14 +320,24 @@ const ReferralLinks = () => {
   });
   
   // Handle form submission for creating a new referral link
+  const cleanPayload = (data: ReferralLinkFormValues) => {
+    const cleaned: any = { ...data };
+    Object.keys(cleaned).forEach((key) => {
+      if (cleaned[key as keyof ReferralLinkFormValues] === "") {
+        delete cleaned[key as keyof ReferralLinkFormValues];
+      }
+    });
+    return cleaned as Partial<ReferralLinkFormValues>;
+  };
+
   const onSubmit = (data: ReferralLinkFormValues) => {
-    createLinkMutation.mutate(data);
+    createLinkMutation.mutate(cleanPayload(data));
   };
   
   // Handle form submission for updating a referral link
   const onEditSubmit = (data: ReferralLinkFormValues) => {
     if (currentLink) {
-      updateLinkMutation.mutate({ id: currentLink.id, data });
+      updateLinkMutation.mutate({ id: currentLink.id, data: cleanPayload(data) });
     }
   };
   
@@ -879,11 +900,12 @@ const ReferralLinks = () => {
                               accept="image/*"
                               onChange={(e) => handleImageUpload(e, field)}
                               className="cursor-pointer"
+                              ref={fileInputRef}
                             />
                             {field.value && field.value.startsWith('data:') && (
                               <div className="mt-2">
-                                <img 
-                                  src={field.value} 
+                                <img
+                                  src={field.value}
                                   alt="Preview" 
                                   className="h-16 w-16 object-cover rounded border"
                                 />
@@ -968,8 +990,8 @@ const ReferralLinks = () => {
                 >
                   Cancel
                 </Button>
-                <Button type="submit">
-                  Create Link
+                <Button type="submit" disabled={createLinkMutation.isPending}>
+                  {createLinkMutation.isPending ? 'Creating...' : 'Create Link'}
                 </Button>
               </DialogFooter>
             </form>
@@ -1086,11 +1108,12 @@ const ReferralLinks = () => {
                               accept="image/*"
                               onChange={(e) => handleImageUpload(e, field)}
                               className="cursor-pointer"
+                              ref={editFileInputRef}
                             />
                             {field.value && field.value.startsWith('data:') && (
                               <div className="mt-2">
-                                <img 
-                                  src={field.value} 
+                                <img
+                                  src={field.value}
                                   alt="Preview" 
                                   className="h-16 w-16 object-cover rounded border"
                                 />
@@ -1175,8 +1198,8 @@ const ReferralLinks = () => {
                 >
                   Cancel
                 </Button>
-                <Button type="submit">
-                  Update Link
+                <Button type="submit" disabled={updateLinkMutation.isPending}>
+                  {updateLinkMutation.isPending ? 'Updating...' : 'Update Link'}
                 </Button>
               </DialogFooter>
             </form>

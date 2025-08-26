@@ -1108,7 +1108,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Referral Links Feature
-  async getReferralLinks(userId: number): Promise<ReferralLink[]> {
+  async getReferralLinks(userId: string): Promise<ReferralLink[]> {
     return await db
       .select()
       .from(referralLinks)
@@ -1124,7 +1124,7 @@ export class EnhancedDatabaseStorage implements IStorage {
     return link;
   }
 
-  async createReferralLink(userId: number, link: InsertReferralLink): Promise<ReferralLink> {
+  async createReferralLink(userId: string, link: InsertReferralLink): Promise<ReferralLink> {
     const [newLink] = await db
       .insert(referralLinks)
       .values({
