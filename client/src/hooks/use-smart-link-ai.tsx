@@ -11,8 +11,8 @@ export function useSmartLinkAI() {
   // Mutation to prioritize links using AI
   const mutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest('POST', '/api/links/ai-prioritize', {});
-      return await res.json();
+      // apiRequest returns the parsed JSON response
+      return await apiRequest('POST', '/api/links/ai-prioritize', {});
     },
     onSuccess: (data) => {
       // Invalidate links query to refetch with new order

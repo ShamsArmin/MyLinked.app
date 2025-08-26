@@ -110,8 +110,8 @@ export function SocialScoreIndicator({ className = '', showDetails = true, showR
   
   const calculateMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/social-score/calculate');
-      return await response.json();
+      // apiRequest already returns parsed JSON
+      return await apiRequest('POST', '/api/social-score/calculate');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/social-score'] });
