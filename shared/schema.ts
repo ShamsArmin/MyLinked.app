@@ -420,6 +420,11 @@ export const insertReferralLinkSchema = createInsertSchema(referralLinks).pick({
   linkType: true,
   referenceUserId: true,
   referenceCompany: true,
+}).partial({
+  description: true,
+  image: true,
+  referenceUserId: true,
+  referenceCompany: true,
 });
 
 // Link schemas
