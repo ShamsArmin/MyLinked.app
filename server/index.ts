@@ -6,7 +6,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { monitor } from "./monitoring";
 import { securityMiddleware } from "./security-middleware";
 import { migrate } from "drizzle-orm/neon-serverless/migrator";
-import { db, pool } from "./db";
+import { db } from "./db";
 // Temporarily disabled problematic imports
 // import { initializeEmailTemplates } from "./init-email-templates";
 // import { initAIEmailTemplates } from "./ai-email-templates";
@@ -116,28 +116,16 @@ app.use((req, res, next) => {
 
 
 (async () => {
-  if (process.env.RUN_MIGRATIONS_ON_START === "1") {
-    let applied = 0;
-    let skipped = 0;
+  const runMigrations = process.env.RUN_MIGRATIONS_ON_START !== "0";
+  if (runMigrations) {
     try {
-      const before = await pool.query('SELECT COUNT(*) AS count FROM "__drizzle_migrations"');
-      try {
-        await migrate(db, { migrationsFolder: "./migrations" });
-      } catch (err: any) {
-        if (err?.code === '42P07' || err?.code === '42710') {
-          skipped++;
-        } else {
-          throw err;
-        }
-      }
-      const after = await pool.query('SELECT COUNT(*) AS count FROM "__drizzle_migrations"');
-      applied = Number(after.rows[0].count) - Number(before.rows[0].count);
-      console.log(`db bootstrap: ok (applied ${applied}, skipped ${skipped})`);
+      await migrate(db, { migrationsFolder: "./migrations" });
+      console.log("db bootstrap: ok");
     } catch (err) {
-      console.error('db bootstrap failed:', err);
+      console.error("db bootstrap failed:", err);
     }
   } else {
-    console.log('db bootstrap: skipped');
+    console.log("db bootstrap: skipped");
   }
 
   const server = await registerRoutes(app);
