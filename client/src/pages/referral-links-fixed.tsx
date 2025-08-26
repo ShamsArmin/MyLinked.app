@@ -319,8 +319,7 @@ const ReferralLinks = () => {
         await navigator.clipboard.writeText(text);
         return;
       }
-      throw new Error('Clipboard API not available');
-    } catch {
+      // Fallback
       const textArea = document.createElement('textarea');
       textArea.value = text;
       textArea.setAttribute('readonly', '');
@@ -328,7 +327,10 @@ const ReferralLinks = () => {
       textArea.style.left = '-9999px';
       textArea.style.top = '0';
       document.body.appendChild(textArea);
-      textArea.focus();
+      if (textArea.focus) {
+        // @ts-ignore - older TS lib may not include FocusOptions
+        textArea.focus({ preventScroll: true });
+      }
       textArea.select();
       textArea.setSelectionRange(0, textArea.value.length);
 
@@ -338,19 +340,30 @@ const ReferralLinks = () => {
       if (!successful) {
         throw new Error('Copy command was unsuccessful');
       }
+    } catch {
+      // Re-throw to be handled by caller
+      throw new Error('Failed to copy to clipboard');
     }
   };
 
-  // Handle copy referral URL to clipboard
-  const handleCopyLink = async (link: ReferralLink) => {
+  // Handle copy referral URL to clipboard (supports either full link or id)
+  const handleCopyLink = async (linkOrId: ReferralLink | number) => {
+    const id = typeof linkOrId === 'number' ? linkOrId : linkOrId.id;
+    const providedUrl =
+      typeof linkOrId === 'number' ? undefined : (linkOrId.url?.trim() || undefined);
+
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const referralUrl = providedUrl && providedUrl !== ''
+      ? providedUrl
+      : `${baseUrl}/api/r/${id}`;
+
     try {
-      await copyTextToClipboard(link.url);
-      setCopiedId(link.id);
+      await copyTextToClipboard(referralUrl);
+      setCopiedId(id);
       toast({
         title: 'Copied!',
         description: 'Referral link copied to clipboard',
       });
-
       // Reset copied state after 2 seconds
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
@@ -1069,7 +1082,7 @@ const ReferralLinks = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <Form {...editForm}>
+        <Form {...editForm}>
             <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
               <FormField
                 control={editForm.control}
@@ -1439,8 +1452,10 @@ const ReferralLinkCard = ({
             {link.description}
           </p>
         )}
-        <div className="flex items-center gap-1 bg-muted p-1.5 rounded-md cursor-pointer overflow-hidden hover:bg-muted/80 transition-colors" 
-          onClick={() => handleLinkClick(link.url)}>
+        <div
+          className="flex items-center gap-1 bg-muted p-1.5 rounded-md cursor-pointer overflow-hidden hover:bg-muted/80 transition-colors" 
+          onClick={() => handleLinkClick(link.url)}
+        >
           <ExternalLink className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
           <a 
             href={link.url}
