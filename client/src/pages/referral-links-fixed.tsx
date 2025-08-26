@@ -416,18 +416,27 @@ const [links, setLinks] = useState<ReferralLink[]>([]);
 
   const handlePinLink = (id: number) => {
     setLinks(prev => {
-      const updated = prev.map(l =>
-        l.id === id ? { ...l, pinned: !l.pinned } : l
-      );
-      const sorted = [...updated].sort(
-        (a, b) => Number(b.pinned) - Number(a.pinned)
-      );
-      const isPinned = sorted.find(l => l.id === id)?.pinned;
+      const index = prev.findIndex(l => l.id === id);
+      if (index === -1) return prev;
+
+      const link = { ...prev[index], pinned: !prev[index].pinned };
+      const newLinks = [...prev];
+      newLinks.splice(index, 1);
+
+      if (link.pinned) {
+        newLinks.unshift(link);
+      } else {
+        const firstUnpinned = newLinks.findIndex(l => !l.pinned);
+        if (firstUnpinned === -1) newLinks.push(link);
+        else newLinks.splice(firstUnpinned, 0, link);
+      }
+
       toast({
         title: 'Success',
-        description: isPinned ? 'Link pinned' : 'Link unpinned',
+        description: link.pinned ? 'Link pinned' : 'Link unpinned',
       });
-      return sorted;
+
+      return newLinks;
     });
   };
 
