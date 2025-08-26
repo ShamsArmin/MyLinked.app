@@ -38,8 +38,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Link, Users, UserPlus, ExternalLink, Copy, Check, Trash2,
-  Edit, Heart, Award, Gift, User, Briefcase, BarChart3, Plus,
-  Upload, Image as ImageIcon, Pin, ArrowUp, ArrowDown
+  Edit, Award, Gift, Briefcase, BarChart3, Plus,
+  Upload, Pin, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -88,43 +88,6 @@ const referralLinkSchema = z.object({
 
 type ReferralLinkFormValues = z.infer<typeof referralLinkSchema>;
 
-// Sample data for demo
-const sampleLinks: ReferralLink[] = [
-  {
-    id: 1,
-    userId: 1,
-    title: 'My Designer Friend',
-    url: 'https://example.com/designer',
-    description: 'Check out my friend\'s amazing design portfolio',
-    linkType: 'friend',
-    clicks: 24,
-    createdAt: '2024-05-01T10:30:00Z'
-  },
-  {
-    id: 2,
-    userId: 1,
-    title: 'Acme Design Tools',
-    url: 'https://acmedesign.com',
-    description: 'The best design tools I use every day',
-    linkType: 'sponsor',
-    referenceCompany: 'Acme Design',
-    image: 'https://placehold.co/50x50',
-    clicks: 47,
-    createdAt: '2024-05-05T14:22:00Z'
-  },
-  {
-    id: 3,
-    userId: 1,
-    title: 'Premium Hosting Service',
-    url: 'https://hostingservice.com/ref123',
-    description: 'Get 20% off your first month of hosting with my code',
-    linkType: 'affiliate',
-    referenceCompany: 'Premium Hosting',
-    clicks: 12,
-    createdAt: '2024-05-10T09:15:00Z'
-  }
-];
-
 const ReferralLinks = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -133,11 +96,11 @@ const ReferralLinks = () => {
   // States for dialogs
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-const [currentLink, setCurrentLink] = useState<ReferralLink | null>(null);
-const [copiedId, setCopiedId] = useState<number | null>(null);
-const [imageUploadType, setImageUploadType] = useState<'url' | 'file'>('url');
-const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('url');
-const [links, setLinks] = useState<ReferralLink[]>([]);
+  const [currentLink, setCurrentLink] = useState<ReferralLink | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [imageUploadType, setImageUploadType] = useState<'url' | 'file'>('url');
+  const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('url');
+  const [links, setLinks] = useState<ReferralLink[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
