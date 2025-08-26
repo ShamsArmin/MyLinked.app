@@ -111,9 +111,9 @@ export interface IStorage {
   discoverUsers(userId: number, filters: any): Promise<User[]>;
   
   // Referral Links Feature
-  getReferralLinks(userId: number): Promise<ReferralLink[]>;
+  getReferralLinks(userId: string): Promise<ReferralLink[]>;
   getReferralLinkById(id: number): Promise<ReferralLink | undefined>;
-  createReferralLink(userId: number, link: InsertReferralLink): Promise<ReferralLink>;
+  createReferralLink(userId: string, link: InsertReferralLink): Promise<ReferralLink>;
   updateReferralLink(id: number, updates: Partial<InsertReferralLink>): Promise<ReferralLink | undefined>;
   deleteReferralLink(id: number): Promise<boolean>;
   incrementReferralLinkClicks(id: number): Promise<ReferralLink | undefined>;
