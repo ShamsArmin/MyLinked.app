@@ -205,7 +205,7 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
 
   // Create a new referral link
   const createLinkMutation = useMutation({
-    mutationFn: async (data: ReferralLinkFormValues) => {
+    mutationFn: async (data: Partial<ReferralLinkFormValues>) => {
       const res = await apiRequest('POST', '/api/referral-links', data);
       return await res.json();
     },
@@ -324,14 +324,24 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
   });
   
   // Handle form submission for creating a new referral link
+  const cleanPayload = (data: ReferralLinkFormValues) => {
+    const cleaned: any = { ...data };
+    Object.keys(cleaned).forEach((key) => {
+      if (cleaned[key as keyof ReferralLinkFormValues] === "") {
+        delete cleaned[key as keyof ReferralLinkFormValues];
+      }
+    });
+    return cleaned as Partial<ReferralLinkFormValues>;
+  };
+
   const onSubmit = (data: ReferralLinkFormValues) => {
-    createLinkMutation.mutate(data);
+    createLinkMutation.mutate(cleanPayload(data));
   };
   
   // Handle form submission for updating a referral link
   const onEditSubmit = (data: ReferralLinkFormValues) => {
     if (currentLink) {
-      updateLinkMutation.mutate({ id: currentLink.id, data });
+      updateLinkMutation.mutate({ id: currentLink.id, data: cleanPayload(data) });
     }
   };
   
