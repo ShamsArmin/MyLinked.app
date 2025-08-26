@@ -341,11 +341,15 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
     }
   };
   
-  // Fallback copy to clipboard for browsers without navigator.clipboard support
+  // Copy to clipboard with graceful fallback for older browsers or insecure contexts
   const copyTextToClipboard = async (text: string) => {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return;
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return;
+      } catch {
+        // ignore and fallback to execCommand
+      }
     }
 
     const textArea = document.createElement('textarea');
@@ -357,16 +361,12 @@ const [editImageUploadType, setEditImageUploadType] = useState<'url' | 'file'>('
     textArea.focus();
     textArea.select();
 
-    return new Promise<void>((resolve, reject) => {
-      try {
-        const successful = document.execCommand('copy');
-        successful ? resolve() : reject(new Error('Copy command was unsuccessful'));
-      } catch (err) {
-        reject(err);
-      } finally {
-        textArea.remove();
-      }
-    });
+    const successful = document.execCommand('copy');
+    textArea.remove();
+
+    if (!successful) {
+      throw new Error('Copy command was unsuccessful');
+    }
   };
 
   // Handle copy referral URL to clipboard
