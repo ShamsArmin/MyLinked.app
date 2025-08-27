@@ -1227,7 +1227,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       if (typeof storage.getSpotlightProjects === "function") {
-        spotlightProjects = await storage.getSpotlightProjects(user.id);
+        const projects = await storage.getSpotlightProjects(user.id);
+        spotlightProjects = await Promise.all(
+          projects.map(async (project: any) => {
+            const contributors = await storage.getProjectContributors(project.id);
+            const tags = await storage.getProjectTags(project.id);
+            return { ...project, contributors, tags };
+          })
+        );
       }
     } catch (error) {
       console.warn("Failed to fetch spotlight projects:", error);
