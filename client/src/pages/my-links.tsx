@@ -97,6 +97,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 const linkFormSchema = insertLinkSchema.extend({
@@ -786,6 +787,14 @@ export default function MyLinksPage() {
                           <DropdownMenuItem onClick={() => handleEditLink(link)}>
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteLink(link.id)}
+                            className="text-red-500 focus:text-red-500"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

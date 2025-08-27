@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePlatformIcons } from "@/hooks/use-platform-icons";
 import { getThemeColors } from "@/hooks/use-theme";
 import { stripLinkUrl } from "@/lib/link-utils";
+import MyLinks, { LinkItem } from "@/components/my-links";
 
 import {
   ExternalLink,
@@ -490,6 +491,41 @@ export default function VisitorProfileNew() {
 
   const { profile, links = [], spotlightProjects = [], referralLinks = [], skills = [] } = data;
 
+  const platformNames: { [key: string]: string } = {
+    linkedin: "LinkedIn",
+    instagram: "Instagram",
+    twitter: "Twitter",
+    facebook: "Facebook",
+    tiktok: "TikTok",
+    youtube: "YouTube",
+    github: "GitHub",
+    website: "Website",
+    email: "Email",
+    phone: "Phone",
+  };
+
+  const getDisplayName = (platform: string, title: string) => {
+    const name = platformNames[platform.toLowerCase()];
+    return name || (title.length > 10 ? title.substring(0, 10) + "..." : title);
+  };
+
+  const linkItems: LinkItem[] = links.map((link) => {
+    const platformConfig = getPlatformConfig(link.platform);
+    const IconComponent = platformConfig?.icon;
+    return {
+      id: String(link.id),
+      label: getDisplayName(link.platform, link.title),
+      url: link.url,
+      icon: IconComponent ? (
+        <IconComponent
+          className="h-6 w-6"
+          style={{ color: platformConfig.color }}
+        />
+      ) : null,
+      platform: link.platform,
+    };
+  });
+
   // Check if pitch mode is enabled
   if (profile.pitchMode) {
     return <PitchModeLayout 
@@ -675,223 +711,12 @@ export default function VisitorProfileNew() {
             <CardTitle className="text-lg sm:text-xl text-gray-800 dark:text-gray-200">My Links</CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
-            {/* Mobile: Always show grid layout */}
-            <div className="block sm:hidden">
-              <div className="grid grid-cols-2 gap-3">
-                {links.map((link) => {
-                    const platformConfig = getPlatformConfig(link.platform);
-
-                    // Get clean platform name or truncate long titles
-                    const getDisplayName = (platform: string, title: string) => {
-                      const platformNames: { [key: string]: string } = {
-                        'linkedin': 'LinkedIn',
-                        'instagram': 'Instagram',
-                        'twitter': 'Twitter',
-                        'facebook': 'Facebook',
-                        'tiktok': 'TikTok',
-                        'youtube': 'YouTube',
-                        'github': 'GitHub',
-                        'website': 'Website',
-                        'email': 'Email',
-                        'phone': 'Phone'
-                      };
-
-                      // Return clean platform name if available
-                      if (platformNames[platform.toLowerCase()]) {
-                        return platformNames[platform.toLowerCase()];
-                      }
-
-                      // Otherwise truncate title to max 10 characters
-                      return title.length > 10 ? title.substring(0, 10) + '...' : title;
-                    };
-
-                    const IconComponent = platformConfig?.icon;
-
-                    return (
-                      <Button
-                        key={link.id}
-                        variant="outline"
-                        className="h-20 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                        onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                      >
-                        {IconComponent && React.createElement(IconComponent, {
-                          className: "h-8 w-8",
-                          style: { color: platformConfig.color }
-                        })}
-                        <span className="text-xs font-medium text-gray-700 text-center">
-                          {getDisplayName(link.platform, link.title)}
-                        </span>
-                      </Button>
-                    );
-                  })}
-              </div>
-            </div>
-
-            {/* Desktop: Show grid for <= 6 links, dropdown for > 6 links */}
-            <div className="hidden sm:block">
-              {links.length <= 6 ? (
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {links.map((link) => {
-                    const platformConfig = getPlatformConfig(link.platform);
-
-                    // Get clean platform name or truncate long titles
-                    const getDisplayName = (platform: string, title: string) => {
-                      const platformNames: { [key: string]: string } = {
-                        'linkedin': 'LinkedIn',
-                        'instagram': 'Instagram',
-                        'twitter': 'Twitter',
-                        'facebook': 'Facebook',
-                        'tiktok': 'TikTok',
-                        'youtube': 'YouTube',
-                        'github': 'GitHub',
-                        'website': 'Website',
-                        'email': 'Email',
-                        'phone': 'Phone'
-                      };
-
-                      // Return clean platform name if available
-                      if (platformNames[platform.toLowerCase()]) {
-                        return platformNames[platform.toLowerCase()];
-                      }
-
-                      // Otherwise truncate title to max 10 characters
-                      return title.length > 10 ? title.substring(0, 10) + '...' : title;
-                    };
-
-                    const IconComponent = platformConfig?.icon;
-
-                    return (
-                      <Button
-                        key={link.id}
-                        variant="outline"
-                        className="h-20 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                        onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                      >
-                        {IconComponent && React.createElement(IconComponent, {
-                          className: "h-8 w-8",
-                          style: { color: platformConfig.color }
-                        })}
-                        <span className="text-xs font-medium text-gray-700 text-center">
-                          {getDisplayName(link.platform, link.title)}
-                        </span>
-                      </Button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {/* Show first 5 links directly */}
-                  {links.slice(0, 5).map((link) => {
-                    const platformConfig = getPlatformConfig(link.platform);
-
-                    // Get clean platform name or truncate long titles
-                    const getDisplayName = (platform: string, title: string) => {
-                      const platformNames: { [key: string]: string } = {
-                        'linkedin': 'LinkedIn',
-                        'instagram': 'Instagram',
-                        'twitter': 'Twitter',
-                        'facebook': 'Facebook',
-                        'tiktok': 'TikTok',
-                        'youtube': 'YouTube',
-                        'github': 'GitHub',
-                        'website': 'Website',
-                        'email': 'Email',
-                        'phone': 'Phone'
-                      };
-
-                      // Return clean platform name if available
-                      if (platformNames[platform.toLowerCase()]) {
-                        return platformNames[platform.toLowerCase()];
-                      }
-
-                      // Otherwise truncate title to max 10 characters
-                      return title.length > 10 ? title.substring(0, 10) + '...' : title;
-                    };
-
-                    const IconComponent = platformConfig?.icon;
-
-                    return (
-                      <Button
-                        key={link.id}
-                        variant="outline"
-                        className="h-20 w-20 flex flex-col items-center justify-center gap-1 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                        onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                      >
-                        {IconComponent && React.createElement(IconComponent, {
-                          className: "h-6 w-6",
-                          style: { color: platformConfig.color }
-                        })}
-                        <span className="text-xs font-medium text-gray-700 text-center">
-                          {getDisplayName(link.platform, link.title)}
-                        </span>
-                      </Button>
-                    );
-                  })}
-
-                  {/* Dropdown menu for remaining links */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="h-20 w-20 flex flex-col items-center justify-center gap-1 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                      >
-                        <MoreHorizontal className="h-6 w-6 text-gray-600" />
-                        <span className="text-xs font-medium text-gray-700">
-                          +{links.length - 5}
-                        </span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      {links.slice(5).map((link) => {
-                        const platformConfig = getPlatformConfig(link.platform);
-
-                        // Get clean platform name or truncate long titles
-                        const getDisplayName = (platform: string, title: string) => {
-                          const platformNames: { [key: string]: string } = {
-                            'linkedin': 'LinkedIn',
-                            'instagram': 'Instagram',
-                            'twitter': 'Twitter',
-                            'facebook': 'Facebook',
-                            'tiktok': 'TikTok',
-                            'youtube': 'YouTube',
-                            'github': 'GitHub',
-                            'website': 'Website',
-                            'email': 'Email',
-                            'phone': 'Phone'
-                          };
-
-                          // Return clean platform name if available
-                          if (platformNames[platform.toLowerCase()]) {
-                            return platformNames[platform.toLowerCase()];
-                          }
-
-                          // Otherwise truncate title to max 10 characters
-                          return title.length > 20 ? title.substring(0, 20) + '...' : title;
-                        };
-
-                        const IconComponent = platformConfig?.icon;
-
-                        return (
-                          <DropdownMenuItem
-                            key={link.id}
-                            onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                            className="flex items-center gap-2 cursor-pointer hover:bg-blue-50"
-                          >
-                            {IconComponent && React.createElement(IconComponent, {
-                              className: "h-4 w-4",
-                              style: { color: platformConfig.color }
-                            })}
-                            <span className="text-sm">
-                              {getDisplayName(link.platform, link.title)}
-                            </span>
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              )}
-            </div>
+            <MyLinks
+              links={linkItems}
+              onLinkClick={(item) =>
+                handleLinkClick(Number(item.id), item.url, item.platform || "")
+              }
+            />
           </CardContent>
         </Card>
 
