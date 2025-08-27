@@ -1709,86 +1709,15 @@ export default function SpotlightPage() {
               >
                 Cancel
               </Button>
-              <Button 
-                type="button" 
-                onClick={async () => {
-                  try {
-                    // Show saving indicator
-                    toast({
-                      title: "Saving changes...",
-                      description: "Please wait while we update your project"
-                    });
-                    
-                    if (!selectedProject) {
-                      toast({
-                        title: "Error",
-                        description: "No project selected for editing",
-                        variant: "destructive"
-                      });
-                      return;
-                    }
-                    
-                    // Get form values directly
-                    const title = document.getElementById('edit-title') as HTMLInputElement;
-                    const url = document.getElementById('edit-url') as HTMLInputElement;
-                    const description = document.getElementById('edit-description') as HTMLTextAreaElement;
-                    const thumbnail = document.getElementById('edit-thumbnail') as HTMLInputElement;
-                    const isPinned = document.getElementById('edit-isPinned') as HTMLInputElement;
-                    
-                    // Validate required fields
-                    if (!title?.value || !url?.value) {
-                      toast({
-                        title: "Required fields missing",
-                        description: "Please provide both a title and URL",
-                        variant: "destructive"
-                      });
-                      return;
-                    }
-                    
-                    // Update using direct fetch for better reliability
-                    const response = await fetch(`/api/spotlight/projects/${selectedProject.id}`, {
-                      method: "PATCH",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        title: title.value.trim(),
-                        url: url.value.trim(),
-                        description: description?.value?.trim() || "",
-                        thumbnail: thumbnail?.value || "",
-                        isPinned: isPinned?.checked || false
-                      })
-                    });
-                    
-                    if (!response.ok) {
-                      throw new Error(`Error: ${response.status} - ${response.statusText}`);
-                    }
-                    
-                    // Refresh project data
-                    queryClient.invalidateQueries({ queryKey: ["/api/spotlight/projects"] });
-                    
-                    // Show success toast
-                    toast({
-                      title: "Project updated",
-                      description: "Your changes have been saved successfully"
-                    });
-                    
-                    // Close the dialog
-                    setIsEditDialogOpen(false);
-                  } catch (error) {
-                    console.error("Error saving project:", error);
-                    toast({
-                      title: "Error saving changes",
-                      description: "Please try again with different values",
-                      variant: "destructive"
-                    });
-                  }
-                }}
-                disabled={updateProjectMutation.isPending}
-              >
-                {updateProjectMutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Save Changes
-              </Button>
+                <Button
+                  type="submit"
+                  disabled={updateProjectMutation.isPending}
+                >
+                  {updateProjectMutation.isPending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Save Changes
+                </Button>
             </DialogFooter>
           </form>
         </DialogContent>
