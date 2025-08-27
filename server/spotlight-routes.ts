@@ -321,7 +321,6 @@ spotlightRouter.patch("/projects/:projectId", isProjectOwner, async (req, res) =
           if (tag.label?.trim()) {
             await storage.addTag(projectId, {
               label: tag.label,
-              icon: tag.icon || "",
               type: tag.type || "tag"
             });
           }

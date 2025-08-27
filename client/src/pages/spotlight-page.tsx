@@ -148,7 +148,6 @@ const createProjectSchema = z.object({
   tags: z.array(
     z.object({
       label: z.string().min(1, "Label is required"),
-      icon: z.string().optional(),
       type: z.string().optional(),
     })
   ).max(3).optional(),
@@ -207,7 +206,6 @@ export default function SpotlightPage() {
   const addTagForm = useForm({
     defaultValues: {
       label: "",
-      icon: "",
       type: "tag",
     },
   });
@@ -239,7 +237,6 @@ export default function SpotlightPage() {
           tags: data.tags?.filter(t => t.label.trim())
             .map(t => ({
               label: t.label.trim(),
-              icon: t.icon?.trim() || '',
               type: t.type || 'tag'
             })) || [],
         };
@@ -682,10 +679,9 @@ export default function SpotlightPage() {
           for (const field of Object.values(editProjectForm.getValues().tagFields || {}).slice(0, 3)) {
             // Skip empty fields
             if (!field.label?.trim()) continue;
-            
+
             tagInputs.push({
               label: field.label.trim(),
-              icon: field.icon?.trim() || "",
               type: field.type || "tag"
             });
           }
@@ -775,7 +771,6 @@ export default function SpotlightPage() {
       })) || [],
       tags: project.tags?.map(t => ({
         label: t.label,
-        icon: t.icon || "",
         type: t.type,
       })) || [],
     });
@@ -1452,13 +1447,6 @@ export default function SpotlightPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-[150px]">
-                        <Label htmlFor={`tag-icon-${field.id}`}>Icon (optional)</Label>
-                        <Input
-                          id={`tag-icon-${field.id}`}
-                          placeholder="Icon class or emoji"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-[150px]">
                         <Label>Type</Label>
                         <Select defaultValue="tag" onValueChange={(value) => {
                           const typeElement = document.getElementById(`tag-type-${field.id}`) as HTMLSelectElement;
@@ -1737,16 +1725,8 @@ export default function SpotlightPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-[150px]">
-                        <Label htmlFor={`tag-icon-${field.id}`}>Icon (optional)</Label>
-                        <Input
-                          id={`tag-icon-${field.id}`}
-                          placeholder="Icon class or emoji"
-                          defaultValue={editProjectForm.watch(`tags.${index}.icon`) || ""}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-[150px]">
                         <Label htmlFor={`tag-type-${field.id}`}>Type</Label>
-                        <Select 
+                        <Select
                           defaultValue={editProjectForm.watch(`tags.${index}.type`) || "tag"}
                           onValueChange={(value) => {
                             const tags = editProjectForm.getValues("tags") || [];
