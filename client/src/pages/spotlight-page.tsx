@@ -582,17 +582,14 @@ export default function SpotlightPage() {
     createProjectMutation.mutate(projectData);
   };
   
+  
   const handleEditProject = async (data: z.infer<typeof createProjectSchema>) => {
     if (!selectedProject) return;
-    
+    toast({
+      title: "Saving changes...",
+      description: "Please wait while we update your project",
+    });
     try {
-      // Show loading toast
-      toast({
-        title: "Saving changes...",
-        description: "Please wait while we update your project"
-      });
-      
-      // Ensure required fields are present
       if (!data.title || !data.url) {
         toast({
           title: "Missing required fields",
@@ -601,145 +598,60 @@ export default function SpotlightPage() {
         });
         return;
       }
-      
-      // Prepare project basic details
+
+      const contributors: { name: string; role?: string }[] = [];
+      for (const field of contributorFields) {
+        const nameInput = document.getElementById(`contributor-name-${field.id}`) as HTMLInputElement | null;
+        const roleInput = document.getElementById(`contributor-role-${field.id}`) as HTMLInputElement | null;
+        if (nameInput && nameInput.value.trim()) {
+          contributors.push({
+            name: nameInput.value.trim(),
+            role: roleInput?.value.trim() || "",
+          });
+        }
+      }
+
+      const tags: { label: string; type: string }[] = [];
+      for (const field of tagFields.slice(0, 3)) {
+        const labelInput = document.getElementById(`tag-label-${field.id}`) as HTMLInputElement | null;
+        const typeSelect = document.getElementById(`tag-type-${field.id}`) as HTMLSelectElement | null;
+        if (labelInput && labelInput.value.trim()) {
+          tags.push({
+            label: labelInput.value.trim(),
+            type: typeSelect?.value || "tag",
+          });
+        }
+      }
+
       const projectUpdate = {
         title: data.title.trim(),
         url: data.url.trim(),
         description: data.description?.trim() || "",
         thumbnail: data.thumbnail || "",
-        isPinned: Boolean(data.isPinned)
+        isPinned: Boolean(data.isPinned),
+        contributors,
+        tags,
       };
-      
-      // Update basic project details using mutation
-      try {
-        await updateProjectMutation.mutateAsync({
-          projectId: selectedProject.id,
-          updates: projectUpdate,
-        });
-        
-        // After basic update succeeds, handle contributors and tags
-        
-        // 1. Handle contributors
-        try {
-          // Get current contributors
-          const response = await fetch(`/api/spotlight/projects/${selectedProject.id}`);
-          if (!response.ok) throw new Error("Failed to fetch project details");
-          const currentProject = await response.json();
-          
-          // Delete existing contributors
-          if (currentProject.contributors && currentProject.contributors.length > 0) {
-            await Promise.all(
-              currentProject.contributors.map(contributor => 
-                fetch(`/api/spotlight/contributors/${contributor.id}`, { 
-                  method: 'DELETE' 
-                })
-              )
-            );
-          }
-          
-          // Add new contributors from form
-          const contributorInputs = [];
-          for (const field of Object.values(editProjectForm.getValues().contributorFields || {})) {
-            // Skip empty fields
-            if (!field.name?.trim()) continue;
 
-            contributorInputs.push({
-              name: field.name.trim(),
-              role: field.role?.trim() || ""
-            });
-          }
-          
-          // Add each contributor
-          await Promise.all(
-            contributorInputs.map(contributor => 
-              fetch(`/api/spotlight/projects/${selectedProject.id}/contributors`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(contributor)
-              })
-            )
-          );
-        } catch (error) {
-          console.error("Error updating contributors:", error);
-        }
-        
-        // 2. Handle tags
-        try {
-          // Get current tags
-          const response = await fetch(`/api/spotlight/projects/${selectedProject.id}`);
-          if (!response.ok) throw new Error("Failed to fetch project details");
-          const refreshedProject = await response.json();
-          
-          // Delete existing tags
-          if (refreshedProject.tags && refreshedProject.tags.length > 0) {
-            await Promise.all(
-              refreshedProject.tags.map(tag => 
-                fetch(`/api/spotlight/tags/${tag.id}`, { 
-                  method: 'DELETE' 
-                })
-              )
-            );
-          }
-          
-          // Add new tags from form
-          const tagInputs = [];
-          for (const field of Object.values(editProjectForm.getValues().tagFields || {}).slice(0, 3)) {
-            // Skip empty fields
-            if (!field.label?.trim()) continue;
+      await updateProjectMutation.mutateAsync({
+        projectId: selectedProject.id,
+        updates: projectUpdate,
+      });
 
-            tagInputs.push({
-              label: field.label.trim(),
-              type: field.type || "tag"
-            });
-          }
-          
-          // Add each tag
-          await Promise.all(
-            tagInputs.map(tag => 
-              fetch(`/api/spotlight/projects/${selectedProject.id}/tags`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(tag)
-              })
-            )
-          );
-        } catch (error) {
-          console.error("Error updating tags:", error);
-        }
-        
-        // Refresh project cache and selection
-        const latest = (await apiRequest(
-          "GET",
-          `/api/spotlight/projects/${selectedProject.id}`
-        )) as SpotlightProject;
-        queryClient.setQueryData<SpotlightProject[]>(
-          ["/api/spotlight/projects"],
-          (old = []) => old.map((p) => (p.id === latest.id ? latest : p))
-        );
-        setSelectedProject(latest);
-        await queryClient.invalidateQueries({
-          queryKey: ["/api/spotlight/projects"],
-        });
-
-        // Show success toast
-        toast({
-          title: "Project updated successfully",
-          description: "All changes have been saved."
-        });
-
-        // Close the dialog
-        setIsEditDialogOpen(false);
-      } catch (error) {
-        console.error("Error updating project basics:", error);
-        toast({
-          title: "Error saving changes",
-          description: "There was a problem updating the project basics.",
-          variant: "destructive",
-        });
-      }
+      const latest = (await apiRequest(
+        "GET",
+        `/api/spotlight/projects/${selectedProject.id}`
+      )) as SpotlightProject;
+      queryClient.setQueryData<SpotlightProject[]>(
+        ["/api/spotlight/projects"],
+        (old = []) => old.map((p) => (p.id === latest.id ? latest : p))
+      );
+      setSelectedProject(latest);
+      await queryClient.invalidateQueries({
+        queryKey: ["/api/spotlight/projects"],
+      });
     } catch (error) {
-      console.error("Error in handleEditProject:", error);
+      console.error("Error updating project:", error);
       toast({
         title: "Error updating project",
         description: "Please check your connection and try again.",
@@ -747,7 +659,6 @@ export default function SpotlightPage() {
       });
     }
   };
-  
   const handleAddContributor = (data: any) => {
     if (!selectedProject) return;
     
