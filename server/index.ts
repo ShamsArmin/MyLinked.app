@@ -7,6 +7,8 @@ import { monitor } from "./monitoring";
 import { securityMiddleware } from "./security-middleware";
 import { migrate } from "drizzle-orm/neon-serverless/migrator";
 import { db } from "./db";
+import path from "path";
+import { fileURLToPath } from "url";
 // Temporarily disabled problematic imports
 // import { initializeEmailTemplates } from "./init-email-templates";
 // import { initAIEmailTemplates } from "./ai-email-templates";
@@ -119,7 +121,9 @@ app.use((req, res, next) => {
   const runMigrations = process.env.RUN_MIGRATIONS_ON_START !== "0";
   if (runMigrations) {
     try {
-      await migrate(db, { migrationsFolder: "./migrations" });
+      const __dirname = path.dirname(fileURLToPath(import.meta.url));
+      const migrationsFolder = path.join(__dirname, "../migrations");
+      await migrate(db, { migrationsFolder });
       console.log("db bootstrap: ok");
     } catch (err) {
       console.error("db bootstrap failed:", err);
