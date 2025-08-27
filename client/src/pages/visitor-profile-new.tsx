@@ -1151,72 +1151,70 @@ export default function VisitorProfileNew() {
                 </div>
 
                 {/* Skills Button */}
-                {skills.length > 0 && (
-                  <div className="mb-4">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full hover:bg-blue-50 border-blue-200"
-                        >
-                          <Briefcase className="h-4 w-4 mr-2" />
-                          My Skills
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-lg">
-                        <DialogHeader>
-                          <DialogTitle className="flex items-center gap-2">
-                            <Briefcase className="h-5 w-5" />
-                            {profile.name || profile.username}'s Skills
-                          </DialogTitle>
-                        </DialogHeader>
-                        {skills.length > 0 ? (
-                          <div className="space-y-3 max-h-80 overflow-y-auto">
-                            {skills.map((skill, idx) => {
-                              const skillName =
-                                typeof skill === "string"
-                                  ? skill
-                                  : skill.skill || skill.name;
-                              const level =
-                                typeof skill === "string" ? undefined : skill.level;
-                              const description =
-                                typeof skill === "string"
-                                  ? undefined
-                                  : skill.description;
-                              const years =
-                                typeof skill === "string"
-                                  ? undefined
-                                  : skill.yearsOfExperience;
-                              return (
-                                <div
-                                  key={skill.id || skillName || idx}
-                                  className="p-3 rounded-lg border bg-gray-50 border-gray-200"
-                                >
-                                  <div className="flex items-center justify-between mb-2">
-                                    <h5 className="font-medium">{skillName}</h5>
-                                    {level && (
-                                      <Badge variant="secondary" className="text-xs">
-                                        Level {level}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  {description && (
-                                    <p className="text-sm text-gray-600 mb-1">{description}</p>
-                                  )}
-                                  {years && (
-                                    <p className="text-xs text-gray-500">{years} years experience</p>
+                <div className="mb-4">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full hover:bg-blue-50 border-blue-200"
+                      >
+                        <Briefcase className="h-4 w-4 mr-2" />
+                        My Skills
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Briefcase className="h-5 w-5" />
+                          {profile.name || profile.username}'s Skills
+                        </DialogTitle>
+                      </DialogHeader>
+                      {skills.length > 0 ? (
+                        <div className="space-y-3 max-h-80 overflow-y-auto">
+                          {skills.map((skill, idx) => {
+                            const skillName =
+                              typeof skill === "string"
+                                ? skill
+                                : skill.skill || skill.name;
+                            const level =
+                              typeof skill === "string" ? undefined : skill.level;
+                            const description =
+                              typeof skill === "string"
+                                ? undefined
+                                : skill.description;
+                            const years =
+                              typeof skill === "string"
+                                ? undefined
+                                : skill.yearsOfExperience;
+                            return (
+                              <div
+                                key={skill.id || skillName || idx}
+                                className="p-3 rounded-lg border bg-gray-50 border-gray-200"
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <h5 className="font-medium">{skillName}</h5>
+                                  {level && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      Level {level}
+                                    </Badge>
                                   )}
                                 </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-gray-600">No skills added yet.</p>
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                )}
+                                {description && (
+                                  <p className="text-sm text-gray-600 mb-1">{description}</p>
+                                )}
+                                {years && (
+                                  <p className="text-xs text-gray-500">{years} years experience</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-600">No skills added yet.</p>
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                </div>
 
                 {/* Collaboration Request Button */}
                 <Dialog open={showCollaborationDialog} onOpenChange={setShowCollaborationDialog}>
