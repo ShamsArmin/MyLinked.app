@@ -1042,7 +1042,22 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Skills Management
+  private async ensureUserSkillsTable() {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS user_skills (
+        id SERIAL PRIMARY KEY,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        skill VARCHAR(255) NOT NULL,
+        level INTEGER NOT NULL DEFAULT 3,
+        description TEXT,
+        years_of_experience INTEGER,
+        CONSTRAINT user_skills_user_skill_unique UNIQUE (user_id, skill)
+      )
+    `);
+  }
+
   async getSkills(userId: string): Promise<any[]> {
+    await this.ensureUserSkillsTable();
     try {
       const rows = await db.execute(
         sql`select id, skill, level, description, years_of_experience from user_skills where user_id = ${userId} order by level desc`
@@ -1876,6 +1891,7 @@ export class EnhancedDatabaseStorage implements IStorage {
 
   // Skills methods that are missing
   async addUserSkill(userId: string, skill: string, level: number = 3): Promise<any> {
+    await this.ensureUserSkillsTable();
     const result = await db.execute(
       sql`INSERT INTO user_skills (user_id, skill, level)
           VALUES (${userId}, ${skill}, ${level})
@@ -1886,6 +1902,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   async updateUserSkill(skillId: string, updates: any): Promise<any> {
+    await this.ensureUserSkillsTable();
     const { skill, level, description, yearsOfExperience } = updates;
     const result = await db.execute(
       sql`UPDATE user_skills SET
@@ -1900,6 +1917,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   async deleteUserSkill(skillId: string): Promise<boolean> {
+    await this.ensureUserSkillsTable();
     const result = await db.execute(sql`DELETE FROM user_skills WHERE id = ${skillId}`);
     return result.rowCount ? result.rowCount > 0 : false;
   }
