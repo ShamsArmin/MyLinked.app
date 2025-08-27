@@ -297,8 +297,8 @@ export default function SpotlightPage() {
   
   // Update project mutation with more specific types
   const updateProjectMutation = useMutation({
-    mutationFn: async (data: { 
-      projectId: number; 
+    mutationFn: async (data: {
+      projectId: number;
       updates: {
         title?: string;
         url?: string;
@@ -307,17 +307,15 @@ export default function SpotlightPage() {
         isPinned?: boolean;
         contributors?: any[];
         tags?: any[];
-      } 
+      };
     }) => {
-      // Use a more generic payload type to avoid type issues
-      return await apiRequest("PATCH", `/api/spotlight/projects/${data.projectId}`, data.updates);
+      return await apiRequest(
+        "PATCH",
+        `/api/spotlight/projects/${data.projectId}`,
+        data.updates
+      );
     },
     onSuccess: () => {
-      // Force a refetch to get the updated data including contributors and tags
-      queryClient.invalidateQueries({ queryKey: ["/api/spotlight/projects"] });
-      if (selectedProject) {
-        queryClient.invalidateQueries({ queryKey: ["/api/spotlight/projects", selectedProject.id] });
-      }
       setIsEditDialogOpen(false);
       toast({
         title: "Project updated",
@@ -327,7 +325,8 @@ export default function SpotlightPage() {
     onError: (error) => {
       toast({
         title: "Failed to update project",
-        description: error instanceof Error ? error.message : "An error occurred",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       });
     },
@@ -633,20 +632,19 @@ export default function SpotlightPage() {
         tags,
       };
 
-      await updateProjectMutation.mutateAsync({
+      const updated = await updateProjectMutation.mutateAsync({
         projectId: selectedProject.id,
         updates: projectUpdate,
       });
 
-      const latest = (await apiRequest(
-        "GET",
-        `/api/spotlight/projects/${selectedProject.id}`
-      )) as SpotlightProject;
       queryClient.setQueryData<SpotlightProject[]>(
         ["/api/spotlight/projects"],
-        (old = []) => old.map((p) => (p.id === latest.id ? latest : p))
+        (old = []) =>
+          old.map((p) =>
+            Number(p.id) === Number(updated.id) ? { ...p, ...updated } : p
+          )
       );
-      setSelectedProject(latest);
+      setSelectedProject(updated);
       await queryClient.invalidateQueries({
         queryKey: ["/api/spotlight/projects"],
       });
