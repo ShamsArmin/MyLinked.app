@@ -6,17 +6,18 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { usePlatformIcons } from "@/hooks/use-platform-icons";
 import { InstagramPreview } from "@/components/instagram-preview";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 const compactLogoPath = "/assets/logo-compact.png";
 
 // Feature flags
 const FEATURE_CONTENT_PREVIEW = false; // Set to true to re-enable Content Preview feature
 
-import { 
-  Globe, 
-  MessageCircle, 
-  Users, 
-  GitBranch, 
-  Star, 
+import {
+  Globe,
+  MessageCircle,
+  Users,
+  GitBranch,
+  Star,
   ExternalLink,
   Eye,
   MousePointer,
@@ -28,7 +29,8 @@ import {
   PlayCircle,
   Heart,
   Share2,
-  MessageCircle
+  MoreHorizontal,
+  User
 } from "lucide-react";
 import { useState } from "react";
 
@@ -320,21 +322,66 @@ export default function VisitorProfile() {
                             </p>
                             <div className="flex items-center justify-between">
                               <div className="flex flex-wrap gap-1">
-                                {project.tags && project.tags.map((tag: string) => (
-                                  <Badge key={tag} variant="outline" className="text-xs">
-                                    {tag}
+                                {project.tags && project.tags.map((tag: any, index: number) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {typeof tag === 'string' ? tag : (tag?.label || tag?.name || 'Tag')}
                                   </Badge>
                                 ))}
                               </div>
-                              {project.projectUrl && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => window.open(project.projectUrl, '_blank')}
-                                >
-                                  <ExternalLink className="h-4 w-4" />
-                                </Button>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {project.projectUrl && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => window.open(project.projectUrl, '_blank')}
+                                  >
+                                    <ExternalLink className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button size="sm" variant="outline" className="px-2">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent className="w-80 p-4">
+                                    <h4 className="font-semibold text-base mb-2">{project.title}</h4>
+                                    {project.description && (
+                                      <p className="text-sm text-gray-600 mb-3">{project.description}</p>
+                                    )}
+                                    {project.tags && project.tags.length > 0 && (
+                                      <div className="mb-3">
+                                        <h5 className="font-medium text-sm mb-1">Tags:</h5>
+                                        <div className="flex flex-wrap gap-1">
+                                          {project.tags.map((tag: any, idx: number) => (
+                                            <Badge key={idx} variant="secondary" className="text-xs">
+                                              {typeof tag === 'string' ? tag : (tag?.label || tag?.name || 'Tag')}
+                                            </Badge>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {project.contributors && project.contributors.length > 0 && (
+                                      <div className="mb-3">
+                                        <h5 className="font-medium text-sm mb-1">Contributors:</h5>
+                                        <div className="space-y-1">
+                                          {project.contributors.map((contributor: any, idx: number) => (
+                                            <div key={idx} className="flex items-center gap-2 text-xs text-gray-600">
+                                              <User className="h-3 w-3" />
+                                              <span>{contributor.name}</span>
+                                              {contributor.role && (
+                                                <Badge variant="outline" className="text-xs">
+                                                  {contributor.role}
+                                                </Badge>
+                                              )}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
                             </div>
                           </div>
                         </div>

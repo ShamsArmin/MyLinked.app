@@ -933,7 +933,10 @@ export class EnhancedDatabaseStorage implements IStorage {
       .select()
       .from(spotlightProjects)
       .where(eq(spotlightProjects.userId, userId))
-      .orderBy(desc(spotlightProjects.createdAt));
+      .orderBy(
+        desc(spotlightProjects.isPinned),
+        desc(spotlightProjects.createdAt)
+      );
     return projects;
   }
 
@@ -1807,7 +1810,10 @@ export class EnhancedDatabaseStorage implements IStorage {
       .select()
       .from(spotlightProjects)
       .where(eq(spotlightProjects.userId, userId))
-      .orderBy(spotlightProjects.isPinned, desc(spotlightProjects.createdAt));
+      .orderBy(
+        desc(spotlightProjects.isPinned),
+        desc(spotlightProjects.createdAt)
+      );
 
     // Fetch related data for each project
     const projectsWithRelatedData = await Promise.all(
