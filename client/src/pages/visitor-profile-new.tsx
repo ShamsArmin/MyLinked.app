@@ -317,6 +317,24 @@ export default function VisitorProfileNew() {
     setAudioPlaying(null);
   };
 
+  const getDisplayName = (platform: string, title: string, maxLength = 10) => {
+    const platformNames: Record<string, string> = {
+      linkedin: 'LinkedIn',
+      instagram: 'Instagram',
+      twitter: 'Twitter',
+      facebook: 'Facebook',
+      tiktok: 'TikTok',
+      youtube: 'YouTube',
+      github: 'GitHub',
+      website: 'Website',
+      email: 'Email',
+      phone: 'Phone',
+    };
+    const clean = platformNames[platform.toLowerCase()];
+    if (clean) return clean;
+    return title.length > maxLength ? title.substring(0, maxLength) + '...' : title;
+  };
+
   // Social sharing functions - now opens the proper share dialog
   const shareProfile = (platform: string) => {
     // Open the ShareProfileDialog for all sharing options including QR code
@@ -679,92 +697,43 @@ export default function VisitorProfileNew() {
             <div className="block sm:hidden">
               <div className="grid grid-cols-2 gap-3">
                 {links.map((link) => {
-                    const platformConfig = getPlatformConfig(link.platform);
-
-                    // Get clean platform name or truncate long titles
-                    const getDisplayName = (platform: string, title: string) => {
-                      const platformNames: { [key: string]: string } = {
-                        'linkedin': 'LinkedIn',
-                        'instagram': 'Instagram',
-                        'twitter': 'Twitter',
-                        'facebook': 'Facebook',
-                        'tiktok': 'TikTok',
-                        'youtube': 'YouTube',
-                        'github': 'GitHub',
-                        'website': 'Website',
-                        'email': 'Email',
-                        'phone': 'Phone'
-                      };
-
-                      // Return clean platform name if available
-                      if (platformNames[platform.toLowerCase()]) {
-                        return platformNames[platform.toLowerCase()];
-                      }
-
-                      // Otherwise truncate title to max 10 characters
-                      return title.length > 10 ? title.substring(0, 10) + '...' : title;
-                    };
-
-                    const IconComponent = platformConfig?.icon;
-
-                    return (
-                      <Button
-                        key={link.id}
-                        variant="outline"
-                        className="h-20 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                        onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                      >
-                        {IconComponent && React.createElement(IconComponent, {
-                          className: "h-8 w-8",
-                          style: { color: platformConfig.color }
-                        })}
-                        <span className="text-xs font-medium text-gray-700 text-center">
-                          {getDisplayName(link.platform, link.title)}
-                        </span>
-                      </Button>
-                    );
-                  })}
+                  const platformConfig = getPlatformConfig(link.platform);
+                  const IconComponent = platformConfig?.icon;
+                  return (
+                    <Button
+                      key={link.id}
+                      variant="outline"
+                      className="h-20 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
+                      onClick={() => handleLinkClick(link.id, link.url, link.platform)}
+                    >
+                      {IconComponent && React.createElement(IconComponent, {
+                        className: "h-8 w-8",
+                        style: { color: platformConfig.color }
+                      })}
+                      <span className="text-xs font-medium text-gray-700 text-center">
+                        {getDisplayName(link.platform, link.title)}
+                      </span>
+                    </Button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Desktop: Show grid for <= 11 links, dropdown for > 11 links */}
+            {/* Desktop: Show up to 11 links in a single row, 12th block is dropdown */}
             <div className="hidden sm:block">
-              {links.length <= 11 ? (
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {links.map((link) => {
+              {links.length > 0 && (
+                <div
+                  className="grid gap-4"
+                  style={{ gridTemplateColumns: `repeat(${Math.min(links.length, 12)}, minmax(0, 1fr))` }}
+                >
+                  {links.slice(0, Math.min(links.length, 11)).map((link) => {
                     const platformConfig = getPlatformConfig(link.platform);
-
-                    // Get clean platform name or truncate long titles
-                    const getDisplayName = (platform: string, title: string) => {
-                      const platformNames: { [key: string]: string } = {
-                        'linkedin': 'LinkedIn',
-                        'instagram': 'Instagram',
-                        'twitter': 'Twitter',
-                        'facebook': 'Facebook',
-                        'tiktok': 'TikTok',
-                        'youtube': 'YouTube',
-                        'github': 'GitHub',
-                        'website': 'Website',
-                        'email': 'Email',
-                        'phone': 'Phone'
-                      };
-
-                      // Return clean platform name if available
-                      if (platformNames[platform.toLowerCase()]) {
-                        return platformNames[platform.toLowerCase()];
-                      }
-
-                      // Otherwise truncate title to max 10 characters
-                      return title.length > 10 ? title.substring(0, 10) + '...' : title;
-                    };
-
                     const IconComponent = platformConfig?.icon;
-
                     return (
                       <Button
                         key={link.id}
                         variant="outline"
-                        className="h-20 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
+                        className="w-full aspect-square flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
                         onClick={() => handleLinkClick(link.id, link.url, link.platform)}
                       >
                         {IconComponent && React.createElement(IconComponent, {
@@ -777,118 +746,39 @@ export default function VisitorProfileNew() {
                       </Button>
                     );
                   })}
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {/* Show first 11 links directly */}
-                  {links.slice(0, 11).map((link) => {
-                    const platformConfig = getPlatformConfig(link.platform);
-
-                    // Get clean platform name or truncate long titles
-                    const getDisplayName = (platform: string, title: string) => {
-                      const platformNames: { [key: string]: string } = {
-                        'linkedin': 'LinkedIn',
-                        'instagram': 'Instagram',
-                        'twitter': 'Twitter',
-                        'facebook': 'Facebook',
-                        'tiktok': 'TikTok',
-                        'youtube': 'YouTube',
-                        'github': 'GitHub',
-                        'website': 'Website',
-                        'email': 'Email',
-                        'phone': 'Phone'
-                      };
-
-                      // Return clean platform name if available
-                      if (platformNames[platform.toLowerCase()]) {
-                        return platformNames[platform.toLowerCase()];
-                      }
-
-                      // Otherwise truncate title to max 10 characters
-                      return title.length > 10 ? title.substring(0, 10) + '...' : title;
-                    };
-
-                    const IconComponent = platformConfig?.icon;
-
-                    return (
-                      <Button
-                        key={link.id}
-                        variant="outline"
-                        className="h-20 w-20 flex flex-col items-center justify-center gap-1 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                        onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                      >
-                        {IconComponent && React.createElement(IconComponent, {
-                          className: "h-6 w-6",
-                          style: { color: platformConfig.color }
+                  {links.length > 11 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full aspect-square flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
+                        >
+                          <MoreHorizontal className="h-8 w-8 text-gray-600" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        {links.slice(11).map((link) => {
+                          const platformConfig = getPlatformConfig(link.platform);
+                          const IconComponent = platformConfig?.icon;
+                          return (
+                            <DropdownMenuItem
+                              key={link.id}
+                              onClick={() => handleLinkClick(link.id, link.url, link.platform)}
+                              className="flex items-center gap-2 cursor-pointer hover:bg-blue-50"
+                            >
+                              {IconComponent && React.createElement(IconComponent, {
+                                className: "h-4 w-4",
+                                style: { color: platformConfig.color }
+                              })}
+                              <span className="text-sm">
+                                {getDisplayName(link.platform, link.title, 20)}
+                              </span>
+                            </DropdownMenuItem>
+                          );
                         })}
-                        <span className="text-xs font-medium text-gray-700 text-center">
-                          {getDisplayName(link.platform, link.title)}
-                        </span>
-                      </Button>
-                    );
-                  })}
-
-                  {/* Dropdown menu for remaining links */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="h-20 w-20 flex flex-col items-center justify-center gap-1 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                      >
-                        <MoreHorizontal className="h-6 w-6 text-gray-600" />
-                        <span className="text-xs font-medium text-gray-700">
-                          +{links.length - 11}
-                        </span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      {links.slice(11).map((link) => {
-                        const platformConfig = getPlatformConfig(link.platform);
-
-                        // Get clean platform name or truncate long titles
-                        const getDisplayName = (platform: string, title: string) => {
-                          const platformNames: { [key: string]: string } = {
-                            'linkedin': 'LinkedIn',
-                            'instagram': 'Instagram',
-                            'twitter': 'Twitter',
-                            'facebook': 'Facebook',
-                            'tiktok': 'TikTok',
-                            'youtube': 'YouTube',
-                            'github': 'GitHub',
-                            'website': 'Website',
-                            'email': 'Email',
-                            'phone': 'Phone'
-                          };
-
-                          // Return clean platform name if available
-                          if (platformNames[platform.toLowerCase()]) {
-                            return platformNames[platform.toLowerCase()];
-                          }
-
-                          // Otherwise truncate title to max 10 characters
-                          return title.length > 20 ? title.substring(0, 20) + '...' : title;
-                        };
-
-                        const IconComponent = platformConfig?.icon;
-
-                        return (
-                          <DropdownMenuItem
-                            key={link.id}
-                            onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                            className="flex items-center gap-2 cursor-pointer hover:bg-blue-50"
-                          >
-                            {IconComponent && React.createElement(IconComponent, {
-                              className: "h-4 w-4",
-                              style: { color: platformConfig.color }
-                            })}
-                            <span className="text-sm">
-                              {getDisplayName(link.platform, link.title)}
-                            </span>
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               )}
             </div>
