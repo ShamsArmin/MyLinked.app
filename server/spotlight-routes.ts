@@ -5,9 +5,32 @@ import {
   createSpotlightProjectSchema,
   contributorSchema,
   tagSchema,
+  spotlightProjects,
+  spotlightContributors,
+  spotlightTags,
 } from "../shared/schema";
+import { db } from "./db";
+import { migrate } from "drizzle-orm/neon-serverless/migrator";
+import path from "path";
+import { fileURLToPath } from "url";
 
 export const spotlightRouter = Router();
+
+async function ensureSpotlightTables() {
+  try {
+    await db.select().from(spotlightProjects).limit(1);
+    await db.select().from(spotlightContributors).limit(1);
+    await db.select().from(spotlightTags).limit(1);
+  } catch (err: any) {
+    if (err?.code === "42P01") {
+      const __dirname = path.dirname(fileURLToPath(import.meta.url));
+      const migrationsFolder = path.join(__dirname, "../migrations");
+      await migrate(db, { migrationsFolder });
+    } else {
+      throw err;
+    }
+  }
+}
 
 // Middleware to check authentication
 function isAuthenticated(req: Request, res: Response, next: Function) {
@@ -47,6 +70,7 @@ async function isProjectOwner(req: Request, res: Response, next: Function) {
 // Get all spotlight projects for current user
 spotlightRouter.get("/projects", isAuthenticated, async (req, res) => {
   try {
+    await ensureSpotlightTables();
     const userId = req.user!.id;
     const projects = await storage.getSpotlightProjects(userId);
     
@@ -74,6 +98,7 @@ spotlightRouter.get("/projects", isAuthenticated, async (req, res) => {
 // Get a specific spotlight project
 spotlightRouter.get("/projects/:projectId", async (req, res) => {
   try {
+    await ensureSpotlightTables();
     const projectId = parseInt(req.params.projectId);
     const project = await storage.getSpotlightProjectById(projectId);
     
@@ -102,6 +127,7 @@ spotlightRouter.get("/projects/:projectId", async (req, res) => {
 // Create a new spotlight project
 spotlightRouter.post("/projects", isAuthenticated, async (req, res) => {
   try {
+    await ensureSpotlightTables();
     const userId = req.user!.id;
     
     // Modified schema with relaxed validation for the thumbnail and email
