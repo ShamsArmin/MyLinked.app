@@ -708,15 +708,26 @@ export default function SpotlightPage() {
           console.error("Error updating tags:", error);
         }
         
-        // Force refresh all project data
-        queryClient.invalidateQueries({ queryKey: ["/api/spotlight/projects"] });
-        
+        // Refresh project cache and selection
+        const latest = (await apiRequest(
+          "GET",
+          `/api/spotlight/projects/${selectedProject.id}`
+        )) as SpotlightProject;
+        queryClient.setQueryData<SpotlightProject[]>(
+          ["/api/spotlight/projects"],
+          (old = []) => old.map((p) => (p.id === latest.id ? latest : p))
+        );
+        setSelectedProject(latest);
+        await queryClient.invalidateQueries({
+          queryKey: ["/api/spotlight/projects"],
+        });
+
         // Show success toast
         toast({
           title: "Project updated successfully",
           description: "All changes have been saved."
         });
-        
+
         // Close the dialog
         setIsEditDialogOpen(false);
       } catch (error) {
