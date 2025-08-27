@@ -1078,7 +1078,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Don't include password in the response
     const { password, ...userWithoutPassword } = user;
 
-    res.json(userWithoutPassword);
+    // Include the user's skills for persistence across refreshes
+    const skills = await storage.getSkills(userId);
+
+    res.json({ ...userWithoutPassword, skills });
   }));
 
   app.patch("/api/profile", isAuthenticated, asyncHandler(async (req: any, res: any) => {
