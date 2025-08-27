@@ -249,24 +249,30 @@ export default function CollaborationPage() {
       const res = await fetch('/api/add-skill', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ skill: trimmed, level: levelMap[newSkillLevel] || 2 })
       });
-      if (res.ok) {
-        const saved = await res.json();
-        const reverseLevel: Record<number, string> = {1:'beginner',2:'intermediate',3:'advanced',4:'expert'};
-        setUserSkills([...userSkills, {
-          id: saved.id,
-          name: saved.skill || saved.name,
-          level: reverseLevel[saved.level] || 'intermediate'
-        }]);
-        setNewSkill('');
-        setNewSkillLevel('intermediate');
-        setIsAddSkillOpen(false);
-        toast({
-          title: 'Skill Added',
-          description: `"${trimmed}" (${skillLevels.find(l => l.id === newSkillLevel)?.name}) has been added to your skills.`,
-        });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        toast({ title: 'Error', description: error.message || 'Failed to add skill', variant: 'destructive' });
+        return;
       }
+
+      const saved = await res.json();
+      const reverseLevel: Record<number, string> = {1:'beginner',2:'intermediate',3:'advanced',4:'expert'};
+      setUserSkills([...userSkills, {
+        id: saved.id,
+        name: saved.skill || saved.name,
+        level: reverseLevel[saved.level] || 'intermediate'
+      }]);
+      setNewSkill('');
+      setNewSkillLevel('intermediate');
+      setIsAddSkillOpen(false);
+      toast({
+        title: 'Skill Added',
+        description: `"${trimmed}" (${skillLevels.find(l => l.id === newSkillLevel)?.name}) has been added to your skills.`,
+      });
     } catch (err) {
       console.error('Failed to add skill', err);
       toast({ title: 'Error', description: 'Failed to add skill', variant: 'destructive' });
@@ -278,15 +284,21 @@ export default function CollaborationPage() {
       const res = await fetch('/api/add-skill', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ id: skillId })
       });
-      if (res.ok) {
-        setUserSkills(userSkills.filter(skill => skill.id !== skillId));
-        toast({
-          title: 'Skill Removed',
-          description: `"${skillName}" has been removed from your skills.`,
-        });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        toast({ title: 'Error', description: error.message || 'Failed to remove skill', variant: 'destructive' });
+        return;
       }
+
+      setUserSkills(userSkills.filter(skill => skill.id !== skillId));
+      toast({
+        title: 'Skill Removed',
+        description: `"${skillName}" has been removed from your skills.`,
+      });
     } catch (err) {
       console.error('Failed to remove skill', err);
       toast({ title: 'Error', description: 'Failed to remove skill', variant: 'destructive' });
