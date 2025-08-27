@@ -179,7 +179,8 @@ export const platformConfigs: Record<string, PlatformConfig> = {
 };
 
 export const getPlatformConfig = (platform: string): PlatformConfig => {
-  return platformConfigs[platform] || platformConfigs.custom;
+  const key = platform?.toLowerCase() || '';
+  return platformConfigs[key] || platformConfigs.custom;
 };
 
 export const platformOptions = Object.entries(platformConfigs).map(([key, config]) => ({
