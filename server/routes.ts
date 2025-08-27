@@ -1078,7 +1078,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Don't include password in the response
     const { password, ...userWithoutPassword } = user;
 
-    res.json(userWithoutPassword);
+    // Include the user's skills for persistence across refreshes
+    const skills = await storage.getSkills(userId);
+
+    res.json({ ...userWithoutPassword, skills });
   }));
 
   app.patch("/api/profile", isAuthenticated, asyncHandler(async (req: any, res: any) => {
@@ -1740,7 +1743,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     // Use storage method if available, otherwise fallback to direct query
     if (typeof storage.addUserSkill === 'function') {
-      const newSkill = await storage.addUserSkill(userId, skill.trim());
+      const newSkill = await storage.addUserSkill(userId, skill.trim(), level);
       res.status(201).json(newSkill);
     } else {
       // Fallback to direct database query
@@ -1761,7 +1764,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     if (typeof storage.updateUserSkill === 'function') {
-      const updatedSkill = await storage.updateUserSkill(skillId, { skill: skill.trim() });
+      const updatedSkill = await storage.updateUserSkill(skillId, { skill: skill.trim(), level });
       if (!updatedSkill) {
         return res.status(404).json({ message: "Skill not found or you don't have permission to update it" });
       }

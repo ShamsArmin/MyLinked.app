@@ -168,8 +168,9 @@ const skillLevels = [
 ];
 
 interface UserSkill {
+  id: string;
   name: string;
-  level: string;
+  level: string; // stored as "beginner" | "intermediate" | "advanced" | "expert"
 }
 
 export default function CollaborationPage() {
@@ -219,25 +220,89 @@ export default function CollaborationPage() {
     navigate(`/profile/${username}`);
   };
 
-  const handleAddSkill = () => {
-    if (newSkill.trim() && !userSkills.some(skill => skill.name === newSkill.trim())) {
-      setUserSkills([...userSkills, { name: newSkill.trim(), level: newSkillLevel }]);
-      setNewSkill("");
-      setNewSkillLevel("intermediate");
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const res = await fetch('/api/profile');
+        if (res.ok) {
+          const data = await res.json();
+          const levelMap: Record<number, string> = {1:'beginner',2:'intermediate',3:'advanced',4:'expert'};
+          const fetched = (data.skills || []).map((s: any) => ({
+            id: s.id,
+            name: s.skill || s.name,
+            level: levelMap[s.level] || 'intermediate'
+          }));
+          setUserSkills(fetched);
+        }
+      } catch (err) {
+        console.error('Failed to load skills', err);
+      }
+    };
+    fetchSkills();
+  }, []);
+
+  const handleAddSkill = async () => {
+    const trimmed = newSkill.trim();
+    if (!trimmed || userSkills.some(skill => skill.name === trimmed)) return;
+    const levelMap: Record<string, number> = { beginner:1, intermediate:2, advanced:3, expert:4 };
+    try {
+      const res = await fetch('/api/add-skill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ skill: trimmed, level: levelMap[newSkillLevel] || 2 })
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        toast({ title: 'Error', description: error.message || 'Failed to add skill', variant: 'destructive' });
+        return;
+      }
+
+      const saved = await res.json();
+      const reverseLevel: Record<number, string> = {1:'beginner',2:'intermediate',3:'advanced',4:'expert'};
+      setUserSkills([...userSkills, {
+        id: saved.id,
+        name: saved.skill || saved.name,
+        level: reverseLevel[saved.level] || 'intermediate'
+      }]);
+      setNewSkill('');
+      setNewSkillLevel('intermediate');
       setIsAddSkillOpen(false);
       toast({
-        title: "Skill Added",
-        description: `"${newSkill.trim()}" (${skillLevels.find(l => l.id === newSkillLevel)?.name}) has been added to your skills.`,
+        title: 'Skill Added',
+        description: `"${trimmed}" (${skillLevels.find(l => l.id === newSkillLevel)?.name}) has been added to your skills.`,
       });
+    } catch (err) {
+      console.error('Failed to add skill', err);
+      toast({ title: 'Error', description: 'Failed to add skill', variant: 'destructive' });
     }
   };
 
-  const handleRemoveSkill = (skillToRemove: string) => {
-    setUserSkills(userSkills.filter(skill => skill.name !== skillToRemove));
-    toast({
-      title: "Skill Removed",
-      description: `"${skillToRemove}" has been removed from your skills.`,
-    });
+  const handleRemoveSkill = async (skillId: string, skillName: string) => {
+    try {
+      const res = await fetch('/api/add-skill', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id: skillId })
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        toast({ title: 'Error', description: error.message || 'Failed to remove skill', variant: 'destructive' });
+        return;
+      }
+
+      setUserSkills(userSkills.filter(skill => skill.id !== skillId));
+      toast({
+        title: 'Skill Removed',
+        description: `"${skillName}" has been removed from your skills.`,
+      });
+    } catch (err) {
+      console.error('Failed to remove skill', err);
+      toast({ title: 'Error', description: 'Failed to remove skill', variant: 'destructive' });
+    }
   };
 
   if (!user) {
@@ -428,7 +493,7 @@ export default function CollaborationPage() {
                   ) : (
                     <div className="space-y-2">
                       {userSkills.map((skill) => (
-                        <div key={skill.name} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-md px-3 py-2">
+                        <div key={skill.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-md px-3 py-2">
                           <div className="flex-1">
                             <div className="text-sm font-medium">{skill.name}</div>
                             <div className="text-xs text-gray-500">{skillLevels.find(l => l.id === skill.level)?.name}</div>
@@ -436,7 +501,7 @@ export default function CollaborationPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleRemoveSkill(skill.name)}
+                            onClick={() => handleRemoveSkill(skill.id, skill.name)}
                             className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600"
                           >
                             <X className="h-3 w-3" />
