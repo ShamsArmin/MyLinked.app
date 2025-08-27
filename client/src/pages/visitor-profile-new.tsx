@@ -727,9 +727,9 @@ export default function VisitorProfileNew() {
               </div>
             </div>
 
-            {/* Desktop: Show grid for <= 6 links, dropdown for > 6 links */}
+            {/* Desktop: Show grid for <= 11 links, dropdown for > 11 links */}
             <div className="hidden sm:block">
-              {links.length <= 6 ? (
+              {links.length <= 11 ? (
                 <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                   {links.map((link) => {
                     const platformConfig = getPlatformConfig(link.platform);
@@ -780,8 +780,8 @@ export default function VisitorProfileNew() {
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {/* Show first 5 links directly */}
-                  {links.slice(0, 5).map((link) => {
+                  {/* Show first 11 links directly */}
+                  {links.slice(0, 11).map((link) => {
                     const platformConfig = getPlatformConfig(link.platform);
 
                     // Get clean platform name or truncate long titles
@@ -837,12 +837,12 @@ export default function VisitorProfileNew() {
                       >
                         <MoreHorizontal className="h-6 w-6 text-gray-600" />
                         <span className="text-xs font-medium text-gray-700">
-                          +{links.length - 5}
+                          +{links.length - 11}
                         </span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
-                      {links.slice(5).map((link) => {
+                      {links.slice(11).map((link) => {
                         const platformConfig = getPlatformConfig(link.platform);
 
                         // Get clean platform name or truncate long titles
