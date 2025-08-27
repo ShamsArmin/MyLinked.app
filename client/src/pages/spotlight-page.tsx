@@ -383,11 +383,16 @@ export default function SpotlightPage() {
     mutationFn: async (data: { projectId: number; contributor: any }) => {
       return await apiRequest("POST", `/api/spotlight/projects/${data.projectId}/contributors`, data.contributor);
     },
-    onSuccess: () => {
-      if (selectedProject) {
-        queryClient.invalidateQueries({ queryKey: ["/api/spotlight/projects", selectedProject.id] });
+    onSuccess: async (_data, variables) => {
+      // Refresh project list
+      await queryClient.invalidateQueries({ queryKey: ["/api/spotlight/projects"] });
+
+      // If we're viewing this project, refresh its details so new contributor appears immediately
+      if (selectedProject?.id === variables.projectId) {
+        const updated = await apiRequest("GET", `/api/spotlight/projects/${variables.projectId}`);
+        setSelectedProject(updated);
       }
-      queryClient.invalidateQueries({ queryKey: ["/api/spotlight/projects"] });
+
       setIsAddContributorDialogOpen(false);
       addContributorForm.reset();
       toast({
@@ -409,11 +414,14 @@ export default function SpotlightPage() {
     mutationFn: async (data: { projectId: number; contributorId: number }) => {
       await apiRequest("DELETE", `/api/spotlight/contributors/${data.contributorId}`);
     },
-    onSuccess: () => {
-      if (selectedProject) {
-        queryClient.invalidateQueries({ queryKey: ["/api/spotlight/projects", selectedProject.id] });
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/spotlight/projects"] });
+
+      if (selectedProject?.id === variables.projectId) {
+        const updated = await apiRequest("GET", `/api/spotlight/projects/${variables.projectId}`);
+        setSelectedProject(updated);
       }
-      queryClient.invalidateQueries({ queryKey: ["/api/spotlight/projects"] });
+
       toast({
         title: "Contributor removed",
         description: "The contributor has been removed from the project.",
@@ -491,7 +499,6 @@ export default function SpotlightPage() {
     const titleInput = document.getElementById("title") as HTMLInputElement;
     const urlInput = document.getElementById("url") as HTMLInputElement;
     const descriptionInput = document.getElementById("description") as HTMLTextAreaElement;
-    const isPinnedInput = document.getElementById("isPinned") as HTMLInputElement;
     
     // Validate required fields
     if (!titleInput?.value?.trim() || !urlInput?.value?.trim()) {
@@ -566,7 +573,8 @@ export default function SpotlightPage() {
       url: validUrl,
       description: descriptionInput?.value?.trim() || "",
       thumbnail: thumbnailInput?.value?.trim() || "",
-      isPinned: isPinnedInput?.checked || false,
+      // Newly created projects are unpinned by default
+      isPinned: false,
       contributors: contributors,
       tags: tags.slice(0, 3) // Limit to maximum 3 tags
     };
@@ -1367,16 +1375,8 @@ export default function SpotlightPage() {
                 </p>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isPinned"
-                  {...createProjectForm.register("isPinned")}
-                />
-                <Label htmlFor="isPinned">Pin this project</Label>
-              </div>
-              
               <Separator />
-              
+
               <div className="grid grid-cols-1 gap-4">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
