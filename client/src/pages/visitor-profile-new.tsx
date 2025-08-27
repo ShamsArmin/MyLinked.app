@@ -13,9 +13,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { usePlatformIcons } from "@/hooks/use-platform-icons";
 import { getThemeColors } from "@/hooks/use-theme";
 import { stripLinkUrl } from "@/lib/link-utils";
+import { PlatformIcon } from "@/components/platform-icon";
 
 import {
   ExternalLink,
@@ -60,7 +60,6 @@ import { ShareProfileDialog } from "@/components/share-profile-dialog";
 export default function VisitorProfileNew() {
   const { username } = useParams();
   const [, navigate] = useLocation();
-  const { getPlatformConfig } = usePlatformIcons();
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const [audioPlaying, setAudioPlaying] = useState<string | null>(null);
@@ -696,26 +695,19 @@ export default function VisitorProfileNew() {
             {/* Mobile: Always show grid layout */}
             <div className="block sm:hidden">
               <div className="grid grid-cols-2 gap-3">
-                {links.map((link) => {
-                  const platformConfig = getPlatformConfig(link.platform);
-                  const IconComponent = platformConfig?.icon;
-                  return (
-                    <Button
-                      key={link.id}
-                      variant="outline"
-                      className="h-20 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                      onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                    >
-                      {IconComponent && React.createElement(IconComponent, {
-                        className: "h-8 w-8",
-                        style: { color: platformConfig.color }
-                      })}
-                      <span className="text-xs font-medium text-gray-700 text-center">
-                        {getDisplayName(link.platform, link.title)}
-                      </span>
-                    </Button>
-                  );
-                })}
+                {links.map((link) => (
+                  <Button
+                    key={link.id}
+                    variant="outline"
+                    className="h-20 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
+                    onClick={() => handleLinkClick(link.id, link.url, link.platform)}
+                  >
+                    <PlatformIcon platform={link.platform} size={32} />
+                    <span className="text-xs font-medium text-gray-700 text-center">
+                      {getDisplayName(link.platform, link.title)}
+                    </span>
+                  </Button>
+                ))}
               </div>
             </div>
 
@@ -726,26 +718,19 @@ export default function VisitorProfileNew() {
                   className="grid gap-4"
                   style={{ gridTemplateColumns: `repeat(${Math.min(links.length, 12)}, minmax(0, 1fr))` }}
                 >
-                  {links.slice(0, Math.min(links.length, 11)).map((link) => {
-                    const platformConfig = getPlatformConfig(link.platform);
-                    const IconComponent = platformConfig?.icon;
-                    return (
-                      <Button
-                        key={link.id}
-                        variant="outline"
-                        className="w-full aspect-square flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                        onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                      >
-                        {IconComponent && React.createElement(IconComponent, {
-                          className: "h-8 w-8",
-                          style: { color: platformConfig.color }
-                        })}
-                        <span className="text-xs font-medium text-gray-700 text-center">
-                          {getDisplayName(link.platform, link.title)}
-                        </span>
-                      </Button>
-                    );
-                  })}
+                  {links.slice(0, Math.min(links.length, 11)).map((link) => (
+                    <Button
+                      key={link.id}
+                      variant="outline"
+                      className="w-full aspect-square flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
+                      onClick={() => handleLinkClick(link.id, link.url, link.platform)}
+                    >
+                      <PlatformIcon platform={link.platform} size={32} />
+                      <span className="text-xs font-medium text-gray-700 text-center">
+                        {getDisplayName(link.platform, link.title)}
+                      </span>
+                    </Button>
+                  ))}
                   {links.length > 11 && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -757,25 +742,18 @@ export default function VisitorProfileNew() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
-                        {links.slice(11).map((link) => {
-                          const platformConfig = getPlatformConfig(link.platform);
-                          const IconComponent = platformConfig?.icon;
-                          return (
-                            <DropdownMenuItem
-                              key={link.id}
-                              onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                              className="flex items-center gap-2 cursor-pointer hover:bg-blue-50"
-                            >
-                              {IconComponent && React.createElement(IconComponent, {
-                                className: "h-4 w-4",
-                                style: { color: platformConfig.color }
-                              })}
-                              <span className="text-sm">
-                                {getDisplayName(link.platform, link.title, 20)}
-                              </span>
-                            </DropdownMenuItem>
-                          );
-                        })}
+                        {links.slice(11).map((link) => (
+                          <DropdownMenuItem
+                            key={link.id}
+                            onClick={() => handleLinkClick(link.id, link.url, link.platform)}
+                            className="flex items-center gap-2 cursor-pointer hover:bg-blue-50"
+                          >
+                            <PlatformIcon platform={link.platform} size={16} />
+                            <span className="text-sm">
+                              {getDisplayName(link.platform, link.title, 20)}
+                            </span>
+                          </DropdownMenuItem>
+                        ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
