@@ -125,8 +125,14 @@ app.use((req, res, next) => {
       const migrationsFolder = path.join(__dirname, "../migrations");
       await migrate(db, { migrationsFolder });
       console.log("db bootstrap: ok");
-    } catch (err) {
-      console.error("db bootstrap failed:", err);
+    } catch (err: any) {
+      // Ignore "already exists" errors since some tables may have been
+      // created outside of the migrations tracked by Drizzle.
+      if (err?.code === "42P07") {
+        console.log("db bootstrap: tables already exist");
+      } else {
+        console.error("db bootstrap failed:", err);
+      }
     }
   } else {
     console.log("db bootstrap: skipped");

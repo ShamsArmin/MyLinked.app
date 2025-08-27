@@ -10,9 +10,7 @@ import {
   spotlightTags,
 } from "../shared/schema";
 import { db } from "./db";
-import { migrate } from "drizzle-orm/neon-serverless/migrator";
-import path from "path";
-import { fileURLToPath } from "url";
+import { sql } from "drizzle-orm";
 
 export const spotlightRouter = Router();
 
@@ -23,9 +21,43 @@ async function ensureSpotlightTables() {
     await db.select().from(spotlightTags).limit(1);
   } catch (err: any) {
     if (err?.code === "42P01") {
-      const __dirname = path.dirname(fileURLToPath(import.meta.url));
-      const migrationsFolder = path.join(__dirname, "../migrations");
-      await migrate(db, { migrationsFolder });
+      // Create spotlight tables if they are missing. We avoid running the
+      // full migration set because existing databases may already contain
+      // earlier tables and lack the drizzle migrations metadata, which would
+      // cause "relation already exists" errors when re-running migrations.
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS spotlight_projects (
+          id SERIAL PRIMARY KEY,
+          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          title VARCHAR(100) NOT NULL,
+          url VARCHAR(1000) NOT NULL,
+          description TEXT,
+          thumbnail TEXT,
+          is_pinned BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW(),
+          view_count INTEGER DEFAULT 0,
+          click_count INTEGER DEFAULT 0
+        );`);
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS spotlight_contributors (
+          id SERIAL PRIMARY KEY,
+          project_id INTEGER NOT NULL REFERENCES spotlight_projects(id) ON DELETE CASCADE,
+          user_id UUID REFERENCES users(id),
+          name VARCHAR(100) NOT NULL,
+          email VARCHAR(255),
+          role VARCHAR(50),
+          is_registered_user BOOLEAN DEFAULT FALSE,
+          added_at TIMESTAMP DEFAULT NOW()
+        );`);
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS spotlight_tags (
+          id SERIAL PRIMARY KEY,
+          project_id INTEGER NOT NULL REFERENCES spotlight_projects(id) ON DELETE CASCADE,
+          label VARCHAR(50) NOT NULL,
+          icon VARCHAR(50),
+          type VARCHAR(20) DEFAULT 'tag'
+        );`);
     } else {
       throw err;
     }
