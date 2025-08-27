@@ -1042,7 +1042,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Skills Management
-  async getSkills(userId: number): Promise<any[]> {
+  async getSkills(userId: string): Promise<any[]> {
     try {
       const rows = await db.execute(
         sql`select id, skill, level, description, years_of_experience from user_skills where user_id = ${userId} order by level desc`
@@ -1875,34 +1875,32 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Skills methods that are missing
-  async addUserSkill(userId: number, skill: string): Promise<any> {
-    const [newSkill] = await db
-      .insert(userSkills)
-      .values({
-        userId,
-        skill,
-        createdAt: new Date()
-      })
-      .returning();
-    return newSkill;
+  async addUserSkill(userId: string, skill: string, level: number = 3): Promise<any> {
+    const result = await db.execute(
+      sql`INSERT INTO user_skills (user_id, skill, level)
+          VALUES (${userId}, ${skill}, ${level})
+          ON CONFLICT (user_id, skill) DO UPDATE SET level = excluded.level
+          RETURNING id, skill, level, description, years_of_experience`
+    );
+    return result.rows?.[0];
   }
 
-  async updateUserSkill(skillId: number, updates: any): Promise<any> {
-    const [updatedSkill] = await db
-      .update(userSkills)
-      .set({
-        ...updates,
-        updatedAt: new Date()
-      })
-      .where(eq(userSkills.id, skillId))
-      .returning();
-    return updatedSkill;
+  async updateUserSkill(skillId: string, updates: any): Promise<any> {
+    const { skill, level, description, yearsOfExperience } = updates;
+    const result = await db.execute(
+      sql`UPDATE user_skills SET
+            skill = COALESCE(${skill}, skill),
+            level = COALESCE(${level}, level),
+            description = COALESCE(${description}, description),
+            years_of_experience = COALESCE(${yearsOfExperience}, years_of_experience)
+          WHERE id = ${skillId}
+          RETURNING id, skill, level, description, years_of_experience`
+    );
+    return result.rows?.[0];
   }
 
-  async deleteUserSkill(skillId: number): Promise<boolean> {
-    const result = await db
-      .delete(userSkills)
-      .where(eq(userSkills.id, skillId));
+  async deleteUserSkill(skillId: string): Promise<boolean> {
+    const result = await db.execute(sql`DELETE FROM user_skills WHERE id = ${skillId}`);
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
