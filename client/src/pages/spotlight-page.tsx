@@ -142,10 +142,6 @@ const createProjectSchema = z.object({
   contributors: z.array(
     z.object({
       name: z.string().min(1, "Name is required"),
-      email: z.union([
-        z.string().email("Please enter a valid email"),
-        z.string().length(0)
-      ]),
       role: z.string().optional(),
     })
   ).optional(),
@@ -170,7 +166,6 @@ export default function SpotlightPage() {
   const [isAddTagDialogOpen, setIsAddTagDialogOpen] = useState(false);
   const [contributorFields, setContributorFields] = useState([{ id: Date.now() }]);
   const [tagFields, setTagFields] = useState([{ id: Date.now() }]);
-  const [thumbnailPreview, setThumbnailPreview] = useState("");
   
   // Form for creating a project
   const createProjectForm = useForm<z.infer<typeof createProjectSchema>>({
@@ -204,7 +199,6 @@ export default function SpotlightPage() {
   const addContributorForm = useForm({
     defaultValues: {
       name: "",
-      email: "",
       role: "",
     },
   });
@@ -240,7 +234,6 @@ export default function SpotlightPage() {
           contributors: data.contributors?.filter(c => c.name.trim())
             .map(c => ({
               name: c.name.trim(),
-              email: c.email && c.email.trim() ? c.email.trim().replace(/\s+/g, '') : '',
               role: c.role?.trim() || ''
             })) || [],
           tags: data.tags?.filter(t => t.label.trim())
@@ -287,7 +280,6 @@ export default function SpotlightPage() {
       createProjectForm.reset();
       setContributorFields([{ id: Date.now() }]);
       setTagFields([{ id: Date.now() }]);
-      setThumbnailPreview("");
       toast({
         title: "Project created",
         description: "Your spotlight project has been created successfully.",
@@ -303,19 +295,6 @@ export default function SpotlightPage() {
       });
       
       // Don't close the dialog so user can try again
-      setTimeout(() => {
-        // Force refresh the form fields after a short delay
-        try {
-          const contributorFields = document.querySelectorAll('input[id^="contributor-"]');
-          contributorFields.forEach((field: any) => {
-            if (field.id.includes('email')) {
-              field.value = '';
-            }
-          });
-        } catch (e) {
-          console.error("Error resetting contributor fields:", e);
-        }
-      }, 500);
     },
   });
   
@@ -548,21 +527,17 @@ export default function SpotlightPage() {
     // Process contributors from the form
     const contributors: any[] = [];
     const contributorNameElements = document.querySelectorAll('input[id^="contributor-name-"]');
-    const contributorEmailElements = document.querySelectorAll('input[id^="contributor-email-"]');
     const contributorRoleElements = document.querySelectorAll('input[id^="contributor-role-"]');
 
     // Collect all contributor data by index
     for (let i = 0; i < contributorNameElements.length; i++) {
       const nameInput = contributorNameElements[i] as HTMLInputElement;
-      const emailInput = i < contributorEmailElements.length ? 
-        contributorEmailElements[i] as HTMLInputElement : null;
-      const roleInput = i < contributorRoleElements.length ? 
+      const roleInput = i < contributorRoleElements.length ?
         contributorRoleElements[i] as HTMLInputElement : null;
-      
+
       if (nameInput && nameInput.value.trim()) {
         contributors.push({
           name: nameInput.value.trim(),
-          email: emailInput && emailInput.value ? emailInput.value.trim() : "",
           role: roleInput && roleInput.value ? roleInput.value.trim() : ""
         });
       }
@@ -587,12 +562,13 @@ export default function SpotlightPage() {
       }
     }
     
+    const thumbnailInput = document.getElementById("thumbnail") as HTMLInputElement;
     // Create complete project data with proper arrays
     const projectData = {
       title: titleInput.value.trim(),
       url: validUrl,
       description: descriptionInput?.value?.trim() || "",
-      thumbnail: thumbnailPreview || "",
+      thumbnail: thumbnailInput?.value?.trim() || "",
       isPinned: isPinnedInput?.checked || false,
       contributors: contributors,
       tags: tags.slice(0, 3) // Limit to maximum 3 tags
@@ -662,10 +638,9 @@ export default function SpotlightPage() {
           for (const field of Object.values(editProjectForm.getValues().contributorFields || {})) {
             // Skip empty fields
             if (!field.name?.trim()) continue;
-            
+
             contributorInputs.push({
               name: field.name.trim(),
-              email: field.email?.trim() || "",
               role: field.role?.trim() || ""
             });
           }
@@ -796,7 +771,6 @@ export default function SpotlightPage() {
       isPinned: project.isPinned,
       contributors: project.contributors?.map(c => ({
         name: c.name,
-        email: c.email || "",
         role: c.role || "",
       })) || [],
       tags: project.tags?.map(t => ({
@@ -889,7 +863,6 @@ export default function SpotlightPage() {
   const sanitizeContributorData = (contributors: any[] = []) => {
     return contributors.map(c => ({
       name: c.name?.trim() || "",
-      email: c.email?.trim().replace(/\s+/g, "") || "",
       role: c.role?.trim() || ""
     })).filter(c => c.name);
   };
@@ -1425,13 +1398,6 @@ export default function SpotlightPage() {
                           placeholder="Contributor name"
                         />
                       </div>
-                      <div className="flex-1 min-w-[200px]">
-                        <Label htmlFor={`contributor-email-${field.id}`}>Email (optional)</Label>
-                        <Input
-                          id={`contributor-email-${field.id}`}
-                          placeholder="email@example.com"
-                        />
-                      </div>
                       <div className="flex-1 min-w-[150px]">
                         <Label htmlFor={`contributor-role-${field.id}`}>Role (optional)</Label>
                         <Input
@@ -1713,14 +1679,6 @@ export default function SpotlightPage() {
                           id={`contributor-name-${field.id}`}
                           placeholder="Contributor name"
                           defaultValue={editProjectForm.watch(`contributors.${index}.name`) || ""}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-[200px]">
-                        <Label htmlFor={`contributor-email-${field.id}`}>Email (optional)</Label>
-                        <Input
-                          id={`contributor-email-${field.id}`}
-                          placeholder="email@example.com"
-                          defaultValue={editProjectForm.watch(`contributors.${index}.email`) || ""}
                         />
                       </div>
                       <div className="flex-1 min-w-[150px]">
