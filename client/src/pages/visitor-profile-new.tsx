@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -16,6 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { getThemeColors } from "@/hooks/use-theme";
 import { stripLinkUrl } from "@/lib/link-utils";
 import { PlatformIcon } from "@/components/platform-icon";
+import { deleteLink } from "@/lib/links-api";
+import { Link as LinkType } from "@shared/schema";
 
 import {
   ExternalLink,
@@ -33,6 +35,7 @@ import {
   Plus,
   Send,
   X,
+  Trash2,
   Mail,
   Phone,
   Briefcase,
@@ -53,7 +56,6 @@ import {
   AlertTriangle
 } from "lucide-react";
 
-import { useState } from "react";
 import { PitchModeLayout } from "@/components/pitch-mode-layout";
 import { ShareProfileDialog } from "@/components/share-profile-dialog";
 
@@ -292,6 +294,17 @@ export default function VisitorProfileNew() {
     }
   };
 
+  const handleDeleteLink = async (linkId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await deleteLink(linkId);
+      setLinks((prev) => prev.filter((l) => l.id !== linkId));
+      toast({ title: "Link deleted" });
+    } catch {
+      toast({ title: "Failed to delete link", variant: "destructive" });
+    }
+  };
+
   const handleCopyText = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -505,7 +518,12 @@ export default function VisitorProfileNew() {
     );
   }
 
-  const { profile, links = [], spotlightProjects = [], referralLinks = [], skills = [] } = data;
+  const { profile, links: fetchedLinks = [], spotlightProjects = [], referralLinks = [], skills = [] } = data;
+  const [links, setLinks] = useState<LinkType[]>(fetchedLinks);
+  useEffect(() => {
+    setLinks(fetchedLinks);
+  }, [fetchedLinks]);
+  const isOwner = currentUser && profile && Number(currentUser.id) === Number(profile.id);
 
   // Check if pitch mode is enabled
   if (profile.pitchMode) {
@@ -696,17 +714,28 @@ export default function VisitorProfileNew() {
             <div className="block sm:hidden">
               <div className="grid grid-cols-2 gap-3">
                 {links.map((link) => (
-                  <Button
-                    key={link.id}
-                    variant="outline"
-                    className="h-20 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                    onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                  >
-                    <PlatformIcon platform={link.platform} size={32} />
-                    <span className="text-xs font-medium text-gray-700 text-center">
-                      {getDisplayName(link.platform, link.title)}
-                    </span>
-                  </Button>
+                  <div key={link.id} className="relative group">
+                    <Button
+                      variant="outline"
+                      className="h-20 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
+                      onClick={() => handleLinkClick(link.id, link.url, link.platform)}
+                    >
+                      <PlatformIcon platform={link.platform} size={32} />
+                      <span className="text-xs font-medium text-gray-700 text-center">
+                        {getDisplayName(link.platform, link.title)}
+                      </span>
+                    </Button>
+                    {isOwner && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="absolute top-1 right-1 h-5 w-5 text-red-500 bg-white rounded-full"
+                        onClick={(e) => handleDeleteLink(link.id, e)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
@@ -719,17 +748,28 @@ export default function VisitorProfileNew() {
                   style={{ gridTemplateColumns: `repeat(${Math.min(links.length, 12)}, minmax(0, 1fr))` }}
                 >
                   {links.slice(0, Math.min(links.length, 11)).map((link) => (
-                    <Button
-                      key={link.id}
-                      variant="outline"
-                      className="w-full aspect-square flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
-                      onClick={() => handleLinkClick(link.id, link.url, link.platform)}
-                    >
-                      <PlatformIcon platform={link.platform} size={32} />
-                      <span className="text-xs font-medium text-gray-700 text-center">
-                        {getDisplayName(link.platform, link.title)}
-                      </span>
-                    </Button>
+                    <div key={link.id} className="relative group">
+                      <Button
+                        variant="outline"
+                        className="w-full aspect-square flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 border-2 hover:border-blue-300 hover:bg-blue-50"
+                        onClick={() => handleLinkClick(link.id, link.url, link.platform)}
+                      >
+                        <PlatformIcon platform={link.platform} size={32} />
+                        <span className="text-xs font-medium text-gray-700 text-center">
+                          {getDisplayName(link.platform, link.title)}
+                        </span>
+                      </Button>
+                      {isOwner && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="absolute top-1 right-1 h-5 w-5 text-red-500 bg-white rounded-full"
+                          onClick={(e) => handleDeleteLink(link.id, e)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   ))}
                   {links.length > 11 && (
                     <DropdownMenu>

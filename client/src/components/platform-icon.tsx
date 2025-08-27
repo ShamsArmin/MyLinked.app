@@ -10,11 +10,6 @@ interface PlatformIconProps {
 export function PlatformIcon({ platform, size = 24, className = '' }: PlatformIconProps) {
   const config = getPlatformConfig(platform);
   const Icon = config.icon;
-  
-  return (
-    <Icon 
-      className={`${config.color} ${className}`}
-      style={{ fontSize: size, width: size, height: size }}
-    />
-  );
+
+  return <Icon size={size} className={`${config.color} ${className}`} />;
 }

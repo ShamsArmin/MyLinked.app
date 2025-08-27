@@ -191,7 +191,7 @@ export const platformOptions = Object.entries(platformConfigs).map(([key, config
 export const getPlatformIcon = (platform: string, className?: string) => {
   const config = getPlatformConfig(platform);
   const IconComponent = config.icon;
-  return <IconComponent className={className} />;
+  return <IconComponent className={`${config.color} ${className ?? ''}`} />;
 };
 
 export const usePlatformIcons = () => {
