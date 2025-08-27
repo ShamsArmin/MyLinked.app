@@ -598,29 +598,14 @@ export default function SpotlightPage() {
         return;
       }
 
-      const contributors: { name: string; role?: string }[] = [];
-      for (const field of contributorFields) {
-        const nameInput = document.getElementById(`contributor-name-${field.id}`) as HTMLInputElement | null;
-        const roleInput = document.getElementById(`contributor-role-${field.id}`) as HTMLInputElement | null;
-        if (nameInput && nameInput.value.trim()) {
-          contributors.push({
-            name: nameInput.value.trim(),
-            role: roleInput?.value.trim() || "",
-          });
-        }
-      }
-
-      const tags: { label: string; type: string }[] = [];
-      for (const field of tagFields.slice(0, 3)) {
-        const labelInput = document.getElementById(`tag-label-${field.id}`) as HTMLInputElement | null;
-        const typeSelect = document.getElementById(`tag-type-${field.id}`) as HTMLSelectElement | null;
-        if (labelInput && labelInput.value.trim()) {
-          tags.push({
-            label: labelInput.value.trim(),
-            type: typeSelect?.value || "tag",
-          });
-        }
-      }
+      const contributors = sanitizeContributorData(data.contributors);
+      const tags = (data.tags || [])
+        .slice(0, 3)
+        .map((t) => ({
+          label: t.label?.trim() || "",
+          type: t.type || "tag",
+        }))
+        .filter((t) => t.label);
 
       const projectUpdate = {
         title: data.title.trim(),
@@ -1582,19 +1567,19 @@ export default function SpotlightPage() {
                   <div key={field.id} className="grid grid-cols-1 gap-2">
                     <div className="flex flex-wrap gap-2">
                       <div className="flex-1 min-w-[200px]">
-                        <Label htmlFor={`contributor-name-${field.id}`}>Name</Label>
+                        <Label>Name</Label>
                         <Input
-                          id={`contributor-name-${field.id}`}
                           placeholder="Contributor name"
                           defaultValue={editProjectForm.watch(`contributors.${index}.name`) || ""}
+                          {...editProjectForm.register(`contributors.${index}.name`)}
                         />
                       </div>
                       <div className="flex-1 min-w-[150px]">
-                        <Label htmlFor={`contributor-role-${field.id}`}>Role (optional)</Label>
+                        <Label>Role (optional)</Label>
                         <Input
-                          id={`contributor-role-${field.id}`}
                           placeholder="Designer, Developer, etc."
                           defaultValue={editProjectForm.watch(`contributors.${index}.role`) || ""}
+                          {...editProjectForm.register(`contributors.${index}.role`)}
                         />
                       </div>
                       <Button
@@ -1602,9 +1587,12 @@ export default function SpotlightPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => {
-                          const newFields = contributorFields.filter(f => f.id !== field.id);
+                          const newFields = contributorFields.filter((f) => f.id !== field.id);
                           if (newFields.length > 0) {
                             setContributorFields(newFields);
+                            const contributors = editProjectForm.getValues("contributors") || [];
+                            contributors.splice(index, 1);
+                            editProjectForm.setValue("contributors", contributors);
                           }
                         }}
                         disabled={contributorFields.length === 1}
@@ -1637,24 +1625,22 @@ export default function SpotlightPage() {
                   <div key={field.id} className="grid grid-cols-1 gap-2">
                     <div className="flex flex-wrap gap-2">
                       <div className="flex-1 min-w-[200px]">
-                        <Label htmlFor={`tag-label-${field.id}`}>Label</Label>
+                        <Label>Label</Label>
                         <Input
-                          id={`tag-label-${field.id}`}
                           placeholder="Tag label"
                           defaultValue={editProjectForm.watch(`tags.${index}.label`) || ""}
+                          {...editProjectForm.register(`tags.${index}.label`)}
                         />
                       </div>
                       <div className="flex-1 min-w-[150px]">
-                        <Label htmlFor={`tag-type-${field.id}`}>Type</Label>
+                        <Label>Type</Label>
                         <Select
                           defaultValue={editProjectForm.watch(`tags.${index}.type`) || "tag"}
                           onValueChange={(value) => {
-                            const tags = editProjectForm.getValues("tags") || [];
-                            tags[index] = { ...tags[index], type: value };
-                            editProjectForm.setValue("tags", tags);
+                            editProjectForm.setValue(`tags.${index}.type`, value);
                           }}
                         >
-                          <SelectTrigger id={`tag-type-${field.id}`}>
+                          <SelectTrigger>
                             <SelectValue placeholder="Select type" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1675,9 +1661,12 @@ export default function SpotlightPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => {
-                          const newFields = tagFields.filter(f => f.id !== field.id);
+                          const newFields = tagFields.filter((f) => f.id !== field.id);
                           if (newFields.length > 0) {
                             setTagFields(newFields);
+                            const tags = editProjectForm.getValues("tags") || [];
+                            tags.splice(index, 1);
+                            editProjectForm.setValue("tags", tags);
                           }
                         }}
                         disabled={tagFields.length === 1}
