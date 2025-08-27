@@ -1045,9 +1045,16 @@ export class EnhancedDatabaseStorage implements IStorage {
   async getSkills(userId: number): Promise<any[]> {
     try {
       const rows = await db.execute(
-        sql`select skill from user_skills where user_id = ${userId} order by level desc`
+        sql`select id, skill, level, description, years_of_experience from user_skills where user_id = ${userId} order by level desc`
       );
-      const skills = (rows?.rows ?? []).map((r: any) => r.skill).filter(Boolean);
+      const skills = (rows?.rows ?? []).map((r: any) => ({
+        id: r.id,
+        name: r.skill,
+        skill: r.skill,
+        level: r.level,
+        description: r.description,
+        yearsOfExperience: r.years_of_experience,
+      }));
       return skills;
     } catch (error) {
       console.error("Error fetching skills:", error);
