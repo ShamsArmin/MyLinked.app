@@ -43,6 +43,7 @@ export const users = pgTable("users", {
   theme: text("theme").default("default"),
   viewMode: text("view_mode").default("list"),
   darkMode: boolean("dark_mode").default(false),
+  hasSeenDashboardTour: boolean("has_seen_dashboard_tour").default(false),
   // Enhanced features
   welcomeMessage: text("welcome_message"),
   socialScore: integer("social_score").default(50),
@@ -391,6 +392,7 @@ export const updateUserSchema = createInsertSchema(users).pick({
   theme: true,
   viewMode: true,
   darkMode: true,
+  hasSeenDashboardTour: true,
   password: true,
   // New feature fields
   welcomeMessage: true,
