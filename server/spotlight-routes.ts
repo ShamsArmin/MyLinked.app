@@ -5,9 +5,64 @@ import {
   createSpotlightProjectSchema,
   contributorSchema,
   tagSchema,
+  spotlightProjects,
+  spotlightContributors,
+  spotlightTags,
 } from "../shared/schema";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 
 export const spotlightRouter = Router();
+
+async function ensureSpotlightTables() {
+  try {
+    await db.select().from(spotlightProjects).limit(1);
+    await db.select().from(spotlightContributors).limit(1);
+    await db.select().from(spotlightTags).limit(1);
+  } catch (err: any) {
+    if (err?.code === "42P01") {
+      // Create spotlight tables if they are missing. We avoid running the
+      // full migration set because existing databases may already contain
+      // earlier tables and lack the drizzle migrations metadata, which would
+      // cause "relation already exists" errors when re-running migrations.
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS spotlight_projects (
+          id SERIAL PRIMARY KEY,
+          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          title VARCHAR(100) NOT NULL,
+          url VARCHAR(1000) NOT NULL,
+          description TEXT,
+          thumbnail TEXT,
+          is_pinned BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW(),
+          view_count INTEGER DEFAULT 0,
+          click_count INTEGER DEFAULT 0
+        );`);
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS spotlight_contributors (
+          id SERIAL PRIMARY KEY,
+          project_id INTEGER NOT NULL REFERENCES spotlight_projects(id) ON DELETE CASCADE,
+          user_id UUID REFERENCES users(id),
+          name VARCHAR(100) NOT NULL,
+          email VARCHAR(255),
+          role VARCHAR(50),
+          is_registered_user BOOLEAN DEFAULT FALSE,
+          added_at TIMESTAMP DEFAULT NOW()
+        );`);
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS spotlight_tags (
+          id SERIAL PRIMARY KEY,
+          project_id INTEGER NOT NULL REFERENCES spotlight_projects(id) ON DELETE CASCADE,
+          label VARCHAR(50) NOT NULL,
+          icon VARCHAR(50),
+          type VARCHAR(20) DEFAULT 'tag'
+        );`);
+    } else {
+      throw err;
+    }
+  }
+}
 
 // Middleware to check authentication
 function isAuthenticated(req: Request, res: Response, next: Function) {
@@ -47,6 +102,7 @@ async function isProjectOwner(req: Request, res: Response, next: Function) {
 // Get all spotlight projects for current user
 spotlightRouter.get("/projects", isAuthenticated, async (req, res) => {
   try {
+    await ensureSpotlightTables();
     const userId = req.user!.id;
     const projects = await storage.getSpotlightProjects(userId);
     
@@ -74,6 +130,7 @@ spotlightRouter.get("/projects", isAuthenticated, async (req, res) => {
 // Get a specific spotlight project
 spotlightRouter.get("/projects/:projectId", async (req, res) => {
   try {
+    await ensureSpotlightTables();
     const projectId = parseInt(req.params.projectId);
     const project = await storage.getSpotlightProjectById(projectId);
     
@@ -102,6 +159,7 @@ spotlightRouter.get("/projects/:projectId", async (req, res) => {
 // Create a new spotlight project
 spotlightRouter.post("/projects", isAuthenticated, async (req, res) => {
   try {
+    await ensureSpotlightTables();
     const userId = req.user!.id;
     
     // Modified schema with relaxed validation for the thumbnail and email
@@ -263,7 +321,6 @@ spotlightRouter.patch("/projects/:projectId", isProjectOwner, async (req, res) =
           if (tag.label?.trim()) {
             await storage.addTag(projectId, {
               label: tag.label,
-              icon: tag.icon || "",
               type: tag.type || "tag"
             });
           }

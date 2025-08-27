@@ -436,8 +436,11 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(spotlightProjects)
         .where(eq(spotlightProjects.userId, userId))
-        .orderBy(desc(spotlightProjects.createdAt));
-      
+        .orderBy(
+          desc(spotlightProjects.isPinned),
+          desc(spotlightProjects.createdAt)
+        );
+
       return projects;
     } catch (error) {
       console.error("Error fetching spotlight projects:", error);
