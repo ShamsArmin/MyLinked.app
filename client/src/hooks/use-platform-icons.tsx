@@ -179,7 +179,8 @@ export const platformConfigs: Record<string, PlatformConfig> = {
 };
 
 export const getPlatformConfig = (platform: string): PlatformConfig => {
-  return platformConfigs[platform] || platformConfigs.custom;
+  const key = platform?.toLowerCase() || '';
+  return platformConfigs[key] || platformConfigs.custom;
 };
 
 export const platformOptions = Object.entries(platformConfigs).map(([key, config]) => ({
@@ -190,7 +191,7 @@ export const platformOptions = Object.entries(platformConfigs).map(([key, config
 export const getPlatformIcon = (platform: string, className?: string) => {
   const config = getPlatformConfig(platform);
   const IconComponent = config.icon;
-  return <IconComponent className={className} />;
+  return <IconComponent className={`${config.color} ${className ?? ''}`} />;
 };
 
 export const usePlatformIcons = () => {
