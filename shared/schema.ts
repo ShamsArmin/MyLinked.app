@@ -33,6 +33,7 @@ export const industries = pgTable("industries", {
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   username: text("username").notNull().unique(),
+  usernameLower: text("username_lower"),
   password: text("password").notNull(),
   name: text("name").notNull(),
   email: text("email").unique(),
