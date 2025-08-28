@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { z } from "zod";
-import { OptimizeLinksSection } from "@/components/optimize-links-section";
+// import { OptimizeLinksSection } from "@/components/optimize-links-section"; // Temporarily disabled
 import { TourGuide } from "@/components/tour-guide";
 import { useTour } from "@/hooks/use-tour";
 
@@ -2039,15 +2039,17 @@ export default function AIEnhancedDashboard() {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                {/*
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="flex flex-col h-auto py-3 text-center justify-center bg-white/80 dark:bg-black/20"
                   onClick={() => navigate("/optimize-links")}
                 >
                   <Shuffle className="h-4 w-4 mb-1 text-indigo-500" />
                   <span className="text-xs">Optimize Links</span>
                 </Button>
+                */}
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -2624,30 +2626,32 @@ export default function AIEnhancedDashboard() {
 
             {/* Right Column - Smart Link AI and One-Click Pitch Mode (1 column) */}
             <div className="md:col-span-1 space-y-6">
-              {/* Smart Link AI Card */}
-              <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg">
-                <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 border-b border-blue-200/30">
-                  <CardTitle className="text-slate-800 flex items-center">
-                    <Brain className="h-5 w-5 mr-2 text-blue-600" />
-                    Smart Link AI
-                  </CardTitle>
-                  <CardDescription className="text-slate-600">AI-powered link optimization</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="text-sm text-slate-600">
-                      Get AI suggestions to improve your links and boost engagement
+              {/* Smart Link AI Card temporarily disabled */}
+              {false && (
+                <Card className="shadow-xl border-2 border-blue-200/50 bg-white/90 backdrop-blur-lg">
+                  <CardHeader className="pb-4 bg-gradient-to-r from-blue-100 to-purple-100 border-b border-blue-200/30">
+                    <CardTitle className="text-slate-800 flex items-center">
+                      <Brain className="h-5 w-5 mr-2 text-blue-600" />
+                      Smart Link AI
+                    </CardTitle>
+                    <CardDescription className="text-slate-600">AI-powered link optimization</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="text-sm text-slate-600">
+                        Get AI suggestions to improve your links and boost engagement
+                      </div>
+                      <Button
+                        onClick={() => navigate("/optimize-links")}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                      >
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Optimize Links
+                      </Button>
                     </div>
-                    <Button 
-                      onClick={() => navigate("/optimize-links")}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-                    >
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Optimize Links
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* One-Click Pitch Mode Card */}
               <PitchModeCard />
@@ -2952,11 +2956,13 @@ export default function AIEnhancedDashboard() {
                 </CardContent>
               </Card>
               
-              {/* Smart Link AI Section */}
-              <SmartLinkAI 
-                links={links}
-                onApplySuggestions={applyAiSuggestions}
-              />
+              {/* Smart Link AI Section temporarily disabled */}
+              {false && (
+                <SmartLinkAI
+                  links={links}
+                  onApplySuggestions={applyAiSuggestions}
+                />
+              )}
               
             </div>
             

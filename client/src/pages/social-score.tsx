@@ -292,16 +292,16 @@ export default function SocialScorePage() {
         }, 300);
       },
     },
-    {
-      title: "Optimize Link Order",
-      description: "Use AI to suggest the optimal order for your links based on analytics.",
-      status: "neutral",
-      action: "Optimize Links",
-      onAction: () => {
-        // Navigate to the dedicated optimize links page
-        navigate("/optimize-links");
-      },
-    },
+    // {
+    //   title: "Optimize Link Order",
+    //   description: "Use AI to suggest the optimal order for your links based on analytics.",
+    //   status: "neutral",
+    //   action: "Optimize Links",
+    //   onAction: () => {
+    //     // Navigate to the dedicated optimize links page
+    //     navigate("/optimize-links");
+    //   },
+    // },
   ];
   
   // Filter recommendations based on score
