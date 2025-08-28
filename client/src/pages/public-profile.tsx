@@ -274,7 +274,7 @@ export default function PublicProfile() {
             {profile.welcomeMessage && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className={`flex items-center gap-2 ${themeStyles.accent}`}>
                     <MessageCircle className="h-5 w-5" />
                     Welcome Message
                   </CardTitle>
@@ -319,7 +319,7 @@ export default function PublicProfile() {
             {links && links.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className={`flex items-center gap-2 ${themeStyles.accent}`}>
                     <Globe className="h-5 w-5" />
                     My Links
                   </CardTitle>
@@ -367,7 +367,7 @@ export default function PublicProfile() {
             {spotlightProjects && spotlightProjects.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className={`flex items-center gap-2 ${themeStyles.accent}`}>
                     <GitBranch className="h-5 w-5" />
                     Collaborative Spotlight
                   </CardTitle>
@@ -431,7 +431,7 @@ export default function PublicProfile() {
             {(profile.skills?.length || profile.industry) && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className={`flex items-center gap-2 ${themeStyles.accent}`}>
                     <Award className="h-5 w-5" />
                     Skills & Industry
                   </CardTitle>
@@ -439,13 +439,13 @@ export default function PublicProfile() {
                 <CardContent>
                   {profile.industry && (
                     <div className="mb-4">
-                      <h4 className="font-medium mb-2">Industry</h4>
+                      <h4 className={`font-medium mb-2 ${themeStyles.accent}`}>Industry</h4>
                       <Badge variant="secondary">{profile.industry}</Badge>
                     </div>
                   )}
                   {profile.skills && profile.skills.length > 0 && (
                     <div>
-                      <h4 className="font-medium mb-2">Skills</h4>
+                      <h4 className={`font-medium mb-2 ${themeStyles.accent}`}>Skills</h4>
                       <div className="flex flex-wrap gap-2">
                         {profile.skills.map(skill => (
                           <Badge key={skill} variant="outline" className="text-xs">
@@ -463,7 +463,7 @@ export default function PublicProfile() {
             {referralLinks && referralLinks.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className={`flex items-center gap-2 ${themeStyles.accent}`}>
                     <Star className="h-5 w-5" />
                     Recommended Links
                   </CardTitle>
@@ -474,7 +474,7 @@ export default function PublicProfile() {
                       <div key={link.id} className="p-3 rounded-lg border bg-card border-border">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h4 className="font-medium text-sm">{link.title}</h4>
+                            <h4 className={`font-medium text-sm ${themeStyles.accent}`}>{link.title}</h4>
                             {link.description && (
                               <p className="text-xs mt-1 text-muted-foreground">
                                 {link.description}
