@@ -1109,7 +1109,10 @@ export default function Dashboard() {
                   <CardDescription>Frequently used tools</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="grid grid-cols-3 gap-2">
+                  <div
+                    className="grid gap-2"
+                    style={{ gridTemplateColumns: "repeat(auto-fit, minmax(80px, 1fr))" }}
+                  >
                     <Button 
                       variant="outline" 
                       size="sm" 
