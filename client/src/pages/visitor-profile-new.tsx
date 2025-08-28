@@ -329,6 +329,16 @@ export default function VisitorProfileNew() {
     console.log('Referral form submit clicked');
     console.log('Form data:', referralForm);
 
+    if (!currentUser) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please log in to submit a referral.',
+        variant: 'destructive',
+      });
+      setTimeout(() => navigate('/auth'), 2000);
+      return;
+    }
+
     // Validation
     if (
       !referralForm.name ||
@@ -416,9 +426,10 @@ export default function VisitorProfileNew() {
       });
     } catch (error) {
       console.error('Error sending referral request:', error);
+      const message = error instanceof Error ? error.message : 'Failed to submit request. Please try again.';
       toast({
         title: 'Error',
-        description: 'Failed to submit request. Please try again.',
+        description: message,
         variant: 'destructive',
       });
     }
