@@ -361,42 +361,65 @@ export default function VisitorProfileNew() {
       };
 
       console.log('Sending request data:', requestData);
+      const token = (window as any).getAccessTokenFromClientState?.();
 
       const response = await fetch('/api/referral-requests', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestData)
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
+        body: JSON.stringify(requestData),
       });
 
-      console.log('Response status:', response.status);
-      const responseData = await response.json();
-      console.log('Response data:', responseData);
+      const responseData = await response.json().catch(() => ({}));
 
-      if (response.ok) {
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast({
+            title: 'Please sign in to submit a referral.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        if (response.status === 422 && responseData?.errors?.[0]?.message) {
+          toast({
+            title: 'Invalid request',
+            description: responseData.errors[0].message,
+            variant: 'destructive',
+          });
+          return;
+        }
         toast({
-          title: "Request sent!",
-          description: "Your referral link request has been submitted.",
+          title: 'Error',
+          description: responseData?.message || `Request failed (${response.status})`,
+          variant: 'destructive',
         });
-        setShowReferralDialog(false);
-        setReferralForm({
-          name: '',
-          email: '',
-          phone: '',
-          website: '',
-          fieldOfWork: '',
-          description: '',
-          linkTitle: '',
-          linkUrl: ''
-        });
-      } else {
-        throw new Error(responseData.message || 'Failed to send request');
+        return;
       }
+
+      toast({
+        title: 'Request sent!',
+        description: 'Your referral link request has been submitted.',
+      });
+      setShowReferralDialog(false);
+      setReferralForm({
+        name: '',
+        email: '',
+        phone: '',
+        website: '',
+        fieldOfWork: '',
+        description: '',
+        linkTitle: '',
+        linkUrl: '',
+      });
     } catch (error) {
       console.error('Error sending referral request:', error);
       toast({
-        title: "Error",
-        description: "Failed to submit request. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to submit request. Please try again.',
+        variant: 'destructive',
       });
     }
   };

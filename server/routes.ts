@@ -21,6 +21,7 @@ import {
   insertCollaborationRequestSchema,
   updateCollaborationRequestSchema,
 } from "../shared/schema";
+import jwt from "jsonwebtoken";
 import { db, pool, dbGuard } from "./db";
 import { getUserColumnSet } from "./user-columns";
 import { and, eq, gt, desc } from "drizzle-orm";
@@ -55,6 +56,82 @@ import emailRouter from "./email-routes";
 import supportRouter from "./support-routes";
 import { setupTikTokOAuth } from "./tiktok-oauth";
 import { sendPasswordResetEmail } from "./email-service";
+
+async function getUserFromRequest(req: any) {
+  const u = req.user;
+  if (u) return u;
+  const auth = req.headers?.authorization;
+  if (auth?.startsWith('Bearer ')) {
+    const token = auth.slice(7);
+    try {
+      return jwt.verify(token, process.env.JWT_SECRET || '') as any;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+export async function postReferralRequestHandler(req: any, res: any) {
+  const user = await getUserFromRequest(req);
+  console.debug('[referral-requests] auth=', user ? 'ok' : 'none', 'bodyKeys=', Object.keys(req.body || {}));
+  if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+  const {
+    requesterName,
+    requesterEmail,
+    requesterPhone,
+    requesterWebsite,
+    fieldOfWork,
+    description,
+    linkTitle,
+    linkUrl,
+    targetUserId,
+  } = req.body || {};
+
+  const errors: { field: string; message: string }[] = [];
+  if (!requesterName) errors.push({ field: 'requesterName', message: 'is required' });
+  if (!requesterEmail) errors.push({ field: 'requesterEmail', message: 'is required' });
+  if (!fieldOfWork) errors.push({ field: 'fieldOfWork', message: 'is required' });
+  if (!description) errors.push({ field: 'description', message: 'is required' });
+  if (!linkTitle) errors.push({ field: 'linkTitle', message: 'is required' });
+  if (!linkUrl) errors.push({ field: 'linkUrl', message: 'is required' });
+  if (!targetUserId) errors.push({ field: 'targetUserId', message: 'is required' });
+  if (errors.length) return res.status(422).json({ message: 'Validation error', errors });
+
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+  const existingRequest = await db.query.referralRequests.findFirst({
+    where: and(
+      eq(referralRequests.requesterEmail, requesterEmail),
+      eq(referralRequests.targetUserId, targetUserId),
+      eq(referralRequests.linkUrl, linkUrl),
+      gt(referralRequests.createdAt, tenMinutesAgo),
+    ),
+  });
+
+  if (existingRequest) {
+    return res.status(429).json({
+      message: 'You have already submitted a similar request recently. Please wait 10 minutes before submitting again.',
+    });
+  }
+
+  const referralRequest = await storage.createReferralRequest({
+    targetUserId,
+    requesterName,
+    requesterEmail,
+    requesterPhone,
+    requesterWebsite,
+    fieldOfWork,
+    description,
+    linkTitle,
+    linkUrl,
+  });
+
+  return res.status(201).json({
+    message: 'Referral request sent successfully',
+    id: referralRequest.id,
+  });
+}
 
 // Error handling middleware
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
@@ -2085,60 +2162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Visitor endpoints for requests
-  app.post("/api/referral-requests", asyncHandler(async (req: any, res: any) => {
-    const {
-      requesterName,
-      requesterEmail,
-      requesterPhone,
-      requesterWebsite,
-      fieldOfWork,
-      description,
-      linkTitle,
-      linkUrl,
-      targetUserId,
-    } = req.body;
-
-    // Validate required fields
-    if (!requesterName || !requesterEmail || !fieldOfWork || !description || 
-        !linkTitle || !linkUrl || !targetUserId) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    // Check for duplicate requests within 10 minutes
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-    const existingRequest = await db.query.referralRequests.findFirst({
-      where: and(
-        eq(referralRequests.requesterEmail, requesterEmail),
-        eq(referralRequests.targetUserId, targetUserId),
-        eq(referralRequests.linkUrl, linkUrl),
-        gt(referralRequests.createdAt, tenMinutesAgo),
-      ),
-    });
-
-    if (existingRequest) {
-      return res.status(429).json({
-        message: "You have already submitted a similar request recently. Please wait 10 minutes before submitting again.",
-      });
-    }
-
-    // Create the referral request in the database
-    const referralRequest = await storage.createReferralRequest({
-      targetUserId,
-      requesterName,
-      requesterEmail,
-      requesterPhone,
-      requesterWebsite,
-      fieldOfWork,
-      description,
-      linkTitle,
-      linkUrl,
-    });
-
-    res.status(201).json({
-      message: "Referral request sent successfully",
-      id: referralRequest.id,
-    });
-  }));
+  app.post('/api/referral-requests', asyncHandler(postReferralRequestHandler));
 
   // =============================================================================
   // USER REPORTS
