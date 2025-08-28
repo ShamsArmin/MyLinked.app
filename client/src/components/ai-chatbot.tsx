@@ -30,6 +30,89 @@ const quickActions = [
   { text: "Analytics help", icon: "📈" },
 ];
 
+interface KnowledgeBaseEntry {
+  keywords: string[];
+  response: string;
+}
+
+const knowledgeBase: KnowledgeBaseEntry[] = [
+  {
+    keywords: ["analytics", "engagement", "metrics"],
+    response:
+      "📊 For analytics insights, visit your Analytics page where you can view engagement trends, click-through rates, and performance metrics. I can also help optimize your content strategy based on your data.",
+  },
+  {
+    keywords: ["profile", "optimize", "bio"],
+    response:
+      "✨ To optimize your profile: 1) Add a compelling bio under 160 characters, 2) Use a professional profile image, 3) Connect all your social platforms, 4) Enable pitch mode for better presentation. Need help with any specific area?",
+  },
+  {
+    keywords: ["social score", "score"],
+    response:
+      "🎯 Your Social Score is calculated based on profile completeness, link engagement, social connections, and content quality. To improve it: complete your profile, add more social links, and encourage clicks on your content.",
+  },
+  {
+    keywords: ["links", "add link", "social media"],
+    response:
+      "🔗 To manage your links: Go to 'My Links' section where you can add social media profiles, custom links, and referral links. I recommend organizing them by priority and using compelling descriptions.",
+  },
+  {
+    keywords: ["collaboration", "networking"],
+    response:
+      "🤝 Use the Collaboration section to connect with other creators, showcase spotlight projects, and manage partnership requests. This helps expand your network and create meaningful professional relationships.",
+  },
+  {
+    keywords: ["theme", "design", "appearance"],
+    response:
+      "🎨 Customize your appearance in Themes where you can choose colors, fonts, and layout styles. Pick themes that match your brand identity and professional image.",
+  },
+  {
+    keywords: ["pitch mode", "presentation"],
+    response:
+      "🎤 Pitch Mode creates a professional presentation of your profile. Configure it in Settings to highlight your expertise, focus areas, and key achievements for potential clients or collaborators.",
+  },
+  {
+    keywords: ["oauth", "connection", "connect", "disconnect"],
+    response:
+      "🔐 OAuth connections let MyLinked securely access social platforms. Visit Settings > Social Connections to connect or disconnect accounts. Ensure proper permissions are granted and check platform-specific requirements.",
+  },
+  {
+    keywords: ["api", "developer"],
+    response:
+      "🛠️ Our platform uses several APIs for social media integration. If you're experiencing API issues, verify your credentials, rate limits, and ensure the platform's API status is operational.",
+  },
+  {
+    keywords: ["privacy", "data", "security"],
+    response:
+      "🔒 We protect your data with industry-standard security including encrypted storage and secure OAuth flows. Control what you share by managing connected accounts and links in Settings.",
+  },
+  {
+    keywords: ["account", "delete", "username", "email"],
+    response:
+      "👤 Account settings allow updating username, email, or requesting account deletion via Support. Navigate to Settings to manage these options.",
+  },
+  {
+    keywords: ["problem", "issue", "not working"],
+    response:
+      "🔧 I can help troubleshoot issues! Common solutions: 1) Refresh the page, 2) Clear browser cache, 3) Check your internet connection, 4) Try a different browser. What specific problem are you experiencing?",
+  },
+  {
+    keywords: ["how to", "tutorial", "guide"],
+    response:
+      "📚 I can provide step-by-step guidance for any MyLinked feature. What would you like to learn? Popular topics: setting up profiles, optimizing for engagement, using analytics, or managing collaborations.",
+  },
+  {
+    keywords: ["hello", "hi", "hey"],
+    response:
+      "Hello! I'm your intelligent MyLinked assistant. I can help you optimize your profile, understand analytics, manage social links, troubleshoot issues, and boost your social presence. What would you like to work on today?",
+  },
+  {
+    keywords: ["help", "what can you do"],
+    response:
+      "🚀 I can assist with: Profile optimization, Analytics insights, Social Score improvement, Link management, Collaboration networking, Theme customization, Pitch Mode setup, OAuth connections, and troubleshooting. What specific area interests you?",
+  },
+];
+
 export function AIChatbot() {
   const [state, setState] = useState<ChatbotState>({
     isOpen: false,
@@ -175,55 +258,12 @@ export function AIChatbot() {
 
   const getIntelligentFallback = (userInput: string): string => {
     const input = userInput.toLowerCase();
-    
-    // Social media management queries
-    if (input.includes("analytics") || input.includes("engagement") || input.includes("metrics")) {
-      return "📊 For analytics insights, visit your Analytics page where you can view engagement trends, click-through rates, and performance metrics. I can also help optimize your content strategy based on your data.";
+    const match = knowledgeBase.find((entry) =>
+      entry.keywords.some((keyword) => input.includes(keyword))
+    );
+    if (match) {
+      return match.response;
     }
-    
-    if (input.includes("profile") || input.includes("optimize") || input.includes("bio")) {
-      return "✨ To optimize your profile: 1) Add a compelling bio under 160 characters, 2) Use a professional profile image, 3) Connect all your social platforms, 4) Enable pitch mode for better presentation. Need help with any specific area?";
-    }
-    
-    if (input.includes("social score") || input.includes("score")) {
-      return "🎯 Your Social Score is calculated based on profile completeness, link engagement, social connections, and content quality. To improve it: complete your profile, add more social links, and encourage clicks on your content.";
-    }
-    
-    if (input.includes("links") || input.includes("add link") || input.includes("social media")) {
-      return "🔗 To manage your links: Go to 'My Links' section where you can add social media profiles, custom links, and referral links. I recommend organizing them by priority and using compelling descriptions.";
-    }
-    
-    if (input.includes("collaboration") || input.includes("networking")) {
-      return "🤝 Use the Collaboration section to connect with other creators, showcase spotlight projects, and manage partnership requests. This helps expand your network and create meaningful professional relationships.";
-    }
-    
-    if (input.includes("theme") || input.includes("design") || input.includes("appearance")) {
-      return "🎨 Customize your appearance in Themes where you can choose colors, fonts, and layout styles. Pick themes that match your brand identity and professional image.";
-    }
-    
-    if (input.includes("pitch mode") || input.includes("presentation")) {
-      return "🎤 Pitch Mode creates a professional presentation of your profile. Configure it in Settings to highlight your expertise, focus areas, and key achievements for potential clients or collaborators.";
-    }
-    
-    if (input.includes("problem") || input.includes("issue") || input.includes("not working")) {
-      return "🔧 I can help troubleshoot issues! Common solutions: 1) Refresh the page, 2) Clear browser cache, 3) Check your internet connection, 4) Try a different browser. What specific problem are you experiencing?";
-    }
-    
-    if (input.includes("how to") || input.includes("tutorial") || input.includes("guide")) {
-      return "📚 I can provide step-by-step guidance for any MyLinked feature. What would you like to learn? Popular topics: setting up profiles, optimizing for engagement, using analytics, or managing collaborations.";
-    }
-    
-    // Greeting responses
-    if (input.includes("hello") || input.includes("hi") || input.includes("hey")) {
-      return "Hello! I'm your intelligent MyLinked assistant. I can help you optimize your profile, understand analytics, manage social links, troubleshoot issues, and boost your social presence. What would you like to work on today?";
-    }
-    
-    // General help
-    if (input.includes("help") || input.includes("what can you do")) {
-      return "🚀 I can assist with: Profile optimization, Analytics insights, Social Score improvement, Link management, Collaboration networking, Theme customization, Pitch Mode setup, Troubleshooting, and Strategic advice. What specific area interests you?";
-    }
-    
-    // Default intelligent response
     return `I understand you're asking about "${userInput}". I can provide specific guidance on MyLinked features, optimization strategies, or troubleshooting. Could you tell me more about what you're trying to accomplish or what specific help you need?`;
   };
 
