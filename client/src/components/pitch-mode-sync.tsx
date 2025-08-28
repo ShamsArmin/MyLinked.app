@@ -20,6 +20,8 @@ type PitchModeSyncProps = {
   className?: string;
 };
 
+const toBoolean = (value: any) => value === true || value === 'true';
+
 export function PitchModeSync({ variant = 'settings', className = '' }: PitchModeSyncProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -51,7 +53,7 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
     if (userData && typeof userData === 'object' && 'pitchMode' in userData) {
       console.log(`${variant} - Syncing local state with server data:`, userData);
       const user = userData as User;
-      setEnabled(Boolean(user.pitchMode));
+      setEnabled(toBoolean(user.pitchMode));
       setDescription(user.pitchDescription || '');
       setPitchType(user.pitchModeType || 'professional');
       setFocusAreas(user.pitchFocusAreas || []);

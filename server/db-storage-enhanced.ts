@@ -67,6 +67,18 @@ export class EnhancedDatabaseStorage implements IStorage {
     return timingSafeEqual(hashedBuf, suppliedBuf);
   }
 
+  private normalizeBoolean(value: any): boolean {
+    if (typeof value === 'string') {
+      return value.toLowerCase() === 'true';
+    }
+    return Boolean(value);
+  }
+
+  private normalizeUser(user: any): User | undefined {
+    if (!user) return undefined;
+    return { ...user, pitchMode: this.normalizeBoolean(user.pitchMode) } as User;
+  }
+
   // Password reset methods
   async createPasswordResetToken(email: string): Promise<PasswordResetToken> {
     // Generate secure random token
@@ -183,7 +195,7 @@ export class EnhancedDatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(eq(users.id, id));
-    return user;
+    return this.normalizeUser(user);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
@@ -191,7 +203,7 @@ export class EnhancedDatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(eq(users.username, username));
-    return user;
+    return this.normalizeUser(user);
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
@@ -199,7 +211,7 @@ export class EnhancedDatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(eq(users.email, email));
-    return user;
+    return this.normalizeUser(user);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -277,16 +289,17 @@ export class EnhancedDatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
 
-    console.log('Updated user result:', user ? {
-      id: user.id,
-      username: user.username,
-      pitchMode: user.pitchMode,
-      pitchModeType: user.pitchModeType,
-      pitchDescription: user.pitchDescription,
-      pitchFocusAreas: user.pitchFocusAreas
+    const normalized = this.normalizeUser(user);
+    console.log('Updated user result:', normalized ? {
+      id: normalized.id,
+      username: normalized.username,
+      pitchMode: normalized.pitchMode,
+      pitchModeType: normalized.pitchModeType,
+      pitchDescription: normalized.pitchDescription,
+      pitchFocusAreas: normalized.pitchFocusAreas
     } : 'null');
 
-    return user;
+    return normalized;
   }
 
   async deleteUser(id: number): Promise<boolean> {

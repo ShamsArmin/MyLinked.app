@@ -16,6 +16,8 @@ type PitchModeProps = {
   className?: string;
 };
 
+const toBoolean = (value: any) => value === true || value === 'true';
+
 export function PitchMode({ profile, className = '' }: PitchModeProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -28,14 +30,14 @@ export function PitchMode({ profile, className = '' }: PitchModeProps) {
   const latestData = currentProfile || currentUser || profile;
   
   // Local state for form inputs
-  const [enabled, setEnabled] = useState(latestData?.pitchMode || false);
+  const [enabled, setEnabled] = useState(toBoolean(latestData?.pitchMode));
   const [description, setDescription] = useState(latestData?.pitchDescription || '');
   const [pitchType, setPitchType] = useState(latestData?.pitchModeType || 'professional');
   
   // Update local state when real-time data changes
   useEffect(() => {
     if (latestData && 'pitchMode' in latestData) {
-      setEnabled(latestData.pitchMode || false);
+      setEnabled(toBoolean(latestData.pitchMode));
       setDescription(latestData.pitchDescription || '');
       setPitchType(latestData.pitchModeType || 'professional');
     }
