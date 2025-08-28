@@ -2525,13 +2525,10 @@ export default function AIEnhancedDashboard() {
 
             {/* Right Column - Smart Link AI and One-Click Pitch Mode (1 column) */}
             <div className="md:col-span-1 space-y-6">
-              {/* Smart Link AI Component temporarily disabled */}
-              {false && (
-                <SmartLinkAI
-                  links={links || []}
-                  onApplySuggestions={handleApplySuggestions}
-                />
-              )}
+              <SmartLinkAI
+                links={links || []}
+                onApplySuggestions={handleApplySuggestions}
+              />
 
               {/* One-Click Pitch Mode Card */}
               <PitchModeCard />
