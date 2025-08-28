@@ -20,6 +20,8 @@ type PitchModeSyncProps = {
   className?: string;
 };
 
+const toBoolean = (value: any) => value === true || value === 'true';
+
 export function PitchModeSync({ variant = 'settings', className = '' }: PitchModeSyncProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -51,7 +53,7 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
     if (userData && typeof userData === 'object' && 'pitchMode' in userData) {
       console.log(`${variant} - Syncing local state with server data:`, userData);
       const user = userData as User;
-      setEnabled(Boolean(user.pitchMode));
+      setEnabled(toBoolean(user.pitchMode));
       setDescription(user.pitchDescription || '');
       setPitchType(user.pitchModeType || 'professional');
       setFocusAreas(user.pitchFocusAreas || []);
@@ -115,17 +117,13 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
   const updatePitchModeMutation = useMutation({
     mutationFn: async () => {
       console.log(`${variant} - Saving pitch mode:`, { enabled, type: pitchType, description, focusAreas });
-      const res = await apiRequest('PATCH', '/api/pitch-mode', { 
-        enabled, 
-        type: pitchType, 
+      const updatedUser = await apiRequest('PATCH', '/api/pitch-mode', {
+        enabled,
+        type: pitchType,
         description,
         focusAreas
       });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to save pitch mode');
-      }
-      return await res.json();
+      return updatedUser;
     },
     onMutate: async () => {
       // Cancel any outgoing refetches
