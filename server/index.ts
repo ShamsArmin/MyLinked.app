@@ -73,8 +73,11 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: true, // HTTPS on Render
-    sameSite: 'lax', // single-origin default
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none',
+    domain: process.env.NODE_ENV === 'production' ? '.mylinked.app' : undefined,
+    path: '/',
+    maxAge: 1000 * 60 * 60 * 24 * 7,
   },
   // TODO: move to a persistent store later; MemoryStore is OK short-term
 }));

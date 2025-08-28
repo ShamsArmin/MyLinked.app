@@ -125,6 +125,7 @@ export default function VisitorProfileWorking() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           requesterName: referralForm.name,
           requesterEmail: referralForm.email,
@@ -134,7 +135,7 @@ export default function VisitorProfileWorking() {
           description: referralForm.description,
           linkTitle: referralForm.linkTitle,
           linkUrl: referralForm.linkUrl,
-          targetUserId: parseInt(data?.profile.id, 10)
+          targetUserId: data?.profile.id,
         }),
       });
 
@@ -155,7 +156,8 @@ export default function VisitorProfileWorking() {
           linkUrl: ''
         });
       } else {
-        throw new Error('Failed to send request');
+        const { message } = await response.json().catch(() => ({}));
+        throw new Error(message || 'Failed to send request');
       }
     } catch (error) {
       toast({
