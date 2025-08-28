@@ -115,17 +115,13 @@ export function PitchModeSync({ variant = 'settings', className = '' }: PitchMod
   const updatePitchModeMutation = useMutation({
     mutationFn: async () => {
       console.log(`${variant} - Saving pitch mode:`, { enabled, type: pitchType, description, focusAreas });
-      const res = await apiRequest('PATCH', '/api/pitch-mode', { 
-        enabled, 
-        type: pitchType, 
+      const updatedUser = await apiRequest('PATCH', '/api/pitch-mode', {
+        enabled,
+        type: pitchType,
         description,
         focusAreas
       });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to save pitch mode');
-      }
-      return await res.json();
+      return updatedUser;
     },
     onMutate: async () => {
       // Cancel any outgoing refetches

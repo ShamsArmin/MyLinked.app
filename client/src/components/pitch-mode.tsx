@@ -44,16 +44,12 @@ export function PitchMode({ profile, className = '' }: PitchModeProps) {
   const updatePitchModeMutation = useMutation({
     mutationFn: async () => {
       console.log('Settings page saving pitch mode:', { enabled, type: pitchType, description });
-      const res = await apiRequest('PATCH', '/api/pitch-mode', { 
-        enabled, 
-        type: pitchType, 
-        description 
+      const updatedProfile = await apiRequest('PATCH', '/api/pitch-mode', {
+        enabled,
+        type: pitchType,
+        description
       });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to save pitch mode');
-      }
-      return await res.json();
+      return updatedProfile;
     },
     onSuccess: (updatedProfile) => {
       console.log('Settings page pitch mode saved successfully:', updatedProfile);
