@@ -957,9 +957,7 @@ export default function AIEnhancedDashboard() {
   // Update link mutation
   const updateLinkMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<Link> }) => {
-      const response = await apiRequest("PATCH", `/api/links/${id}`, data);
-      const result = await response.json();
-      return result;
+      return apiRequest("PATCH", `/api/links/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/links"] });
@@ -981,10 +979,7 @@ export default function AIEnhancedDashboard() {
   // Delete link mutation
   const deleteLinkMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/links/${id}`);
-      if (!response.ok) {
-        throw new Error("Failed to delete link");
-      }
+      await apiRequest("DELETE", `/api/links/${id}`);
       return { success: true };
     },
     onSuccess: () => {
@@ -1004,29 +999,29 @@ export default function AIEnhancedDashboard() {
   });
   
   // Handle applying AI suggestions for optimal link order
-  const handleApplySuggestions = async (linkScores: {id: number, score: number}[]) => {
+  const handleApplySuggestions = async (
+    linkScores: { id: number; score: number }[]
+  ) => {
     try {
-      // Sort linkScores by score in descending order and update each link's order
-      const sortedScores = linkScores.sort((a, b) => b.score - a.score);
-      
-      // Update each link with its new order
-      const updatePromises = sortedScores.map((item, index) => 
-        updateLinkMutation.mutateAsync({ 
-          id: item.id, 
-          data: { order: index } 
-        })
-      );
-      
-      await Promise.all(updatePromises);
-      
+      // Sort scores by AI ranking and convert to new order indexes
+      const sortedScores = [...linkScores]
+        .sort((a, b) => b.score - a.score)
+        // Ensure we send numeric id/score values expected by the API
+        .map((item, index) => ({ id: Number(item.id), score: index }));
+
+      // Use reorder mutation to apply new ordering
+      await reorderLinksMutation.mutateAsync(sortedScores);
+
       toast({
         title: "Link order optimized",
-        description: "Your links have been reordered based on AI suggestions to maximize engagement.",
+        description:
+          "Your links have been reordered based on AI suggestions to maximize engagement.",
       });
     } catch (error: any) {
       toast({
         title: "Failed to apply suggestions",
-        description: error.message || "An error occurred while optimizing link order.",
+        description:
+          error.message || "An error occurred while optimizing link order.",
         variant: "destructive",
       });
     }
@@ -1037,12 +1032,10 @@ export default function AIEnhancedDashboard() {
     mutationFn: async (id: number) => {
       const link = links.find((l) => l.id === id);
       if (!link) throw new Error("Link not found");
-      
-      const response = await apiRequest("PATCH", `/api/links/${id}`, {
+
+      return apiRequest("PATCH", `/api/links/${id}`, {
         featured: !link.featured,
       });
-      const result = await response.json();
-      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/links"] });
@@ -1062,10 +1055,8 @@ export default function AIEnhancedDashboard() {
   
   // Reorder links mutation
   const reorderLinksMutation = useMutation({
-    mutationFn: async (linkScores: { id: number; score: number }[]) => {
-      const response = await apiRequest("POST", "/api/links/reorder", { linkScores });
-      return await response.json();
-    },
+    mutationFn: async (linkScores: { id: number; score: number }[]) =>
+      apiRequest("POST", "/api/links/reorder", { linkScores }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/links"] });
       toast({
@@ -1101,9 +1092,19 @@ export default function AIEnhancedDashboard() {
     
     // Calculate scores for the reordering
     const linkScores = links.map((link, index) => {
-      if (index === linkIndex) return { id: link.id, score: links[newIndex].order || 0 };
-      if (index === newIndex) return { id: link.id, score: links[linkIndex].order || 0 };
-      return { id: link.id, score: link.order || 0 };
+      if (index === linkIndex) {
+        return {
+          id: Number(link.id),
+          score: Number(links[newIndex].order ?? 0),
+        };
+      }
+      if (index === newIndex) {
+        return {
+          id: Number(link.id),
+          score: Number(links[linkIndex].order ?? 0),
+        };
+      }
+      return { id: Number(link.id), score: Number(link.order ?? 0) };
     });
     
     reorderLinksMutation.mutate(linkScores);
@@ -1132,11 +1133,7 @@ export default function AIEnhancedDashboard() {
   
   // Update profile mutation
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest("PATCH", "/api/profile", data);
-      const result = await response.json();
-      return result;
-    },
+    mutationFn: async (data: any) => apiRequest("PATCH", "/api/profile", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
@@ -1156,11 +1153,8 @@ export default function AIEnhancedDashboard() {
 
   // Update referral request mutation
   const updateReferralRequestMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const response = await apiRequest("PATCH", `/api/referral-requests/${id}`, { status });
-      const result = await response.json();
-      return result;
-    },
+    mutationFn: async ({ id, status }: { id: number; status: string }) =>
+      apiRequest("PATCH", `/api/referral-requests/${id}`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/referral-requests"] });
       queryClient.invalidateQueries({ queryKey: ["/api/referral-requests/count"] });
@@ -2525,13 +2519,10 @@ export default function AIEnhancedDashboard() {
 
             {/* Right Column - Smart Link AI and One-Click Pitch Mode (1 column) */}
             <div className="md:col-span-1 space-y-6">
-              {/* Smart Link AI Component temporarily disabled */}
-              {false && (
-                <SmartLinkAI
-                  links={links || []}
-                  onApplySuggestions={handleApplySuggestions}
-                />
-              )}
+              <SmartLinkAI
+                links={links || []}
+                onApplySuggestions={handleApplySuggestions}
+              />
 
               {/* One-Click Pitch Mode Card */}
               <PitchModeCard />
