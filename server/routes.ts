@@ -1107,6 +1107,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(userWithoutPassword);
   }));
 
+  app.get("/api/me", isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const user = await storage.getUser(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    const { password, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
+  }));
+
+  app.patch("/api/me", isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const { hasSeenDashboardTour } = z.object({ hasSeenDashboardTour: z.boolean() }).parse(req.body);
+    await storage.updateUser(req.user.id, { hasSeenDashboardTour });
+    res.json({ success: true });
+  }));
+
   // Delete user account
   app.delete("/api/profile", isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.id;

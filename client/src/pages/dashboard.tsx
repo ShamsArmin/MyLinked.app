@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, insertLinkSchema, ProfileStats } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import DashboardTour from "@/components/DashboardTour";
+import { useDashboardTour } from "@/hooks/useDashboardTour";
 import { useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -385,8 +387,20 @@ export default function Dashboard() {
   const {
     user
   } = useAuth();
-  
+
   const [, navigate] = useLocation();
+
+  const { data: profile } = useQuery({
+    queryKey: ["/api/me"],
+    queryFn: async () => {
+      const res = await fetch("/api/me");
+      if (!res.ok) throw new Error("Failed to load profile");
+      return res.json();
+    },
+    retry: false,
+  });
+
+  const { shouldStart, startTour, completeTour } = useDashboardTour(profile);
   
   // Get all links
   const {
@@ -937,7 +951,7 @@ export default function Dashboard() {
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle>My Links</CardTitle>
-                    <Button onClick={() => setShowAddLinkDialog(true)}>
+                    <Button className="add-link-button" onClick={() => setShowAddLinkDialog(true)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add Link
                     </Button>
@@ -949,11 +963,18 @@ export default function Dashboard() {
                     <p className="text-sm text-muted-foreground">
                       {links.length} link{links.length !== 1 ? 's' : ''} total
                     </p>
-                    
-                    <ViewModeSelector
-                      currentMode={viewMode}
-                      onModeChange={setViewMode}
-                    />
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="dashboard-search border rounded px-2 py-1 text-sm"
+                      />
+                      <ViewModeSelector
+                        currentMode={viewMode}
+                        onModeChange={setViewMode}
+                      />
+                    </div>
                   </div>
                   
                   {isLoadingLinks ? (
@@ -983,7 +1004,7 @@ export default function Dashboard() {
                       </Button>
                     </div>
                   ) : (
-                    <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-4"}>
+                    <div className={`my-links-grid ${viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-4"}`}>
                       {links.map((link, index) => (
                         <LinkCard
                           key={link.id}
@@ -1601,6 +1622,15 @@ export default function Dashboard() {
           )}
         </DialogContent>
       </Dialog>
+      {shouldStart && (
+        <DashboardTour onFinish={completeTour} onSkip={completeTour} />
+      )}
+      <button
+        onClick={startTour}
+        className="fixed bottom-4 right-4 text-xs underline text-blue-600 help-menu"
+      >
+        Take a tour
+      </button>
     </div>
   );
 }
