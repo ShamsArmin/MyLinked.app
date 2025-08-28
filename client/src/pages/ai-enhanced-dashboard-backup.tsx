@@ -2038,7 +2038,10 @@ export default function AIEnhancedDashboard() {
               <CardDescription className="text-slate-600">Frequently used tools</CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div
+                className="grid gap-3"
+                style={{ gridTemplateColumns: "repeat(auto-fit, minmax(90px, 1fr))" }}
+              >
                 {/*
                 <Button
                   variant="outline"
