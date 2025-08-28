@@ -330,10 +330,18 @@ export default function VisitorProfileNew() {
     console.log('Form data:', referralForm);
 
     // Validation
-    if (!referralForm.name || !referralForm.email || !referralForm.fieldOfWork || !referralForm.linkTitle || !referralForm.linkUrl) {
+    if (
+      !referralForm.name ||
+      !referralForm.email ||
+      !referralForm.fieldOfWork ||
+      !referralForm.description ||
+      !referralForm.linkTitle ||
+      !referralForm.linkUrl
+    ) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in your name, email, field of work, link title, and link URL.",
+        description:
+          "Please fill in your name, email, field of work, description, link title, and link URL.",
         variant: "destructive",
       });
       return;
@@ -349,7 +357,7 @@ export default function VisitorProfileNew() {
         description: referralForm.description,
         linkTitle: referralForm.linkTitle,
         linkUrl: referralForm.linkUrl,
-        targetUserId: parseInt(data?.profile.id, 10)
+        targetUserId: data?.profile.id
       };
 
       console.log('Sending request data:', requestData);

@@ -126,8 +126,15 @@ export default function VisitorProfileWorking() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...referralForm,
-          profileUserId: parseInt(data?.profile.id, 10)
+          requesterName: referralForm.name,
+          requesterEmail: referralForm.email,
+          requesterPhone: referralForm.phone,
+          requesterWebsite: referralForm.website,
+          fieldOfWork: referralForm.fieldOfWork,
+          description: referralForm.description,
+          linkTitle: referralForm.linkTitle,
+          linkUrl: referralForm.linkUrl,
+          targetUserId: data?.profile.id
         }),
       });
 
