@@ -1,7 +1,7 @@
 import { Route, Switch } from "wouter";
 import AuthPage from "./pages/auth-page";
 import AIEnhancedDashboard from "./pages/ai-enhanced-dashboard";
-import BrandingPage from "./pages/branding";
+import BrandingPage from "./pages/branding"; // AI Branding page (guarded by FEATURE_BRANDING)
 import ProfilePage from "./pages/profile-fixed";
 import SettingsPage from "./pages/settings";
 import SocialScorePage from "./pages/social-score";
@@ -49,6 +49,9 @@ import MyLinksPage from "./pages/my-links";
 import ForgotPasswordPage from "./pages/forgot-password";
 import ResetPasswordPage from "./pages/reset-password";
 import CollaborationPage from "./pages/collaboration-page";
+
+// Feature flag for AI Branding
+const BRANDING_ENABLED = import.meta.env.VITE_FEATURE_BRANDING === "true";
 
 // Deprecated landing page - use the new component instead
 function OldLandingPage() {
@@ -149,7 +152,9 @@ function Router() {
         <ProtectedRoute path="/admin-legacy" component={EnhancedAdminPanel} />
         <Route path="/accept-invite" component={AcceptInvitePage} />
         <ProtectedRoute path="/feed" component={LiveFeedPage} />
-        <ProtectedRoute path="/branding" component={BrandingPage} />
+          {BRANDING_ENABLED && (
+            <ProtectedRoute path="/branding" component={BrandingPage} />
+          )}
         <ProtectedRoute path="/social-score" component={SocialScorePage} />
         <ProtectedRoute path="/analytics" component={AnalyticsPage} />
         {/* Public profile route - must come before protected /profile route */}

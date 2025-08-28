@@ -16,6 +16,7 @@ import QRCode from "qrcode";
 
 // Feature flags
 const FEATURE_CONTENT_PREVIEW = false; // Set to true to re-enable Content Preview feature
+const FEATURE_BRANDING = import.meta.env.VITE_FEATURE_BRANDING === "true"; // AI Branding temporarily disabled for MVP
 import {
   Plus,
   Pencil,
@@ -1970,15 +1971,17 @@ export default function AIEnhancedDashboard() {
                   <Share2 className="h-4 w-4 mb-1 text-indigo-500" />
                   <span className="text-xs">Referrals</span>
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex flex-col h-auto py-3 text-center justify-center bg-card/80"
-                  onClick={() => navigate("/branding")}
-                >
-                  <Paintbrush className="h-4 w-4 mb-1 text-indigo-500" />
-                  <span className="text-xs">Branding</span>
-                </Button>
+                {FEATURE_BRANDING && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex flex-col h-auto py-3 text-center justify-center bg-card/80"
+                    onClick={() => navigate("/branding")}
+                  >
+                    <Paintbrush className="h-4 w-4 mb-1 text-indigo-500" />
+                    <span className="text-xs">Branding</span>
+                  </Button>
+                )}
                 <Button 
                   variant="outline" 
                   size="sm" 

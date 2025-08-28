@@ -1494,45 +1494,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }));
 
-  // AI-Powered Personal Branding Suggester
-  app.post("/api/branding/suggest", asyncHandler(async (req: any, res: any) => {
-    if (!process.env.OPENAI_API_KEY) {
-      // Provide fallback branding suggestions
-      const fallbackSuggestions = {
-        colorPalette: {
-          primary: "#4361ee",
-          secondary: "#3a0ca3",
-          accent: "#f72585",
-        },
-        tagline: "Connecting Your Digital World",
-        profileBio: "Digital creator sharing insights and connecting across platforms. Follow for updates on my latest projects and collaborations.",
-        imageryThemes: ["Minimalist", "Technology", "Creative", "Professional"],
-        fontRecommendations: ["Poppins", "Inter", "Montserrat"],
+  // AI Branding temporarily disabled for MVP.
+  if (process.env.FEATURE_BRANDING === "true") {
+    // AI-Powered Personal Branding Suggester
+    app.post("/api/branding/suggest", asyncHandler(async (req: any, res: any) => {
+      if (!process.env.OPENAI_API_KEY) {
+        // Provide fallback branding suggestions
+        const fallbackSuggestions = {
+          colorPalette: {
+            primary: "#4361ee",
+            secondary: "#3a0ca3",
+            accent: "#f72585",
+          },
+          tagline: "Connecting Your Digital World",
+          profileBio: "Digital creator sharing insights and connecting across platforms. Follow for updates on my latest projects and collaborations.",
+          imageryThemes: ["Minimalist", "Technology", "Creative", "Professional"],
+          fontRecommendations: ["Poppins", "Inter", "Montserrat"],
+        };
+
+        return res.json({
+          message: "Generated example suggestions. OpenAI API currently unavailable.",
+          suggestions: fallbackSuggestions,
+          isDemo: true,
+        });
+      }
+
+      const profileData = {
+        username: "User",
+        name: "Demo User",
+        bio: "Demo bio",
+        profession: req.body.profession || "",
+        interests: req.body.interests || [],
+        socialAccounts: req.body.socialAccounts || [],
       };
 
-      return res.json({
-        message: "Generated example suggestions. OpenAI API currently unavailable.",
-        suggestions: fallbackSuggestions,
-        isDemo: true,
+      const brandingSuggestions = await generateBrandingSuggestions(profileData, []);
+
+      res.json({
+        message: "Branding suggestions generated successfully",
+        suggestions: brandingSuggestions,
       });
-    }
-
-    const profileData = {
-      username: "User",
-      name: "Demo User",
-      bio: "Demo bio",
-      profession: req.body.profession || "",
-      interests: req.body.interests || [],
-      socialAccounts: req.body.socialAccounts || [],
-    };
-
-    const brandingSuggestions = await generateBrandingSuggestions(profileData, []);
-
-    res.json({
-      message: "Branding suggestions generated successfully",
-      suggestions: brandingSuggestions,
-    });
-  }));
+    }));
+  }
 
   // Analytics insights with intelligent fallback
   app.get("/api/analytics/insights", isAuthenticated, asyncHandler(async (req: any, res: any) => {

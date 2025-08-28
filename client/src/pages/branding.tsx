@@ -43,6 +43,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+// Feature flag for AI Branding
+const FEATURE_BRANDING = import.meta.env.VITE_FEATURE_BRANDING === "true"; // AI Branding temporarily disabled for MVP
+
 interface BrandingSuggestions {
   colorPalette: {
     primary: string;
@@ -62,7 +65,11 @@ export default function BrandingPage() {
   const [currentTab, setCurrentTab] = useState("colors");
   const [isGenerating, setIsGenerating] = useState(false);
   const [brandingData, setBrandingData] = useState<BrandingSuggestions | null>(null);
-  
+
+  if (!FEATURE_BRANDING) {
+    return <div className="p-4">AI Branding temporarily disabled for MVP.</div>;
+  }
+
   // Branding generation mutation
   const generateBrandingMutation = useMutation({
     mutationFn: async (data: any) => {

@@ -4,6 +4,9 @@ import { apiRequest, queryClient } from '../lib/queryClient';
 import { Loader2, Sparkles, RefreshCw, CopyCheck, ExternalLink, PenTool, Palette, Lightbulb, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+// Feature flag for AI Branding
+const BRANDING_ENABLED = import.meta.env.VITE_FEATURE_BRANDING === 'true';
+
 type BrandingSuggestionsProps = {
   className?: string;
   userId?: number;
@@ -24,6 +27,10 @@ type BrandingSuggestion = {
 };
 
 export function BrandingSuggester({ className = '', userId, username }: BrandingSuggestionsProps) {
+  if (!BRANDING_ENABLED) {
+    return null; // AI Branding temporarily disabled for MVP.
+  }
+
   const { toast } = useToast();
   const [interests, setInterests] = useState<string[]>([]);
   const [interestInput, setInterestInput] = useState('');
