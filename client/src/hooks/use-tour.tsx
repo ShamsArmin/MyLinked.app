@@ -7,19 +7,26 @@ export function useTour() {
   const [tourCompleted, setTourCompleted] = useState(false);
 
   useEffect(() => {
-    if (user && !tourCompleted) {
-      // Check if user has completed tour before
-      const tourKey = `tour_completed_${user.id}`;
-      const hasCompletedTour = localStorage.getItem(tourKey) === 'true';
-      
-      if (!hasCompletedTour) {
-        // Show tour after a brief delay to let the page load
-        const timer = setTimeout(() => {
-          setShowTour(true);
-        }, 1500);
-        
-        return () => clearTimeout(timer);
+    if (!user) return;
+
+    const tourKey = `tour_completed_${user.id}`;
+    const hasCompletedTour = localStorage.getItem(tourKey) === 'true';
+
+    if (hasCompletedTour) {
+      // Persist completion state across sessions
+      if (!tourCompleted) {
+        setTourCompleted(true);
       }
+      return;
+    }
+
+    if (!tourCompleted) {
+      // Show tour after a brief delay to let the page load
+      const timer = setTimeout(() => {
+        setShowTour(true);
+      }, 1500);
+
+      return () => clearTimeout(timer);
     }
   }, [user, tourCompleted]);
 
