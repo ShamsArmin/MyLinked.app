@@ -1004,29 +1004,28 @@ export default function AIEnhancedDashboard() {
   });
   
   // Handle applying AI suggestions for optimal link order
-  const handleApplySuggestions = async (linkScores: {id: number, score: number}[]) => {
+  const handleApplySuggestions = async (
+    linkScores: { id: number; score: number }[]
+  ) => {
     try {
-      // Sort linkScores by score in descending order and update each link's order
-      const sortedScores = linkScores.sort((a, b) => b.score - a.score);
-      
-      // Update each link with its new order
-      const updatePromises = sortedScores.map((item, index) => 
-        updateLinkMutation.mutateAsync({ 
-          id: item.id, 
-          data: { order: index } 
-        })
-      );
-      
-      await Promise.all(updatePromises);
-      
+      // Sort scores by AI ranking and convert to new order indexes
+      const sortedScores = [...linkScores]
+        .sort((a, b) => b.score - a.score)
+        .map((item, index) => ({ id: item.id, score: index }));
+
+      // Use reorder mutation to apply new ordering
+      await reorderLinksMutation.mutateAsync(sortedScores);
+
       toast({
         title: "Link order optimized",
-        description: "Your links have been reordered based on AI suggestions to maximize engagement.",
+        description:
+          "Your links have been reordered based on AI suggestions to maximize engagement.",
       });
     } catch (error: any) {
       toast({
         title: "Failed to apply suggestions",
-        description: error.message || "An error occurred while optimizing link order.",
+        description:
+          error.message || "An error occurred while optimizing link order.",
         variant: "destructive",
       });
     }
