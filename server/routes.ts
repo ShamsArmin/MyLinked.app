@@ -55,6 +55,7 @@ import emailRouter from "./email-routes";
 import supportRouter from "./support-routes";
 import { setupTikTokOAuth } from "./tiktok-oauth";
 import { sendPasswordResetEmail } from "./email-service";
+import authRouter from "../src/routes/auth";
 
 // Error handling middleware
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
@@ -198,6 +199,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     next();
   });
+
+  // Google OAuth routes
+  app.use(authRouter);
 
   app.use("/api/links", linksRouter);
 
