@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { z } from "zod";
-import { OptimizeLinksSection } from "@/components/optimize-links-section";
+// import { OptimizeLinksSection } from "@/components/optimize-links-section"; // Temporarily disabled
 import { TourGuide } from "@/components/tour-guide";
 import { useTour } from "@/hooks/use-tour";
 
@@ -1926,15 +1926,17 @@ export default function AIEnhancedDashboard() {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                {/*
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="flex flex-col h-auto py-3 text-center justify-center bg-card/80"
                   onClick={() => navigate("/optimize-links")}
                 >
                   <Shuffle className="h-4 w-4 mb-1 text-indigo-500" />
                   <span className="text-xs">Optimize Links</span>
                 </Button>
+                */}
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -2520,11 +2522,13 @@ export default function AIEnhancedDashboard() {
 
             {/* Right Column - Smart Link AI and One-Click Pitch Mode (1 column) */}
             <div className="md:col-span-1 space-y-6">
-              {/* Smart Link AI Component */}
-              <SmartLinkAI 
-                links={links || []} 
-                onApplySuggestions={handleApplySuggestions} 
-              />
+              {/* Smart Link AI Component temporarily disabled */}
+              {false && (
+                <SmartLinkAI
+                  links={links || []}
+                  onApplySuggestions={handleApplySuggestions}
+                />
+              )}
 
               {/* One-Click Pitch Mode Card */}
               <PitchModeCard />

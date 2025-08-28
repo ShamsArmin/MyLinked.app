@@ -22,7 +22,7 @@ import IndustryDiscoveryDemo from "./pages/industry-discovery-demo";
 import IndustryDiscoveryFixed from "./pages/industry-discovery-fixed";
 import IndustryExamples from "./pages/industry-examples";
 import ReferralLinksPage from "./pages/referral-links-fixed";
-import OptimizeLinksPage from "./pages/optimize-links-page";
+// import OptimizeLinksPage from "./pages/optimize-links-page"; // Temporarily disabled
 
 import ThemesPage from "./pages/themes-page";
 import SimpleThemesDemo from "./pages/simple-themes-demo";
@@ -168,7 +168,7 @@ function Router() {
         <Route path="/industry-discovery-fixed" component={IndustryDiscoveryFixed} />
         <Route path="/industry-examples" component={IndustryExamples} />
         <ProtectedRoute path="/referral-links" component={ReferralLinksPage} />
-        <ProtectedRoute path="/optimize-links" component={OptimizeLinksPage} />
+        {/* <ProtectedRoute path="/optimize-links" component={OptimizeLinksPage} /> */}
         <ProtectedRoute path="/collaboration" component={CollaborationPage} />
 
         <ProtectedRoute path="/my-links" component={MyLinksPage} />
