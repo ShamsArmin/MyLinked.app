@@ -1165,12 +1165,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Don't include password in response
     const { password, ...userWithoutPassword } = updatedUser;
 
-    // Update the session with the new user data so subsequent requests
-    // immediately reflect the saved Pitch Mode state
+    // Refresh the session with the updated user so the new Pitch Mode state
+    // is persisted immediately for subsequent requests
     await new Promise<void>((resolve, reject) => {
       req.login(userWithoutPassword, (err: any) => {
         if (err) return reject(err);
-        resolve();
+        // Ensure the session is saved before sending the response
+        req.session.save((saveErr: any) => {
+          if (saveErr) return reject(saveErr);
+          resolve();
+        });
       });
     });
 
