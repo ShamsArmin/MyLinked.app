@@ -7,7 +7,7 @@ const knowledgeBase: KnowledgeBaseEntry[] = [
   {
     keywords: ["analytics", "engagement", "metrics"],
     response:
-      "\uD83D\uDCCA For analytics insights, visit your Analytics page where you can view engagement trends, click-through rates, and performance metrics. I can also help optimize your content strategy based on your data.",
+      "\uD83D\uDCCA For analytics insights, visit your Analytics page where you can view engagement trends, click-through rates, and performance metrics by date range or platform. You can export reports, compare time periods, and use the data to refine your content strategy. Need help interpreting any metric?",
   },
   {
     keywords: ["profile", "optimize", "bio"],
@@ -45,6 +45,11 @@ const knowledgeBase: KnowledgeBaseEntry[] = [
       "\uD83D\uDD10 OAuth connections let MyLinked securely access social platforms. Visit Settings > Social Connections to connect or disconnect accounts. Ensure proper permissions are granted and check platform-specific requirements.",
   },
   {
+    keywords: ["connection issue", "can't connect", "connection problem", "connect error"],
+    response:
+      "\uD83D\uDCF6 Having trouble connecting? 1) Verify your internet connection, 2) Reauthenticate the social platform in Settings > Social Connections, 3) Confirm the redirect URI matches the app configuration, and 4) Check if the platform is experiencing outages.",
+  },
+  {
     keywords: ["api", "developer"],
     response:
       "\uD83D\uDEE0\uFE0F Our platform uses several APIs for social media integration. If you're experiencing API issues, verify your credentials, rate limits, and ensure the platform's API status is operational.",
@@ -63,6 +68,36 @@ const knowledgeBase: KnowledgeBaseEntry[] = [
     keywords: ["problem", "issue", "not working"],
     response:
       "\uD83D\uDD27 I can help troubleshoot issues! Common solutions: 1) Refresh the page, 2) Clear browser cache, 3) Check your internet connection, 4) Try a different browser. What specific problem are you experiencing?",
+  },
+  {
+    keywords: ["theme not working", "theme issue", "appearance problem", "design bug"],
+    response:
+      "\uD83C\uDFA8 If your theme changes aren't applying: 1) Ensure you clicked 'Save' after selecting a theme, 2) Clear your browser cache, 3) Disable conflicting browser extensions, and 4) Try reloading on a different device to rule out local issues.",
+  },
+  {
+    keywords: ["mobile", "phone", "responsive", "mobile issue"],
+    response:
+      "\uD83D\uDCF1 For mobile display issues: 1) Update to the latest app or browser version, 2) Test in incognito mode to bypass cached styles, 3) Check that your links and widgets are mobile-friendly, and 4) Report persistent problems through Support with screenshots.",
+  },
+  {
+    keywords: ["notification", "email alert", "alerts", "push notification"],
+    response:
+      "\uD83D\uDD14 Manage notifications in Settings > Notifications where you can enable or disable email alerts for new followers, collaboration requests, and analytics summaries. Customize the frequency or unsubscribe anytime.",
+  },
+  {
+    keywords: ["password", "reset password", "forgot password"],
+    response:
+      "\uD83D\uDD11 To reset your password, click 'Forgot Password' on the login page, enter your registered email, and follow the link sent to your inbox. If the email doesn't arrive, check spam or request another reset.",
+  },
+  {
+    keywords: ["billing", "subscription", "plan", "payment"],
+    response:
+      "\uD83D\uDCB3 Billing details and subscription plans live under Settings > Billing. From there you can update payment methods, review invoices, or downgrade/upgrade your plan. Contact Support for payment failures or refunds.",
+  },
+  {
+    keywords: ["bug", "error", "glitch"],
+    response:
+      "\uD83D\uDEA7 Encountered a bug? Take a screenshot, note the steps to reproduce, and send it via Support > Report a Problem so our team can investigate and fix it quickly.",
   },
   {
     keywords: ["how to", "tutorial", "guide"],
