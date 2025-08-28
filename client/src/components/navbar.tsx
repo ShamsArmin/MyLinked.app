@@ -1,20 +1,23 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { 
-  Home, 
-  BarChart2, 
-  Award, 
-  Settings, 
-  User, 
-  Palette, 
-  LogOut, 
-  Menu, 
-  X,
-  Link2
-} from "lucide-react";
+import {
+    Home,
+    BarChart2,
+    Award,
+    Settings,
+    User,
+    Palette,
+    LogOut,
+    Menu,
+    X,
+    Link2
+  } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+
+// Feature flag for AI Branding
+const BRANDING_ENABLED = import.meta.env.VITE_FEATURE_BRANDING === "true";
 
 export function Navbar() {
   const { user, logoutMutation } = useAuth();
@@ -29,7 +32,7 @@ export function Navbar() {
     { href: "/social-score", icon: Award, label: "Social Score" },
     { href: "/spotlight", icon: Link2, label: "Spotlight" },
     { href: "/profile", icon: User, label: "Profile" },
-    { href: "/branding", icon: Palette, label: "Branding" },
+    ...(BRANDING_ENABLED ? [{ href: "/branding", icon: Palette, label: "Branding" }] : []),
     { href: "/settings", icon: Settings, label: "Settings" },
   ];
 

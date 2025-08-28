@@ -20,6 +20,9 @@ import {
 import { ChevronDown, Menu, X, Home, BarChart2, Settings, User, LogOut, Award, Paintbrush, Link as LinkIcon, Palette, HelpCircle } from "lucide-react";
 import { SocialScoreMini } from "./social-score-mini";
 
+// Feature flag for AI Branding
+const BRANDING_ENABLED = import.meta.env.VITE_FEATURE_BRANDING === "true";
+
 const AppHeader: React.FC = () => {
   const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
@@ -34,7 +37,7 @@ const AppHeader: React.FC = () => {
     { label: "Dashboard", href: "/", icon: Home },
     { label: "Analytics", href: "/analytics", icon: BarChart2 },
     { label: "Social Score", href: "/social-score", icon: Award },
-    { label: "Branding", href: "/branding", icon: Paintbrush },
+    ...(BRANDING_ENABLED ? [{ label: "Branding", href: "/branding", icon: Paintbrush }] : []),
     { label: "Spotlight", href: "/spotlight", icon: LinkIcon },
     { label: "Settings", href: "/settings", icon: Settings },
   ];

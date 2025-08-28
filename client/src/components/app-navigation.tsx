@@ -3,6 +3,9 @@ import { Link, useLocation } from 'wouter';
 import { User, LogOut, BarChart3, TrendingUp, Link2, Home, Settings, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
+// Feature flag for AI Branding
+const BRANDING_ENABLED = import.meta.env.VITE_FEATURE_BRANDING === 'true';
+
 type AppNavigationProps = {
   activeItem?: string;
 };
@@ -15,7 +18,7 @@ export function AppNavigation({ activeItem = 'dashboard' }: AppNavigationProps) 
     { id: 'dashboard', label: 'Dashboard', icon: Home, href: '/dashboard' },
     { id: 'social-score', label: 'Social Score', icon: TrendingUp, href: '/social-score' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, href: '/analytics' },
-    { id: 'branding', label: 'AI Branding', icon: Sparkles, href: '/branding' },
+    ...(BRANDING_ENABLED ? [{ id: 'branding', label: 'AI Branding', icon: Sparkles, href: '/branding' }] : []),
     { id: 'settings', label: 'Settings', icon: Settings, href: '/settings' },
   ];
 
