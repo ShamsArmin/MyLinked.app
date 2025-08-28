@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MessageCircle, X, Minus, Send, Bot, User, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { searchKnowledgeBase, getGenericFallback } from "@/lib/chatbot-knowledge-base";
 
 interface Message {
   id: string;
@@ -148,6 +149,8 @@ export function AIChatbot() {
   };
 
   const getAIResponse = async (userInput: string): Promise<string> => {
+    const local = searchKnowledgeBase(userInput);
+    if (local) return local;
     try {
       const response = await fetch("/api/ai-support/chat", {
         method: "POST",
@@ -168,66 +171,11 @@ export function AIChatbot() {
       return data.response || "I'm having trouble processing your request right now. Please try again.";
     } catch (error) {
       console.error("AI Response Error:", error);
-      // Fallback to intelligent local responses
-      return getIntelligentFallback(userInput);
+      return getGenericFallback(userInput);
     }
   };
 
-  const getIntelligentFallback = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-    
-    // Social media management queries
-    if (input.includes("analytics") || input.includes("engagement") || input.includes("metrics")) {
-      return "📊 For analytics insights, visit your Analytics page where you can view engagement trends, click-through rates, and performance metrics. I can also help optimize your content strategy based on your data.";
-    }
-    
-    if (input.includes("profile") || input.includes("optimize") || input.includes("bio")) {
-      return "✨ To optimize your profile: 1) Add a compelling bio under 160 characters, 2) Use a professional profile image, 3) Connect all your social platforms, 4) Enable pitch mode for better presentation. Need help with any specific area?";
-    }
-    
-    if (input.includes("social score") || input.includes("score")) {
-      return "🎯 Your Social Score is calculated based on profile completeness, link engagement, social connections, and content quality. To improve it: complete your profile, add more social links, and encourage clicks on your content.";
-    }
-    
-    if (input.includes("links") || input.includes("add link") || input.includes("social media")) {
-      return "🔗 To manage your links: Go to 'My Links' section where you can add social media profiles, custom links, and referral links. I recommend organizing them by priority and using compelling descriptions.";
-    }
-    
-    if (input.includes("collaboration") || input.includes("networking")) {
-      return "🤝 Use the Collaboration section to connect with other creators, showcase spotlight projects, and manage partnership requests. This helps expand your network and create meaningful professional relationships.";
-    }
-    
-    if (input.includes("theme") || input.includes("design") || input.includes("appearance")) {
-      return "🎨 Customize your appearance in Themes where you can choose colors, fonts, and layout styles. Pick themes that match your brand identity and professional image.";
-    }
-    
-    if (input.includes("pitch mode") || input.includes("presentation")) {
-      return "🎤 Pitch Mode creates a professional presentation of your profile. Configure it in Settings to highlight your expertise, focus areas, and key achievements for potential clients or collaborators.";
-    }
-    
-    if (input.includes("problem") || input.includes("issue") || input.includes("not working")) {
-      return "🔧 I can help troubleshoot issues! Common solutions: 1) Refresh the page, 2) Clear browser cache, 3) Check your internet connection, 4) Try a different browser. What specific problem are you experiencing?";
-    }
-    
-    if (input.includes("how to") || input.includes("tutorial") || input.includes("guide")) {
-      return "📚 I can provide step-by-step guidance for any MyLinked feature. What would you like to learn? Popular topics: setting up profiles, optimizing for engagement, using analytics, or managing collaborations.";
-    }
-    
-    // Greeting responses
-    if (input.includes("hello") || input.includes("hi") || input.includes("hey")) {
-      return "Hello! I'm your intelligent MyLinked assistant. I can help you optimize your profile, understand analytics, manage social links, troubleshoot issues, and boost your social presence. What would you like to work on today?";
-    }
-    
-    // General help
-    if (input.includes("help") || input.includes("what can you do")) {
-      return "🚀 I can assist with: Profile optimization, Analytics insights, Social Score improvement, Link management, Collaboration networking, Theme customization, Pitch Mode setup, Troubleshooting, and Strategic advice. What specific area interests you?";
-    }
-    
-    // Default intelligent response
-    return `I understand you're asking about "${userInput}". I can provide specific guidance on MyLinked features, optimization strategies, or troubleshooting. Could you tell me more about what you're trying to accomplish or what specific help you need?`;
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -401,7 +349,7 @@ export function AIChatbot() {
                 onChange={(e) =>
                   setState((prev) => ({ ...prev, inputValue: e.target.value }))
                 }
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 placeholder="Type your message..."
                 disabled={state.isLoading}
                 className="flex-1"
