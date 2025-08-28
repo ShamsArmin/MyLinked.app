@@ -110,11 +110,10 @@ export default function PublicProfile() {
   };
 
   const playWelcomeMessage = () => {
-      const audio = new Audio(data.profile.welcomeMessage);
-      setAudioPlaying(true);
-      audio.onended = () => setAudioPlaying(false);
-      audio.play();
-    }
+    const audio = new Audio(data.profile.welcomeMessage);
+    setAudioPlaying(true);
+    audio.onended = () => setAudioPlaying(false);
+    audio.play();
   };
 
   if (isLoading) {
@@ -148,39 +147,57 @@ export default function PublicProfile() {
         return {
           gradient: 'from-purple-500 to-pink-500',
           primary: 'bg-purple-500',
-          accent: 'text-purple-600'
+          accent: 'text-purple-600',
+          hover: 'hover:bg-purple-50',
+          border: 'border-purple-200',
+          bg: 'bg-purple-50'
         };
       case 'blue':
         return {
           gradient: 'from-blue-500 to-cyan-400',
           primary: 'bg-blue-500',
-          accent: 'text-blue-600'
+          accent: 'text-blue-600',
+          hover: 'hover:bg-blue-50',
+          border: 'border-blue-200',
+          bg: 'bg-blue-50'
         };
       case 'orange':
         return {
           gradient: 'from-amber-500 to-orange-500',
           primary: 'bg-orange-500',
-          accent: 'text-orange-600'
+          accent: 'text-orange-600',
+          hover: 'hover:bg-orange-50',
+          border: 'border-orange-200',
+          bg: 'bg-orange-50'
         };
       case 'green':
         return {
           gradient: 'from-emerald-500 to-lime-500',
           primary: 'bg-green-500',
-          accent: 'text-green-600'
+          accent: 'text-green-600',
+          hover: 'hover:bg-green-50',
+          border: 'border-green-200',
+          bg: 'bg-green-50'
         };
       default:
         return {
           gradient: 'from-indigo-500 to-purple-600',
           primary: 'bg-indigo-500',
-          accent: 'text-indigo-600'
+          accent: 'text-indigo-600',
+          hover: 'hover:bg-indigo-50',
+          border: 'border-indigo-200',
+          bg: 'bg-indigo-50'
         };
     }
   };
 
   const themeStyles = getThemeStyles();
+  const isDark = profile.darkMode;
+  const bgClass = isDark ? 'bg-gray-900 text-white' : 'bg-gray-50';
+  const cardClass = isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen ${bgClass}`}>
       {/* Top Navigation */}
       <div className="absolute top-0 left-0 right-0 z-10 p-4">
         <div className="flex justify-between items-center">
@@ -272,54 +289,42 @@ export default function PublicProfile() {
           <div className="lg:col-span-2 space-y-6">
             {/* Welcome Message */}
             {profile.welcomeMessage && (
-              <Card>
+              <Card className={cardClass}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className={`flex items-center gap-2 ${themeStyles.accent}`}>
                     <MessageCircle className="h-5 w-5" />
                     Welcome Message
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-3">
-                      <audio 
-                        controls 
-                        className="w-full rounded"
-                        src={profile.welcomeMessage}
-                      >
-                        Your browser does not support the audio element.
-                      </audio>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={playWelcomeMessage}
-                        disabled={audioPlaying}
-                        className="flex items-center gap-2"
-                      >
-                        <PlayCircle className="h-4 w-4" />
-                        {audioPlaying ? 'Playing...' : 'Play Message'}
-                      </Button>
-                    </div>
-                    <video 
-                      controls 
-                      className="w-full rounded border"
+                  <div className="space-y-3">
+                    <audio
+                      controls
+                      className="w-full rounded"
                       src={profile.welcomeMessage}
                     >
-                      Your browser does not support the video element.
-                    </video>
-                  ) : (
-                    <p className="text-foreground">
-                      {profile.welcomeMessage}
-                    </p>
-                  )}
+                      Your browser does not support the audio element.
+                    </audio>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={playWelcomeMessage}
+                      disabled={audioPlaying}
+                      className="flex items-center gap-2"
+                    >
+                      <PlayCircle className="h-4 w-4" />
+                      {audioPlaying ? 'Playing...' : 'Play Message'}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
 
             {/* Links Section */}
             {links && links.length > 0 && (
-              <Card>
+              <Card className={cardClass}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className={`flex items-center gap-2 ${themeStyles.accent}`}>
                     <Globe className="h-5 w-5" />
                     My Links
                   </CardTitle>
@@ -329,12 +334,15 @@ export default function PublicProfile() {
                     {links.map(link => {
                       const platform = getPlatformConfig(link.platform);
                       const IconComponent = platform.icon;
-                      
+                      const linkButtonClass = isDark
+                        ? 'bg-gray-700 border-gray-600 hover:bg-gray-600'
+                        : `bg-white border ${themeStyles.border} ${themeStyles.hover}`;
+
                       return (
                         <Button
                           key={link.id}
                           variant="outline"
-                          className="justify-start p-4 h-auto hover:scale-105 transition-all bg-card border-border hover:bg-accent"
+                          className={`justify-start p-4 h-auto hover:scale-105 transition-all ${linkButtonClass}`}
                           onClick={() => handleLinkClick(link.id, link.url)}
                         >
                           <div className="flex items-center gap-3 w-full">
@@ -365,9 +373,9 @@ export default function PublicProfile() {
 
             {/* Collaborative Spotlight */}
             {spotlightProjects && spotlightProjects.length > 0 && (
-              <Card>
+              <Card className={cardClass}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className={`flex items-center gap-2 ${themeStyles.accent}`}>
                     <GitBranch className="h-5 w-5" />
                     Collaborative Spotlight
                   </CardTitle>
@@ -375,7 +383,7 @@ export default function PublicProfile() {
                 <CardContent>
                   <div className="grid gap-4">
                     {spotlightProjects.map(project => (
-                      <div key={project.id} className="p-4 rounded-lg border bg-card border-border">
+                      <div key={project.id} className={`p-4 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600' : `${themeStyles.bg} ${themeStyles.border}`}`}>
                         <div className="flex items-start gap-4">
                           {project.imageUrl && (
                             <img 
@@ -429,9 +437,9 @@ export default function PublicProfile() {
           <div className="space-y-6">
             {/* Skills & Industry */}
             {(profile.skills?.length || profile.industry) && (
-              <Card>
+              <Card className={cardClass}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className={`flex items-center gap-2 ${themeStyles.accent}`}>
                     <Award className="h-5 w-5" />
                     Skills & Industry
                   </CardTitle>
@@ -461,9 +469,9 @@ export default function PublicProfile() {
 
             {/* Referral Links */}
             {referralLinks && referralLinks.length > 0 && (
-              <Card>
+              <Card className={cardClass}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className={`flex items-center gap-2 ${themeStyles.accent}`}>
                     <Star className="h-5 w-5" />
                     Recommended Links
                   </CardTitle>
@@ -471,7 +479,7 @@ export default function PublicProfile() {
                 <CardContent>
                   <div className="space-y-3">
                     {referralLinks.map(link => (
-                      <div key={link.id} className="p-3 rounded-lg border bg-card border-border">
+                      <div key={link.id} className={`p-3 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600' : `${themeStyles.bg} ${themeStyles.border}`}`}>
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <h4 className="font-medium text-sm">{link.title}</h4>
