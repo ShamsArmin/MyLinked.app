@@ -14,6 +14,9 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 # GOOGLE_CALLBACK_PATH=/auth/google/callback  # optional override
 ```
 
+Trailing slashes in `PUBLIC_BASE_URL` are removed automatically, but it's best
+to omit them in the value you provide.
+
 ## Google Cloud Console
 
 1. Navigate to **APIs & Services → Credentials**.
