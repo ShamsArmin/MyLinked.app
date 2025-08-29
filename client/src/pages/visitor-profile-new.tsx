@@ -357,7 +357,7 @@ export default function VisitorProfileNew() {
         description: referralForm.description,
         linkTitle: referralForm.linkTitle,
         linkUrl: referralForm.linkUrl,
-        targetUserId: parseInt(data?.profile.id, 10)
+        targetUserId: data?.profile.id
       };
 
       console.log('Sending request data:', requestData);
