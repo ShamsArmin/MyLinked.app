@@ -9,6 +9,7 @@ import { migrate } from "drizzle-orm/neon-serverless/migrator";
 import { db } from "./db";
 import path from "path";
 import { fileURLToPath } from "url";
+import referralRequestsRouter from './routes/referral-requests';
 // Temporarily disabled problematic imports
 // import { initializeEmailTemplates } from "./init-email-templates";
 // import { initAIEmailTemplates } from "./ai-email-templates";
@@ -78,6 +79,8 @@ app.use(session({
   },
   // TODO: move to a persistent store later; MemoryStore is OK short-term
 }));
+
+app.use(referralRequestsRouter);
 
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 
