@@ -1,5 +1,5 @@
 import { db, isDbAvailable, setDbEnabled } from './db';
-import { 
+import {
   users, links, profileViews, follows, socialPosts, socialConnections,
   spotlightProjects, spotlightContributors, spotlightTags,
   industries, referralLinks, instagramPreviews,
@@ -42,16 +42,31 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import type { IStorage } from "./storage";
+import { getUserColumnSet } from "./user-columns";
 
 const scryptAsync = promisify(scrypt);
 
 export class EnhancedDatabaseStorage implements IStorage {
   sessionStore: any;
+  private dashboardTourColumnEnsured = false;
 
   constructor() {
     // Use built-in memory store to avoid database connection issues
     this.sessionStore = new session.MemoryStore();
     console.log('Using memory session store to avoid database connection issues');
+  }
+
+  private async ensureDashboardTourColumn() {
+    if (this.dashboardTourColumnEnsured) return;
+    try {
+      const cols = await getUserColumnSet(db);
+      if (!cols.has('has_seen_dashboard_tour')) {
+        await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS has_seen_dashboard_tour boolean DEFAULT false`);
+      }
+    } catch (err) {
+      console.error('Failed to ensure has_seen_dashboard_tour column:', err);
+    }
+    this.dashboardTourColumnEnsured = true;
   }
 
   async hashPassword(password: string): Promise<string> {
@@ -199,6 +214,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
+    await this.ensureDashboardTourColumn();
     const [user] = await db
       .select()
       .from(users)
@@ -207,6 +223,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
+    await this.ensureDashboardTourColumn();
     const [user] = await db
       .select()
       .from(users)
@@ -215,6 +232,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    await this.ensureDashboardTourColumn();
     // Hash the password before inserting
     const password = await this.hashPassword(insertUser.password);
 
@@ -229,6 +247,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   async updateUser(id: number, updates: UpdateUser): Promise<User | undefined> {
+    await this.ensureDashboardTourColumn();
     // If password is being updated, hash it
     if (updates.password) {
       updates.password = await this.hashPassword(updates.password);

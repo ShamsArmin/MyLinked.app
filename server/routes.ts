@@ -13,6 +13,7 @@ import {
   insertLinkSchema,
   updateLinkSchema,
   updateUserSchema,
+  users,
   insertSocialPostSchema,
   insertFollowSchema,
   referralRequests,
@@ -200,6 +201,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.use("/api/links", linksRouter);
+
+  app.get('/api/me', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const user = req.user as { id: string };
+    const [profile] = await db.select().from(users).where(eq(users.id, user.id));
+    if (!profile) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({
+      id: profile.id,
+      name: profile.name,
+      email: profile.email,
+      hasSeenDashboardTour: profile.hasSeenDashboardTour ?? false,
+    });
+  }));
+
+  app.patch('/api/me', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const user = req.user as { id: string };
+    const { hasSeenDashboardTour } = req.body as { hasSeenDashboardTour?: boolean };
+    if (typeof hasSeenDashboardTour !== 'boolean') {
+      return res.status(400).json({ message: 'Invalid body' });
+    }
+    await db.update(users).set({ hasSeenDashboardTour }).where(eq(users.id, user.id));
+    res.json({ ok: true });
+  }));
 
   // Set up TikTok OAuth
   setupTikTokOAuth(app);
