@@ -3,10 +3,44 @@ import pg from 'pg';
 const { Pool } = pg;
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const DUPLICATE_CODES = new Set([
+  '42701', // duplicate_column
+  '42P07', // duplicate_table
+  '42710'  // duplicate_object (index/constraint exists)
+]);
+
+function sha256(str) {
+  return crypto.createHash('sha256').update(str).digest('hex');
+}
+
+async function ensureMigrationsTable(pool) {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      filename TEXT PRIMARY KEY,
+      checksum TEXT,
+      applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+}
+
+async function getAppliedSet(pool) {
+  const { rows } = await pool.query(`SELECT filename FROM schema_migrations`);
+  return new Set(rows.map(r => r.filename));
+}
+
+async function markApplied(pool, filename, checksum) {
+  await pool.query(
+    `INSERT INTO schema_migrations (filename, checksum) VALUES ($1, $2)
+     ON CONFLICT (filename) DO NOTHING`,
+    [filename, checksum]
+  );
+}
 
 async function runMigration() {
   if (!process.env.DATABASE_URL) {
@@ -17,58 +51,67 @@ async function runMigration() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
   try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS schema_migrations (
-        filename TEXT PRIMARY KEY,
-        applied_at TIMESTAMP DEFAULT NOW()
-      )
-    `);
-
     const migrationsDir = path.join(__dirname, 'migrations');
     const files = fs
       .readdirSync(migrationsDir)
       .filter((f) => f.endsWith('.sql'))
       .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
-    const appliedRes = await pool.query('SELECT filename FROM schema_migrations');
-    const applied = new Set(appliedRes.rows.map((r) => r.filename));
-
-    const toRun = files.filter((f) => !applied.has(f));
-
-    if (toRun.length === 0) {
-      console.log('No new migration files found.');
+    if (files.length === 0) {
+      console.log('No migration files found in /migrations.');
       return;
     }
 
+    await ensureMigrationsTable(pool);
+    const applied = await getAppliedSet(pool);
+
     console.log('Running migrations:');
-    for (const f of toRun) console.log(' -', f);
+    for (const f of files) console.log(' -', f);
     console.log('-'.repeat(80));
 
-    for (const file of toRun) {
-      const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+    for (const file of files) {
+      if (applied.has(file)) {
+        console.log(`Skipping ${file}; already applied.`);
+        continue;
+      }
+
+      const fullPath = path.join(migrationsDir, file);
+      const sql = fs.readFileSync(fullPath, 'utf8');
+      const checksum = sha256(sql);
+
       console.log(`Applying ${file} ...`);
+      await pool.query('BEGIN');
       try {
-        await pool.query('BEGIN');
         await pool.query(sql);
-        await pool.query('INSERT INTO schema_migrations (filename) VALUES ($1)', [file]);
+        await markApplied(pool, file, checksum);
         await pool.query('COMMIT');
       } catch (err) {
-        await pool.query('ROLLBACK');
-        if (err.code === '42P07' || err.code === '42710') {
-          console.log(`Skipping ${file}; already applied.`);
-          await pool.query('INSERT INTO schema_migrations (filename) VALUES ($1) ON CONFLICT DO NOTHING', [file]);
-        } else {
-          throw err;
+        // If it's an idempotency/duplicate error, mark as applied and continue
+        if (err && err.code && DUPLICATE_CODES.has(err.code)) {
+          console.warn(`Warning: ${file} raised ${err.code} (already exists). Marking as applied and continuing.`);
+          try {
+            await markApplied(pool, file, checksum);
+            await pool.query('COMMIT');
+          } catch (markErr) {
+            try { await pool.query('ROLLBACK'); } catch {}
+            throw markErr;
+          }
+          continue;
         }
+
+        try { await pool.query('ROLLBACK'); } catch {}
+        throw err;
       }
     }
 
     console.log('-'.repeat(80));
-    console.log('Migrations complete!');
+    console.log('All migrations applied successfully!');
   } catch (err) {
     console.error('Error running migrations:', err);
     process.exit(1);
   } finally {
+    // Ensure the connection is closed
+    // (Render process continues to start the app)
     await pool.end();
   }
 }
