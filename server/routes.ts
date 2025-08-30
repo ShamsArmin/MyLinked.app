@@ -50,6 +50,7 @@ import { professionalAdminRouter } from "./professional-admin-routes";
 import { monitoringRouter } from "./monitoring-routes";
 import { securityRouter } from "./security-routes";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { handleCustomDomain, domainHealthCheck } from "./domain-middleware";
 import emailRouter from "./email-routes";
 import supportRouter from "./support-routes";
@@ -69,6 +70,24 @@ const validateId = (id: string): number => {
   }
   return numId;
 };
+
+// Helper to resolve a user from the request via session or bearer token
+async function getUserFromRequest(req: any) {
+  if (req.user) return req.user;
+  const auth = req.headers?.authorization;
+  if (auth?.startsWith('Bearer ')) {
+    const token = auth.slice(7);
+    try {
+      const payload: any = jwt.verify(token, process.env.JWT_SECRET || '');
+      if (payload?.id) {
+        return await storage.getUser(payload.id);
+      }
+    } catch {
+      // ignore invalid token
+    }
+  }
+  return null;
+}
 
 // Environment validation
 const validateEnvironmentVars = () => {
@@ -2086,6 +2105,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Visitor endpoints for requests
   app.post("/api/referral-requests", asyncHandler(async (req: any, res: any) => {
+    const user = await getUserFromRequest(req);
+    console.debug('[referral-requests] keys(body)=', Object.keys(req.body || {}));
+    console.debug('[referral-requests] auth=', user ? 'ok' : 'none');
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
     const {
       requesterName,
       requesterEmail,
@@ -2096,12 +2122,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       linkTitle,
       linkUrl,
       targetUserId,
-    } = req.body;
+    } = req.body || {};
 
-    // Validate required fields
-    if (!requesterName || !requesterEmail || !fieldOfWork || !description || 
-        !linkTitle || !linkUrl || !targetUserId) {
-      return res.status(400).json({ message: "Missing required fields" });
+    const errors: Array<{ field: string; message: string }> = [];
+    if (!requesterName) errors.push({ field: 'requesterName', message: 'is required' });
+    if (!requesterEmail) errors.push({ field: 'requesterEmail', message: 'is required' });
+    if (!fieldOfWork) errors.push({ field: 'fieldOfWork', message: 'is required' });
+    if (!description) errors.push({ field: 'description', message: 'is required' });
+    if (!linkTitle) errors.push({ field: 'linkTitle', message: 'is required' });
+    if (!linkUrl) errors.push({ field: 'linkUrl', message: 'is required' });
+    if (!targetUserId) errors.push({ field: 'targetUserId', message: 'is required' });
+
+    if (errors.length) {
+      return res.status(422).json({ message: 'Validation error', errors });
     }
 
     // Check for duplicate requests within 10 minutes
@@ -2121,7 +2154,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
 
-    // Create the referral request in the database
     const referralRequest = await storage.createReferralRequest({
       targetUserId,
       requesterName,
@@ -2134,7 +2166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       linkUrl,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Referral request sent successfully",
       id: referralRequest.id,
     });
