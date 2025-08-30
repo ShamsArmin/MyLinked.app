@@ -8,14 +8,17 @@ export function useSocialPosts() {
   const { toast } = useToast();
   
   // Fetch all social posts
-  const { 
-    data: posts, 
-    isLoading, 
-    isError, 
-    error 
+  const {
+    data: posts,
+    isLoading,
+    isError,
+    error
   } = useQuery<SocialPost[]>({
     queryKey: ['/api/social-posts'],
-    retry: 1,
+    retry: 0,
+    suspense: false,
+    useErrorBoundary: false,
+    onError: () => {},
   });
   
   // Add a new social post

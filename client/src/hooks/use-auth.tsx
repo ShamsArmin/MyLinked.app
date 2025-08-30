@@ -130,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: async (user: User) => {
       console.log("Login successful:", user);
       queryClient.setQueryData(["/api/user"], user);
+      await removeAll();
       await invalidateByUser(user.id);
       toast.toast({
         title: "Login successful",
@@ -165,9 +166,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return data.user;
     },
-    onSuccess: (user: User) => {
+    onSuccess: async (user: User) => {
       console.log("Registration successful:", user);
       queryClient.setQueryData(["/api/user"], user);
+      await removeAll();
+      await invalidateByUser(user.id);
       toast.toast({
         title: "Registration successful",
         description: `Welcome to MyLinked, ${user.name}!`,

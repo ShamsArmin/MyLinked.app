@@ -74,6 +74,10 @@ export default function SocialMediaIntegration() {
   const { data: connections = [], isLoading } = useQuery<SocialConnection[]>({
     queryKey: ["/api/social/connections"],
     refetchInterval: 30000, // Refresh every 30 seconds
+    retry: 0,
+    suspense: false,
+    useErrorBoundary: false,
+    onError: () => {},
   });
 
   // Connect to social media platform

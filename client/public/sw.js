@@ -1,3 +1,5 @@
+const SW_VERSION = '3';
+
 self.skipWaiting();
 self.clientsClaim();
 
