@@ -348,31 +348,37 @@ export default function VisitorProfileNew() {
     }
 
     try {
+      // Build payload
       const requestData = {
-        requesterName: referralForm.name,
-        requesterEmail: referralForm.email,
-        requesterPhone: referralForm.phone,
-        requesterWebsite: referralForm.website,
-        fieldOfWork: referralForm.fieldOfWork,
-        description: referralForm.description,
-        linkTitle: referralForm.linkTitle,
-        linkUrl: referralForm.linkUrl,
-        targetUserId: parseInt(data?.profile.id, 10)
+        requesterName: referralForm.name?.trim(),
+        requesterEmail: referralForm.email?.trim(),
+        requesterPhone: (referralForm.phone?.trim() || '') || null,
+        requesterWebsite: (referralForm.website?.trim() || '') || null,
+        fieldOfWork: referralForm.fieldOfWork?.trim(),
+        description: (referralForm.description?.trim() || '') || null,
+        linkTitle: referralForm.linkTitle?.trim(),
+        linkUrl: referralForm.linkUrl?.trim(),
+        // IMPORTANT: must be a UUID string; do NOT parseInt
+        targetUserId: data?.profile.id
       };
 
-      console.log('Sending request data:', requestData);
+      // TEMP instrumentation
+      const url = '/api/referral-requests';
+      console.log('[referral submit] POST', url);
+      console.log('[referral submit] payload ->', requestData);
 
-      const response = await fetch('/api/referral-requests', {
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify(requestData),
       });
 
-      console.log('Response status:', response.status);
-      const responseData = await response.json();
-      console.log('Response data:', responseData);
+      // TEMP instrumentation
+      console.log('[referral submit] response status', res.status);
+      const resText = await res.text();
+      console.log('[referral submit] response body', resText);
 
-      if (response.ok) {
+      if (res.ok) {
         toast({
           title: "Request sent!",
           description: "Your referral link request has been submitted.",
@@ -389,7 +395,7 @@ export default function VisitorProfileNew() {
           linkUrl: ''
         });
       } else {
-        throw new Error(responseData.message || 'Failed to send request');
+        throw new Error('Failed to send request');
       }
     } catch (error) {
       console.error('Error sending referral request:', error);
@@ -1680,39 +1686,3 @@ export default function VisitorProfileNew() {
     </div>
   );
 }
-// right before fetch(...)
-console.log('[referral submit] payload ->', {
-  requesterName: referralForm.name,
-  requesterEmail: referralForm.email,
-  requesterPhone: referralForm.phone || null,
-  requesterWebsite: referralForm.website || null,
-  fieldOfWork: referralForm.fieldOfWork,
-  description: referralForm.description || null,
-  linkTitle: referralForm.linkTitle,
-  linkUrl: referralForm.linkUrl,
-  targetUserId: data?.profile.id, // must be a UUID string, no parseInt
-});
-
-// Also log the URL you’re actually hitting
-const url = '/api/referral-requests'; // ensure it's exactly this relative path
-console.log('[referral submit] POST', url);
-
-const res = await fetch(url, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    requesterName: referralForm.name?.trim(),
-    requesterEmail: referralForm.email?.trim(),
-    requesterPhone: referralForm.phone?.trim() || null,
-    requesterWebsite: referralForm.website?.trim() || null,
-    fieldOfWork: referralForm.fieldOfWork?.trim(),
-    description: referralForm.description?.trim() || null,
-    linkTitle: referralForm.linkTitle?.trim(),
-    linkUrl: referralForm.linkUrl?.trim(),
-    targetUserId: data?.profile.id,
-  }),
-});
-
-console.log('[referral submit] response status', res.status);
-const text = await res.text();
-console.log('[referral submit] response body', text);

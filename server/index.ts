@@ -9,6 +9,7 @@ import { migrate } from "drizzle-orm/neon-serverless/migrator";
 import { db } from "./db";
 import path from "path";
 import { fileURLToPath } from "url";
+import referralRequestsRouter from "./routes/referral-requests";
 // Temporarily disabled problematic imports
 // import { initializeEmailTemplates } from "./init-email-templates";
 // import { initAIEmailTemplates } from "./ai-email-templates";
@@ -64,7 +65,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 app.use(session({
@@ -84,6 +85,12 @@ app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 app.get("/api/auth/whoami", (req, res) => {
   const user = (req as any).user || (req as any).session?.user || null;
   res.json({ user });
+});
+
+// Optional debug endpoint to verify JSON parsing
+app.post('/api/referral-requests/debug-echo', (req, res) => {
+  console.log('[debug-echo] body ->', req.body);
+  res.json({ ok: true, received: req.body });
 });
 
 app.use((req, res, next) => {
@@ -139,6 +146,8 @@ app.use((req, res, next) => {
   }
 
   const server = await registerRoutes(app);
+
+  app.use(referralRequestsRouter);
 
   // Add custom domain route handler AFTER API routes are registered
   app.get('*', (req, res, next) => {
