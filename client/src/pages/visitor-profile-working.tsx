@@ -1,5 +1,5 @@
 import { useParams } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +68,7 @@ export default function VisitorProfileWorking() {
   });
 
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/profile", username],
@@ -166,6 +167,7 @@ export default function VisitorProfileWorking() {
           linkTitle: '',
           linkUrl: ''
         });
+        await queryClient.invalidateQueries({ queryKey: ['referralsInbox'] });
       } else {
         throw new Error('Failed to send request');
       }
