@@ -1680,3 +1680,39 @@ export default function VisitorProfileNew() {
     </div>
   );
 }
+// right before fetch(...)
+console.log('[referral submit] payload ->', {
+  requesterName: referralForm.name,
+  requesterEmail: referralForm.email,
+  requesterPhone: referralForm.phone || null,
+  requesterWebsite: referralForm.website || null,
+  fieldOfWork: referralForm.fieldOfWork,
+  description: referralForm.description || null,
+  linkTitle: referralForm.linkTitle,
+  linkUrl: referralForm.linkUrl,
+  targetUserId: data?.profile.id, // must be a UUID string, no parseInt
+});
+
+// Also log the URL you’re actually hitting
+const url = '/api/referral-requests'; // ensure it's exactly this relative path
+console.log('[referral submit] POST', url);
+
+const res = await fetch(url, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    requesterName: referralForm.name?.trim(),
+    requesterEmail: referralForm.email?.trim(),
+    requesterPhone: referralForm.phone?.trim() || null,
+    requesterWebsite: referralForm.website?.trim() || null,
+    fieldOfWork: referralForm.fieldOfWork?.trim(),
+    description: referralForm.description?.trim() || null,
+    linkTitle: referralForm.linkTitle?.trim(),
+    linkUrl: referralForm.linkUrl?.trim(),
+    targetUserId: data?.profile.id,
+  }),
+});
+
+console.log('[referral submit] response status', res.status);
+const text = await res.text();
+console.log('[referral submit] response body', text);
