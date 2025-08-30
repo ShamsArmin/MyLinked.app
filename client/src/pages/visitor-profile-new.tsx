@@ -357,7 +357,7 @@ export default function VisitorProfileNew() {
         description: referralForm.description,
         linkTitle: referralForm.linkTitle,
         linkUrl: referralForm.linkUrl,
-        targetUserId: parseInt(data?.profile.id, 10)
+        targetUserId: data?.profile.id
       };
 
       console.log('Sending request data:', requestData);
@@ -365,11 +365,12 @@ export default function VisitorProfileNew() {
       const response = await fetch('/api/referral-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(requestData)
       });
 
       console.log('Response status:', response.status);
-      const responseData = await response.json();
+      const responseData = await response.json().catch(() => ({}));
       console.log('Response data:', responseData);
 
       if (response.ok) {
@@ -389,7 +390,7 @@ export default function VisitorProfileNew() {
           linkUrl: ''
         });
       } else {
-        throw new Error(responseData.message || 'Failed to send request');
+        throw new Error(responseData?.message || 'Failed to send request');
       }
     } catch (error) {
       console.error('Error sending referral request:', error);

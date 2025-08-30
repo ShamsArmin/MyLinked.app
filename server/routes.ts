@@ -15,7 +15,6 @@ import {
   updateUserSchema,
   insertSocialPostSchema,
   insertFollowSchema,
-  referralRequests,
   forgotPasswordSchema,
   resetPasswordSchema,
   insertCollaborationRequestSchema,
@@ -23,7 +22,7 @@ import {
 } from "../shared/schema";
 import { db, pool, dbGuard } from "./db";
 import { getUserColumnSet } from "./user-columns";
-import { and, eq, gt, desc } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import {
   suggestLinkPriority,
   generateSocialScore,
@@ -36,6 +35,7 @@ import { InstagramAPI } from "./instagram-api";
 import { spotlightRouter } from "./spotlight-routes";
 import { industryRouter } from "./industry-routes";
 import { referralRouter } from "./referral-routes";
+import { createReferralRequestHandler } from "./handlers/referral-requests";
 
 import linksRouter from "./routes/links";
 
@@ -2085,60 +2085,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Visitor endpoints for requests
-  app.post("/api/referral-requests", asyncHandler(async (req: any, res: any) => {
-    const {
-      requesterName,
-      requesterEmail,
-      requesterPhone,
-      requesterWebsite,
-      fieldOfWork,
-      description,
-      linkTitle,
-      linkUrl,
-      targetUserId,
-    } = req.body;
-
-    // Validate required fields
-    if (!requesterName || !requesterEmail || !fieldOfWork || !description || 
-        !linkTitle || !linkUrl || !targetUserId) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    // Check for duplicate requests within 10 minutes
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-    const existingRequest = await db.query.referralRequests.findFirst({
-      where: and(
-        eq(referralRequests.requesterEmail, requesterEmail),
-        eq(referralRequests.targetUserId, targetUserId),
-        eq(referralRequests.linkUrl, linkUrl),
-        gt(referralRequests.createdAt, tenMinutesAgo),
-      ),
-    });
-
-    if (existingRequest) {
-      return res.status(429).json({
-        message: "You have already submitted a similar request recently. Please wait 10 minutes before submitting again.",
-      });
-    }
-
-    // Create the referral request in the database
-    const referralRequest = await storage.createReferralRequest({
-      targetUserId,
-      requesterName,
-      requesterEmail,
-      requesterPhone,
-      requesterWebsite,
-      fieldOfWork,
-      description,
-      linkTitle,
-      linkUrl,
-    });
-
-    res.status(201).json({
-      message: "Referral request sent successfully",
-      id: referralRequest.id,
-    });
-  }));
+  app.post(
+    "/api/referral-requests",
+    isAuthenticated,
+    asyncHandler(createReferralRequestHandler)
+  );
 
   // =============================================================================
   // USER REPORTS
