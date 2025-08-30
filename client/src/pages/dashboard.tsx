@@ -129,6 +129,7 @@ import { SpotlightCard } from "@/components/spotlight-card";
 
 import { InstagramPreview } from "@/components/instagram-preview";
 import SocialMediaIntegration from "@/components/social-media-integration";
+import NotificationsBell from "@/components/NotificationsBell";
 
 // Extended Zod schema for link forms
 const linkFormSchema = insertLinkSchema.extend({
@@ -738,20 +739,22 @@ export default function Dashboard() {
 
           
           <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="md:hidden"
-              onClick={() => {}}
-            >
-              <Menu className="h-4 w-4" />
-            </Button>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <img
-                    src={user?.profileImage || "https://github.com/shadcn.png"}
+          <Button
+            variant="outline"
+            size="sm"
+            className="md:hidden"
+            onClick={() => {}}
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
+
+          <NotificationsBell />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <img
+                  src={user?.profileImage || "https://github.com/shadcn.png"}
                     alt="User"
                     className="rounded-full"
                     width="32"
