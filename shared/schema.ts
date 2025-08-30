@@ -67,6 +67,7 @@ export const users = pgTable("users", {
   salary: integer("salary"),
   hireDate: timestamp("hire_date"),
   lastLoginAt: timestamp("last_login_at"),
+  hasSeenDashboardTour: boolean("has_seen_dashboard_tour").default(false),
   isActive: boolean("is_active").default(true),
   settings: jsonb("settings").default(sql`'{}'::jsonb`),
   createdAt: timestamp("created_at").defaultNow(),
@@ -407,6 +408,7 @@ export const updateUserSchema = createInsertSchema(users).pick({
   location: true,
   interests: true,
   tags: true,
+  hasSeenDashboardTour: true,
 }).partial().extend({
   bio: z.string().max(160, "Bio must be 160 characters or less").optional(),
 });
