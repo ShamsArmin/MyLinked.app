@@ -1,5 +1,6 @@
 // run-migrations.mjs
-import { Pool } from 'pg';
+import pg from 'pg';
+const { Pool } = pg;
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
