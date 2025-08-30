@@ -1,14 +1,15 @@
 import { Express, Request, Response, NextFunction } from "express";
 import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
 import "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
 import { storage } from "./storage";
 import { User as UserType, users } from "../shared/schema";
 import { isDbAvailable, db } from "./db";
 import { sql } from "drizzle-orm";
 import { getUserColumnSet } from "./user-columns";
+import { hashPassword, verifyPassword, needsRehash } from "../src/auth/password";
+import { createLocalStrategy } from "../src/auth/localStrategy";
+export { hashPassword, verifyPassword, needsRehash };
+export { verifyPassword as comparePasswords };
 
 // Extend the Express namespace for TypeScript
 declare global {
@@ -25,63 +26,12 @@ declare global {
   }
 }
 
-const scryptAsync = promisify(scrypt);
-
-export async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
-}
-
-export async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  if (!hashed || !salt) return false;
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
-}
-
 export function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
   // Configure local strategy
-  passport.use(
-    new LocalStrategy(async (username, password, done) => {
-      if (!(await isDbAvailable())) {
-        return done({ type: 'dbUnavailable' });
-      }
-      try {
-        console.log('Login attempt for username:', username);
-        const user = await storage.getUserByUsername(username);
-        if (!user) {
-          console.log('User not found:', username);
-          return done(null, false, { message: "Invalid username or password" });
-        }
-
-        console.log('User found, checking password...');
-        console.log('Stored password hash:', user.password);
-        const isPasswordValid = await storage.comparePasswords(password, user.password);
-        console.log('Password valid:', isPasswordValid);
-
-        if (!isPasswordValid) {
-          console.log('Password verification failed for user:', username);
-          return done(null, false, { message: "Invalid username or password" });
-        }
-
-        console.log('Login successful for user:', username);
-        return done(null, user as any);
-      } catch (error: any) {
-        console.error('Login error:', {
-          code: error?.code,
-          column: error?.column,
-          table: error?.table,
-          message: error?.message,
-        });
-        return done(error);
-      }
-    })
-  );
+  passport.use(createLocalStrategy(storage));
 
   // Serialize user for session
   passport.serializeUser((user, done) => {
@@ -121,7 +71,7 @@ export function setupAuth(app: Express) {
       }
 
       // Check if user already exists
-      const existingUser = await storage.getUserByUsername(userRecord.username);
+      const existingUser = await storage.getUserByUsername(userRecord.username.toLowerCase());
       if (existingUser) {
         return res.status(400).json({ message: "Username already taken" });
       }
@@ -144,6 +94,7 @@ export function setupAuth(app: Express) {
       }
 
       dbFields.password = await hashPassword(password);
+      dbFields.usernameLower = userRecord.username.toLowerCase();
 
       let [user] = await db.insert(users).values(dbFields as any).returning();
 
@@ -174,9 +125,12 @@ export function setupAuth(app: Express) {
 
   // Login route using Passport.js local strategy
   app.post("/api/login", (req, res, next) => {
-    console.log('Login route called with body:', req.body);
+    const start = Date.now();
+    const origin = req.ip;
+    console.log('Login route', { origin });
     passport.authenticate("local", (err: any, user: any, info: any) => {
-      console.log('Passport authenticate callback:', { err, user: !!user, info });
+      const duration = Date.now() - start;
+      console.log('Login attempt', { ok: !!user, duration });
       if (err) {
         if (err.type === 'dbUnavailable') {
           return res.status(503).json({ message: "Database temporarily unavailable" });
@@ -185,7 +139,6 @@ export function setupAuth(app: Express) {
         return next(err);
       }
       if (!user) {
-        console.log('Authentication failed:', info);
         return res.status(401).json({ message: info?.message || "Authentication failed" });
       }
       req.logIn(user, (err) => {
@@ -193,10 +146,10 @@ export function setupAuth(app: Express) {
           console.error('Login error:', err);
           return next(err);
         }
-        console.log('Login successful for user:', user.username);
-        return res.json({ 
-          message: "Login successful", 
-          user: user 
+        console.log('Login success', { userId: user.id, duration });
+        return res.json({
+          message: "Login successful",
+          user: user
         });
       });
     })(req, res, next);
