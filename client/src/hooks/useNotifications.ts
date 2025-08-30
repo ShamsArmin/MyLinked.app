@@ -39,5 +39,7 @@ export function useNotificationsActions() {
       qc.invalidateQueries({ queryKey: ['notifications', userId] }),
     removeAll: async () =>
       qc.removeQueries({ queryKey: ['notifications'] }),
+    setWarmData: (userId: string, data: NotificationItem[]) =>
+      qc.setQueryData(['notifications', userId], data),
   };
 }

@@ -1,22 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNotifications, useNotificationsActions } from '@/hooks/useNotifications';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function NotificationsBell() {
   const { user } = useAuth();
   const userId = user?.id;
-  const { data, isLoading, isError } = useNotifications(userId);
-  const { invalidateByUser, removeAll } = useNotificationsActions();
+  const { data, isLoading, isError, refetch } = useNotifications(userId);
+  const { removeAll } = useNotificationsActions();
   const items = data ?? [];
   const count = items.length;
   const [open, setOpen] = useState(false);
 
+  const didRefetchOnce = useRef(false);
+
   useEffect(() => {
     (async () => {
       await removeAll();
-      if (userId) await invalidateByUser(userId);
     })();
-  }, [userId, invalidateByUser, removeAll]);
+  }, [userId, removeAll]);
+
+  useEffect(() => {
+    if (userId && !didRefetchOnce.current) {
+      didRefetchOnce.current = true;
+      refetch({ cancelRefetch: false });
+    }
+  }, [userId, refetch]);
 
   return (
     <div className="relative">

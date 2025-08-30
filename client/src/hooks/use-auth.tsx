@@ -130,8 +130,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: async (user: User) => {
       console.log("Login successful:", user);
       queryClient.setQueryData(["/api/user"], user);
-      await removeAll();
-      await invalidateByUser(user.id);
       toast.toast({
         title: "Login successful",
         description: `Welcome back, ${user.name}!`,

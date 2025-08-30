@@ -28,7 +28,7 @@ const registerSchema = insertUserSchema.pick({ username: true, password: true, e
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
-  const { invalidateByUser, removeAll } = useNotificationsActions();
+  const { setWarmData, removeAll, invalidateByUser } = useNotificationsActions();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
@@ -111,10 +111,27 @@ export default function AuthPage() {
   const onLoginSubmit = (values: z.infer<typeof loginSchema>) => {
     setErrorMessage(null);
     loginMutation.mutate(values, {
-      onSuccess: async (user) => {
+      onSuccess: async () => {
         await removeAll();
-        await invalidateByUser(user?.id);
-        setLocation("/");
+        const userRes = await fetch('/api/user', {
+          cache: 'no-store',
+          credentials: 'include',
+          headers: { 'Cache-Control': 'no-store' }
+        });
+        const userJson = await userRes.json();
+        const userId = userJson?.id as string | undefined;
+        if (userId) {
+          const notifRes = await fetch('/api/notifications', {
+            cache: 'no-store',
+            credentials: 'include',
+            headers: { 'Cache-Control': 'no-store' }
+          });
+          if (notifRes.ok) {
+            const notifs = await notifRes.json();
+            setWarmData(userId, notifs ?? []);
+          }
+        }
+        setLocation('/dashboard');
       },
       onError: () => {
         setErrorMessage("Invalid username or password");
