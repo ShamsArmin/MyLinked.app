@@ -148,6 +148,18 @@ export default function AdminLogin() {
                 </>
               )}
             </Button>
+
+            <div className="text-center mt-4">
+              <Button
+                type="button"
+                variant="link"
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                onClick={() => setLocation("/forgot-password")}
+                disabled={loginMutation.isPending}
+              >
+                Forgot your password?
+              </Button>
+            </div>
           </form>
           
           <div className="mt-6 pt-6 border-t text-center text-sm text-slate-500">
