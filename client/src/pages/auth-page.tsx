@@ -28,7 +28,7 @@ const registerSchema = insertUserSchema.pick({ username: true, password: true, e
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
-  const { invalidate } = useNotificationsActions();
+  const { invalidateByUser } = useNotificationsActions();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
@@ -112,7 +112,7 @@ export default function AuthPage() {
     setErrorMessage(null);
     loginMutation.mutate(values, {
       onSuccess: async (user) => {
-        await invalidate(user?.id);
+        await invalidateByUser(user?.id);
         setLocation("/");
       },
       onError: () => {
@@ -125,7 +125,7 @@ export default function AuthPage() {
     setErrorMessage(null);
     registerMutation.mutate(values, {
       onSuccess: async (user) => {
-        await invalidate(user?.id);
+        await invalidateByUser(user?.id);
         setLocation("/");
       },
       onError: () => {

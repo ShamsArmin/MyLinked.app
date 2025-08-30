@@ -71,7 +71,7 @@ export default function VisitorProfileWorking() {
 
   const { toast } = useToast();
   const { user } = useAuth();
-  const { invalidate } = useNotificationsActions();
+  const { invalidateByUser } = useNotificationsActions();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/profile", username],
@@ -170,7 +170,7 @@ export default function VisitorProfileWorking() {
           linkTitle: '',
           linkUrl: ''
         });
-        await invalidate(user?.id);
+        await invalidateByUser(user?.id);
       } else {
         throw new Error('Failed to send request');
       }

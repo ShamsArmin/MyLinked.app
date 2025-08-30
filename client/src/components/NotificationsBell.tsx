@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
-import { useNotifications } from '@/hooks/useNotifications';
+import React, { useEffect, useState } from 'react';
+import { useNotifications, useNotificationsActions } from '@/hooks/useNotifications';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function NotificationsBell() {
   const { user } = useAuth();
-  const { data, isLoading, isError } = useNotifications(user?.id);
+  const userId = user?.id;
+  const { data, isLoading, isError } = useNotifications(userId);
+  const { invalidateByUser, removeAll } = useNotificationsActions();
   const items = data ?? [];
   const count = items.length;
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      await removeAll();
+      if (userId) await invalidateByUser(userId);
+    })();
+  }, [userId, invalidateByUser, removeAll]);
 
   return (
     <div className="relative">

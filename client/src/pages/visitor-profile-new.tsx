@@ -64,7 +64,7 @@ export default function VisitorProfileNew() {
   const [, navigate] = useLocation();
   const { getPlatformConfig } = usePlatformIcons();
   const { toast } = useToast();
-  const { invalidate } = useNotificationsActions();
+  const { invalidateByUser } = useNotificationsActions();
   const { user: currentUser } = useAuth();
   const [audioPlaying, setAudioPlaying] = useState<string | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -396,7 +396,7 @@ export default function VisitorProfileNew() {
           linkTitle: '',
           linkUrl: ''
         });
-        await invalidate(currentUser?.id);
+        await invalidateByUser(currentUser?.id);
       } else {
         throw new Error('Failed to send request');
       }

@@ -35,7 +35,9 @@ export function useNotifications(userId?: string) {
 export function useNotificationsActions() {
   const qc = useQueryClient();
   return {
-    invalidate: async (userId?: string) =>
+    invalidateByUser: async (userId?: string) =>
       qc.invalidateQueries({ queryKey: ['notifications', userId] }),
+    removeAll: async () =>
+      qc.removeQueries({ queryKey: ['notifications'] }),
   };
 }
