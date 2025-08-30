@@ -1,5 +1,3 @@
-# 1) Create the file
-cat > run-migrations.mjs <<'EOF'
 // run-migrations.mjs
 import { Pool } from 'pg';
 import fs from 'fs';
@@ -19,7 +17,6 @@ async function runMigration() {
 
   try {
     const migrationsDir = path.join(__dirname, 'migrations');
-
     const files = fs
       .readdirSync(migrationsDir)
       .filter((f) => f.endsWith('.sql'))
@@ -35,13 +32,11 @@ async function runMigration() {
     console.log('-'.repeat(80));
 
     await pool.query('BEGIN');
-
     for (const file of files) {
       const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
       console.log(`Applying ${file} ...`);
       await pool.query(sql);
     }
-
     await pool.query('COMMIT');
     console.log('-'.repeat(80));
     console.log('All migrations applied successfully!');
@@ -58,9 +53,3 @@ runMigration().catch((err) => {
   console.error('Unhandled error:', err);
   process.exit(1);
 });
-EOF
-
-# 2) Add, commit, push
-git add run-migrations.mjs
-git commit -m "Add run-migrations.mjs and wire migrations to start"
-git push
