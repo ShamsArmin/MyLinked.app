@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useNotificationsActions } from "@/hooks/useNotifications";
 
 import {
   ExternalLink,
@@ -68,6 +70,8 @@ export default function VisitorProfileWorking() {
   });
 
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { invalidateByUser } = useNotificationsActions();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/profile", username],
@@ -166,6 +170,7 @@ export default function VisitorProfileWorking() {
           linkTitle: '',
           linkUrl: ''
         });
+        await invalidateByUser(user?.id);
       } else {
         throw new Error('Failed to send request');
       }

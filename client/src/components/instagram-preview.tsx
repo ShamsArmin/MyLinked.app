@@ -36,6 +36,10 @@ export function InstagramPreview({ isOwner = false, userId }: InstagramPreviewPr
   const { data: preview, isLoading } = useQuery<InstagramPreview | null>({
     queryKey: ["/api/instagram/preview", userId].filter(Boolean),
     enabled: !!userId,
+    retry: 0,
+    suspense: false,
+    useErrorBoundary: false,
+    onError: () => {},
   });
 
   // Sync Instagram content

@@ -4,6 +4,7 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
+import { useNotificationsActions } from "@/hooks/useNotifications";
 import { User } from "@shared/schema";
 import { apiRequest, queryClient } from "../lib/queryClient";
 
@@ -99,6 +100,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Combined loading state
   const isLoading = isInitialLoading || isQueryLoading;
 
+  const { invalidateByUser, removeAll } = useNotificationsActions();
+
   // Mutation for login
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
@@ -124,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    onSuccess: (user: User) => {
+    onSuccess: async (user: User) => {
       console.log("Login successful:", user);
       queryClient.setQueryData(["/api/user"], user);
       toast.toast({
@@ -161,9 +164,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return data.user;
     },
-    onSuccess: (user: User) => {
+    onSuccess: async (user: User) => {
       console.log("Registration successful:", user);
       queryClient.setQueryData(["/api/user"], user);
+      await removeAll();
+      await invalidateByUser(user.id);
       toast.toast({
         title: "Registration successful",
         description: `Welcome to MyLinked, ${user.name}!`,
@@ -202,11 +207,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { status: "client-side-only" };
       }
     },
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       console.log("Logout processing:", result);
       // Clear user data from cache regardless of server result
       queryClient.setQueryData(["/api/user"], null);
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      await removeAll();
       
       if (result.status === "client-side-only") {
         toast.toast({
@@ -225,17 +231,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.location.href = "/";
       }, 300);
     },
-    onError: (error: Error) => {
+    onError: async (error: Error) => {
       console.error("Logout error:", error);
       // Even if there's a server error, we still want to log the user out locally
       queryClient.setQueryData(["/api/user"], null);
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      
+      await removeAll();
+
       toast.toast({
         title: "Logged out",
         description: "You have been logged out locally, but there was a server error.",
       });
-      
+
       // Force a page refresh to clean up any lingering state
       setTimeout(() => {
         window.location.href = "/";
