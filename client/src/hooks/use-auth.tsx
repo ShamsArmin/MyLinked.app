@@ -127,6 +127,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: User) => {
       console.log("Login successful:", user);
       queryClient.setQueryData(["/api/user"], user);
+      // Invalidate notifications so they load immediately after login
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
       toast.toast({
         title: "Login successful",
         description: `Welcome back, ${user.name}!`,
@@ -164,6 +166,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: User) => {
       console.log("Registration successful:", user);
       queryClient.setQueryData(["/api/user"], user);
+      // Clear notifications cache in case any exist from a previous session
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
       toast.toast({
         title: "Registration successful",
         description: `Welcome to MyLinked, ${user.name}!`,
