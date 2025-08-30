@@ -9,10 +9,11 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Duplicate/idempotent error codes we safely ignore and mark as applied
 const DUPLICATE_CODES = new Set([
   '42701', // duplicate_column
   '42P07', // duplicate_table
-  '42710'  // duplicate_object (index/constraint exists)
+  '42710'  // duplicate_object (index/constraint)
 ]);
 
 function sha256(str) {
@@ -20,12 +21,18 @@ function sha256(str) {
 }
 
 async function ensureMigrationsTable(pool) {
+  // Create table if missing (minimal shape), then bring it up to date
   await pool.query(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
-      filename TEXT PRIMARY KEY,
-      checksum TEXT,
-      applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      filename TEXT PRIMARY KEY
     );
+  `);
+
+  // Add columns if they don't exist (handles older tables gracefully)
+  await pool.query(`ALTER TABLE schema_migrations ADD COLUMN IF NOT EXISTS checksum TEXT;`);
+  await pool.query(`
+    ALTER TABLE schema_migrations
+    ADD COLUMN IF NOT EXISTS applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
   `);
 }
 
@@ -35,8 +42,10 @@ async function getAppliedSet(pool) {
 }
 
 async function markApplied(pool, filename, checksum) {
+  // After ensureMigrationsTable, checksum exists; insert defensively
   await pool.query(
-    `INSERT INTO schema_migrations (filename, checksum) VALUES ($1, $2)
+    `INSERT INTO schema_migrations (filename, checksum)
+     VALUES ($1, $2)
      ON CONFLICT (filename) DO NOTHING`,
     [filename, checksum]
   );
@@ -54,7 +63,7 @@ async function runMigration() {
     const migrationsDir = path.join(__dirname, 'migrations');
     const files = fs
       .readdirSync(migrationsDir)
-      .filter((f) => f.endsWith('.sql'))
+      .filter(f => f.endsWith('.sql'))
       .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
     if (files.length === 0) {
@@ -81,12 +90,12 @@ async function runMigration() {
 
       console.log(`Applying ${file} ...`);
       await pool.query('BEGIN');
+
       try {
         await pool.query(sql);
         await markApplied(pool, file, checksum);
         await pool.query('COMMIT');
       } catch (err) {
-        // If it's an idempotency/duplicate error, mark as applied and continue
         if (err && err.code && DUPLICATE_CODES.has(err.code)) {
           console.warn(`Warning: ${file} raised ${err.code} (already exists). Marking as applied and continuing.`);
           try {
@@ -110,8 +119,6 @@ async function runMigration() {
     console.error('Error running migrations:', err);
     process.exit(1);
   } finally {
-    // Ensure the connection is closed
-    // (Render process continues to start the app)
     await pool.end();
   }
 }
@@ -120,3 +127,4 @@ runMigration().catch((err) => {
   console.error('Unhandled error:', err);
   process.exit(1);
 });
+
