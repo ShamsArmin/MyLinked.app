@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/use-auth";
+import { useNotificationsActions } from "@/hooks/useNotifications";
 import { insertUserSchema } from "@shared/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -27,6 +28,7 @@ const registerSchema = insertUserSchema.pick({ username: true, password: true, e
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
+  const { invalidate } = useNotificationsActions();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
@@ -109,7 +111,8 @@ export default function AuthPage() {
   const onLoginSubmit = (values: z.infer<typeof loginSchema>) => {
     setErrorMessage(null);
     loginMutation.mutate(values, {
-      onSuccess: () => {
+      onSuccess: async (user) => {
+        await invalidate(user?.id);
         setLocation("/");
       },
       onError: () => {
@@ -121,7 +124,8 @@ export default function AuthPage() {
   const onRegisterSubmit = (values: z.infer<typeof registerSchema>) => {
     setErrorMessage(null);
     registerMutation.mutate(values, {
-      onSuccess: () => {
+      onSuccess: async (user) => {
+        await invalidate(user?.id);
         setLocation("/");
       },
       onError: () => {

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { useNotifications } from '../hooks/useNotifications';
+import { useNotifications } from '@/hooks/useNotifications';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function NotificationsBell() {
-  const { data, isLoading, isError } = useNotifications();
+  const { user } = useAuth();
+  const { data, isLoading, isError } = useNotifications(user?.id);
   const items = data ?? [];
   const count = items.length;
   const [open, setOpen] = useState(false);

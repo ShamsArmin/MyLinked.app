@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { useParams, useLocation } from "wouter";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
+import { useNotificationsActions } from "@/hooks/useNotifications";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +64,7 @@ export default function VisitorProfileNew() {
   const [, navigate] = useLocation();
   const { getPlatformConfig } = usePlatformIcons();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { invalidate } = useNotificationsActions();
   const { user: currentUser } = useAuth();
   const [audioPlaying, setAudioPlaying] = useState<string | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -395,7 +396,7 @@ export default function VisitorProfileNew() {
           linkTitle: '',
           linkUrl: ''
         });
-        await queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        await invalidate(currentUser?.id);
       } else {
         throw new Error('Failed to send request');
       }

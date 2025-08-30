@@ -1974,8 +1974,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     // Disable caching to avoid stale responses during development/debugging
-    res.set("Cache-Control", "no-store");
-    req.app.set("etag", false);
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.removeHeader('ETag');
 
     const userId = req.user.id as string;
 

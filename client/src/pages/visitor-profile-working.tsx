@@ -1,5 +1,5 @@
 import { useParams } from "wouter";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useNotificationsActions } from "@/hooks/useNotifications";
 
 import {
   ExternalLink,
@@ -68,7 +70,8 @@ export default function VisitorProfileWorking() {
   });
 
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { invalidate } = useNotificationsActions();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/profile", username],
@@ -167,7 +170,7 @@ export default function VisitorProfileWorking() {
           linkTitle: '',
           linkUrl: ''
         });
-        await queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        await invalidate(user?.id);
       } else {
         throw new Error('Failed to send request');
       }

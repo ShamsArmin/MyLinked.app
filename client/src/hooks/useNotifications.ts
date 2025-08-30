@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export type NotificationItem = {
   id: string;
@@ -9,18 +9,33 @@ export type NotificationItem = {
   link?: string;
 };
 
-export function useNotifications() {
+export function useNotifications(userId?: string) {
+  const enabled = Boolean(userId);
+
   return useQuery<NotificationItem[]>({
-    queryKey: ['notifications'],
+    queryKey: ['notifications', userId],
     queryFn: async () => {
-      const res = await fetch('/api/notifications', { cache: 'no-store' });
+      const res = await fetch('/api/notifications', {
+        cache: 'no-store',
+        credentials: 'include',
+        headers: { 'Cache-Control': 'no-store' }
+      });
       if (!res.ok) throw new Error(`Failed to load notifications: ${res.status}`);
       return res.json();
     },
-    refetchInterval: 15000,
+    enabled,
+    refetchOnMount: 'always',
+    refetchOnReconnect: true,
     refetchOnWindowFocus: true,
-    staleTime: 5000,
+    staleTime: 0,
+    retry: 1,
   });
 }
 
-export default useNotifications;
+export function useNotificationsActions() {
+  const qc = useQueryClient();
+  return {
+    invalidate: async (userId?: string) =>
+      qc.invalidateQueries({ queryKey: ['notifications', userId] }),
+  };
+}
