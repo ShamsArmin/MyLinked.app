@@ -17,32 +17,55 @@ async function runMigration() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
   try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS schema_migrations (
+        filename TEXT PRIMARY KEY,
+        applied_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
     const migrationsDir = path.join(__dirname, 'migrations');
     const files = fs
       .readdirSync(migrationsDir)
       .filter((f) => f.endsWith('.sql'))
       .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
-    if (files.length === 0) {
-      console.log('No migration files found in /migrations.');
+    const appliedRes = await pool.query('SELECT filename FROM schema_migrations');
+    const applied = new Set(appliedRes.rows.map((r) => r.filename));
+
+    const toRun = files.filter((f) => !applied.has(f));
+
+    if (toRun.length === 0) {
+      console.log('No new migration files found.');
       return;
     }
 
     console.log('Running migrations:');
-    for (const f of files) console.log(' -', f);
+    for (const f of toRun) console.log(' -', f);
     console.log('-'.repeat(80));
 
-    await pool.query('BEGIN');
-    for (const file of files) {
+    for (const file of toRun) {
       const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
       console.log(`Applying ${file} ...`);
-      await pool.query(sql);
+      try {
+        await pool.query('BEGIN');
+        await pool.query(sql);
+        await pool.query('INSERT INTO schema_migrations (filename) VALUES ($1)', [file]);
+        await pool.query('COMMIT');
+      } catch (err) {
+        await pool.query('ROLLBACK');
+        if (err.code === '42P07' || err.code === '42710') {
+          console.log(`Skipping ${file}; already applied.`);
+          await pool.query('INSERT INTO schema_migrations (filename) VALUES ($1) ON CONFLICT DO NOTHING', [file]);
+        } else {
+          throw err;
+        }
+      }
     }
-    await pool.query('COMMIT');
+
     console.log('-'.repeat(80));
-    console.log('All migrations applied successfully!');
+    console.log('Migrations complete!');
   } catch (err) {
-    try { await pool.query('ROLLBACK'); } catch {}
     console.error('Error running migrations:', err);
     process.exit(1);
   } finally {
