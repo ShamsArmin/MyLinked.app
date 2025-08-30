@@ -20,6 +20,7 @@ import {
   resetPasswordSchema,
   insertCollaborationRequestSchema,
   updateCollaborationRequestSchema,
+  insertReferralRequestSchema,
 } from "../shared/schema";
 import { db, pool, dbGuard } from "./db";
 import { getUserColumnSet } from "./user-columns";
@@ -1990,30 +1991,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true });
   }));
 
-  // Referral request endpoints
-  app.post("/api/referral-request", asyncHandler(async (req: any, res: any) => {
-    const { targetUserId, ...requestData } = req.body;
-
-    if (!targetUserId || !requestData.name || !requestData.email) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    // Check if target user exists
-    const targetUser = await storage.getUser(targetUserId);
-    if (!targetUser) {
-      return res.status(404).json({ message: "Target user not found" });
-    }
-
-    // Create the referral request
-    const referralRequest = await storage.createReferralRequest({
-      targetUserId,
-      ...requestData,
-      status: "pending",
-    });
-
-    res.json(referralRequest);
-  }));
-
   app.get("/api/referral-requests", isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.id;
     const requests = await storage.getReferralRequests(userId);
@@ -2085,59 +2062,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Visitor endpoints for requests
-  app.post("/api/referral-requests", asyncHandler(async (req: any, res: any) => {
-    const {
-      requesterName,
-      requesterEmail,
-      requesterPhone,
-      requesterWebsite,
-      fieldOfWork,
-      description,
-      linkTitle,
-      linkUrl,
-      targetUserId,
-    } = req.body;
-
-    // Validate required fields
-    if (!requesterName || !requesterEmail || !fieldOfWork || !description || 
-        !linkTitle || !linkUrl || !targetUserId) {
-      return res.status(400).json({ message: "Missing required fields" });
+  app.post("/api/referral-requests", isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const validation = insertReferralRequestSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ message: "Invalid request" });
     }
 
-    // Check for duplicate requests within 10 minutes
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-    const existingRequest = await db.query.referralRequests.findFirst({
-      where: and(
-        eq(referralRequests.requesterEmail, requesterEmail),
-        eq(referralRequests.targetUserId, targetUserId),
-        eq(referralRequests.linkUrl, linkUrl),
-        gt(referralRequests.createdAt, tenMinutesAgo),
-      ),
-    });
+    const data = validation.data;
 
-    if (existingRequest) {
-      return res.status(429).json({
-        message: "You have already submitted a similar request recently. Please wait 10 minutes before submitting again.",
-      });
-    }
+    // Map camelCase payload to snake_case columns
+    const insertData: Record<string, any> = {
+      [referralRequests.targetUserId.name]: data.targetUserId,
+      [referralRequests.requesterName.name]: data.requesterName,
+      [referralRequests.requesterEmail.name]: data.requesterEmail,
+      [referralRequests.requesterPhone.name]: data.requesterPhone,
+      [referralRequests.requesterWebsite.name]: data.requesterWebsite,
+      [referralRequests.fieldOfWork.name]: data.fieldOfWork,
+      [referralRequests.description.name]: data.description,
+      [referralRequests.linkTitle.name]: data.linkTitle,
+      [referralRequests.linkUrl.name]: data.linkUrl,
+      status: 'pending',
+    };
 
-    // Create the referral request in the database
-    const referralRequest = await storage.createReferralRequest({
-      targetUserId,
-      requesterName,
-      requesterEmail,
-      requesterPhone,
-      requesterWebsite,
-      fieldOfWork,
-      description,
-      linkTitle,
-      linkUrl,
-    });
+    const [referralRequest] = await db
+      .insert(referralRequests)
+      .values(insertData as any)
+      .returning();
 
-    res.status(201).json({
-      message: "Referral request sent successfully",
-      id: referralRequest.id,
-    });
+    res.status(201).json(referralRequest);
   }));
 
   // =============================================================================
