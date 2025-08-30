@@ -167,7 +167,7 @@ export default function VisitorProfileWorking() {
           linkTitle: '',
           linkUrl: ''
         });
-        await queryClient.invalidateQueries({ queryKey: ['referralsInbox'] });
+        await queryClient.invalidateQueries({ queryKey: ['notifications'] });
       } else {
         throw new Error('Failed to send request');
       }

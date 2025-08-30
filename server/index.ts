@@ -10,7 +10,6 @@ import { db } from "./db";
 import path from "path";
 import { fileURLToPath } from "url";
 import referralRequestsRouter from "./routes/referral-requests";
-import referralRequestsInboxRouter from "./routes/referral-requests-inbox";
 // Temporarily disabled problematic imports
 // import { initializeEmailTemplates } from "./init-email-templates";
 // import { initAIEmailTemplates } from "./ai-email-templates";
@@ -148,7 +147,6 @@ app.use((req, res, next) => {
 
   const server = await registerRoutes(app);
 
-  app.use(referralRequestsInboxRouter);
   app.use(referralRequestsRouter);
 
   // Add custom domain route handler AFTER API routes are registered

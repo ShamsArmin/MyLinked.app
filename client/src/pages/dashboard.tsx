@@ -129,7 +129,7 @@ import { SpotlightCard } from "@/components/spotlight-card";
 
 import { InstagramPreview } from "@/components/instagram-preview";
 import SocialMediaIntegration from "@/components/social-media-integration";
-import ReferralNotifications from "@/components/ReferralNotifications";
+import NotificationsBell from "@/components/NotificationsBell";
 
 // Extended Zod schema for link forms
 const linkFormSchema = insertLinkSchema.extend({
@@ -748,7 +748,7 @@ export default function Dashboard() {
             <Menu className="h-4 w-4" />
           </Button>
 
-          <ReferralNotifications />
+          <NotificationsBell />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

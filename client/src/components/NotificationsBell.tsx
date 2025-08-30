@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useReferralsInbox } from '../hooks/useReferralsInbox';
+import { useNotifications } from '../hooks/useNotifications';
 
-export default function ReferralNotifications() {
-  const { data, isLoading, isError } = useReferralsInbox('pending');
-  const count = data?.count ?? 0;
+export default function NotificationsBell() {
+  const { data, isLoading, isError } = useNotifications();
+  const items = data ?? [];
+  const count = items.length;
   const [open, setOpen] = useState(false);
 
   return (
@@ -23,21 +24,25 @@ export default function ReferralNotifications() {
 
       {open && (
         <div className="absolute right-0 mt-2 w-80 rounded-xl shadow-lg bg-white border p-3 z-50">
-          <div className="font-semibold mb-2">Referral requests</div>
+          <div className="font-semibold mb-2">Notifications</div>
           {isLoading && <div className="text-sm text-gray-500">Loading…</div>}
           {isError && <div className="text-sm text-red-600">Failed to load</div>}
           {!isLoading && !isError && (
             <>
               {count === 0 ? (
-                <div className="text-sm text-gray-500">No pending requests</div>
+                <div className="text-sm text-gray-500">No notifications</div>
               ) : (
                 <ul className="space-y-2 max-h-72 overflow-auto">
-                  {data!.items.map(item => (
+                  {items.map(item => (
                     <li key={item.id} className="text-sm">
-                      <div className="font-medium">{item.requester_name}</div>
-                      <div className="text-gray-600">{item.requester_email}</div>
-                      <div className="text-gray-700">“{item.link_title}”</div>
+                      <div className="font-medium">{item.title}</div>
+                      {item.body && <div className="text-gray-600">{item.body}</div>}
                       <div className="text-xs text-gray-400">{new Date(item.created_at).toLocaleString()}</div>
+                      {item.link && (
+                        <a href={item.link} className="text-xs text-blue-600 hover:underline">
+                          View
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>

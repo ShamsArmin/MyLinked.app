@@ -23,7 +23,7 @@ import {
 } from "../shared/schema";
 import { db, pool, dbGuard } from "./db";
 import { getUserColumnSet } from "./user-columns";
-import { and, eq, gt, desc } from "drizzle-orm";
+import { and, eq, gt, desc, sql } from "drizzle-orm";
 import {
   suggestLinkPriority,
   generateSocialScore,
@@ -1969,8 +1969,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Notifications API
   app.get("/api/notifications", isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const userId = req.user.id;
-    const notifications = await storage.getNotifications(userId);
+    if (!req.user?.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Disable caching to avoid stale responses during development/debugging
+    res.set("Cache-Control", "no-store");
+    req.app.set("etag", false);
+
+    const userId = req.user.id as string;
+
+    // Load top 10 pending referral requests for this user
+    const referralsResult = await db.execute(sql`
+      SELECT
+        id,
+        requester_name,
+        requester_email,
+        link_title,
+        created_at
+      FROM referral_requests
+      WHERE target_user_id = ${userId} AND status = 'pending'
+      ORDER BY created_at DESC
+      LIMIT 10
+    `);
+
+    const referralNotifications = (referralsResult.rows ?? []).map((r: any) => ({
+      id: `referral_${r.id}`,
+      type: 'referral_request' as const,
+      title: `New referral request from ${r.requester_name}`,
+      body: `${r.requester_email} • “${r.link_title ?? 'Referral'}”`,
+      created_at: r.created_at,
+      link: '/dashboard/referrals'
+    }));
+
+    // Load existing notifications and merge
+    const otherNotifications = await storage.getNotifications(userId);
+    const notifications = [
+      ...(otherNotifications ?? []),
+      ...referralNotifications,
+    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
     res.json(notifications);
   }));
 
