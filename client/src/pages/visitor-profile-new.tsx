@@ -349,15 +349,16 @@ export default function VisitorProfileNew() {
 
     try {
       const requestData = {
-        requesterName: referralForm.name,
-        requesterEmail: referralForm.email,
-        requesterPhone: referralForm.phone,
-        requesterWebsite: referralForm.website,
-        fieldOfWork: referralForm.fieldOfWork,
-        description: referralForm.description,
-        linkTitle: referralForm.linkTitle,
-        linkUrl: referralForm.linkUrl,
-        targetUserId: parseInt(data?.profile.id, 10)
+        requesterName: referralForm.name?.trim(),
+        requesterEmail: referralForm.email?.trim(),
+        requesterPhone: referralForm.phone?.trim() || null,
+        requesterWebsite: referralForm.website?.trim() || null,
+        fieldOfWork: referralForm.fieldOfWork?.trim(),
+        description: referralForm.description?.trim() || null,
+        linkTitle: referralForm.linkTitle?.trim(),
+        linkUrl: referralForm.linkUrl?.trim(),
+        // IMPORTANT: do NOT parseInt — IDs are UUID strings
+        targetUserId: data?.profile.id
       };
 
       console.log('Sending request data:', requestData);

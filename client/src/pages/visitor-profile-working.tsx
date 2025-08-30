@@ -120,22 +120,23 @@ export default function VisitorProfileWorking() {
   // Form submission handlers
   const handleReferralSubmit = async () => {
     try {
+      const requestData = {
+        requesterName: referralForm.name?.trim(),
+        requesterEmail: referralForm.email?.trim(),
+        requesterPhone: referralForm.phone?.trim() || null,
+        requesterWebsite: referralForm.website?.trim() || null,
+        fieldOfWork: referralForm.fieldOfWork?.trim(),
+        description: referralForm.description?.trim() || null,
+        linkTitle: referralForm.linkTitle?.trim(),
+        linkUrl: referralForm.linkUrl?.trim(),
+        // IMPORTANT: do NOT parseInt — IDs are UUID strings
+        targetUserId: data?.profile.id
+      };
+
       const response = await fetch('/api/referral-requests', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          requesterName: referralForm.name,
-          requesterEmail: referralForm.email,
-          requesterPhone: referralForm.phone,
-          requesterWebsite: referralForm.website,
-          fieldOfWork: referralForm.fieldOfWork,
-          description: referralForm.description,
-          linkTitle: referralForm.linkTitle,
-          linkUrl: referralForm.linkUrl,
-          targetUserId: parseInt(data?.profile.id, 10)
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData)
       });
 
       if (response.ok) {
