@@ -39,11 +39,10 @@ import {
 import { eq, and, not, sql, desc, or, ilike, isNotNull, isNull, count, notInArray } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
+import { randomBytes } from "crypto";
 import type { IStorage } from "./storage";
+import { hashPassword as hashPasswordHelper, verifyPassword as verifyPasswordHelper } from "./auth/password";
 
-const scryptAsync = promisify(scrypt);
 
 export class EnhancedDatabaseStorage implements IStorage {
   sessionStore: any;
@@ -54,20 +53,15 @@ export class EnhancedDatabaseStorage implements IStorage {
     console.log('Using memory session store to avoid database connection issues');
   }
 
-  async hashPassword(password: string): Promise<string> {
-    const salt = randomBytes(16).toString("hex");
-    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-    return `${buf.toString("hex")}.${salt}`;
-  }
+    async hashPassword(password: string): Promise<string> {
+      return hashPasswordHelper(password);
+    }
 
-  async comparePasswords(supplied: string, stored: string): Promise<boolean> {
-    const [hashed, salt] = stored.split(".");
-    const hashedBuf = Buffer.from(hashed, "hex");
-    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-    return timingSafeEqual(hashedBuf, suppliedBuf);
-  }
+    async comparePasswords(supplied: string, stored: string): Promise<boolean> {
+      return verifyPasswordHelper(supplied, stored);
+    }
 
-  private normalizeBoolean(value: any): boolean {
+    private normalizeBoolean(value: any): boolean {
     if (typeof value === 'string') {
       return value.toLowerCase() === 'true';
     }
