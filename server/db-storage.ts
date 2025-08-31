@@ -24,12 +24,8 @@ import type {
   ProfileStats,
   CollaborativeProfile
 } from "../shared/schema";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
 import { IStorage } from "./storage";
-
-// Set up scrypt for password hashing
-const scryptAsync = promisify(scrypt);
+import { hashPassword as hashPasswordUtil, verifyPassword } from "./auth/password";
 
 export class DatabaseStorage implements IStorage {
   sessionStore: any;
@@ -45,16 +41,11 @@ export class DatabaseStorage implements IStorage {
 
   // Password methods
   async hashPassword(password: string): Promise<string> {
-    const salt = randomBytes(16).toString('hex');
-    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-    return `${buf.toString('hex')}.${salt}`;
+    return hashPasswordUtil(password);
   }
 
   async comparePasswords(supplied: string, stored: string): Promise<boolean> {
-    const [hashed, salt] = stored.split('.');
-    const hashedBuf = Buffer.from(hashed, 'hex');
-    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-    return timingSafeEqual(hashedBuf, suppliedBuf);
+    return verifyPassword(supplied, stored);
   }
 
   // User methods
