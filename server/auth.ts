@@ -52,8 +52,12 @@ export function setupAuth(app: Express) {
         return done({ type: 'dbUnavailable' });
       }
       try {
-        console.log('Login attempt for username:', username);
-        const user = await storage.getUserByUsername(username);
+        console.log('Login attempt for identifier:', username);
+        let user = await storage.getUserByUsername(username);
+        if (!user) {
+          // Fall back to email lookup if username search failed
+          user = await storage.getUserByEmail(username);
+        }
         if (!user) {
           console.log('User not found:', username);
           return done(null, false, { message: "Invalid username or password" });

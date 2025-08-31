@@ -8,6 +8,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { z } from "zod";
+import DashboardTour from "@/components/DashboardTour";
+import { useDashboardTour } from "@/hooks/useDashboardTour";
+import type { User } from "../../../types/user";
 const compactLogoPath = "/assets/logo-compact.png";
 const logoPath = "/assets/logo-horizontal.png";
 
@@ -387,9 +390,22 @@ export default function Dashboard() {
   const {
     user
   } = useAuth();
-  
+
   const [, navigate] = useLocation();
-  
+
+  // Fetch profile for onboarding tour
+  const { data: profile } = useQuery<User>({
+    queryKey: ['/api/me'],
+    enabled: !!user,
+    queryFn: async () => {
+      const res = await fetch('/api/me');
+      if (!res.ok) throw new Error('Failed to load profile');
+      return res.json();
+    }
+  });
+
+  const { shouldStart, startTour, completeTour } = useDashboardTour(profile);
+
   // Get all links
   const {
     data: links = [],
@@ -709,6 +725,7 @@ export default function Dashboard() {
   
   return (
     <div className="min-h-screen bg-background">
+      <DashboardTour run={shouldStart} onFinish={completeTour} onSkip={completeTour} />
       {/* Dashboard Header */}
       <header className="border-b shadow-sm">
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
@@ -1610,6 +1627,11 @@ export default function Dashboard() {
           )}
         </DialogContent>
       </Dialog>
+      <footer className="text-center mt-4">
+        <button id="help-link" onClick={startTour} className="text-sm text-blue-500 underline">
+          Take a tour
+        </button>
+      </footer>
     </div>
   );
 }
