@@ -1,16 +1,24 @@
 # MyLinked Admin Roles
 
-## Migrations
-Run database migrations:
+## Database & migrations
+Set your database connection via `DATABASE_URL` or standard `PG*` variables. Example:
 
-```bash
-npm run db:migrate
+```
+DATABASE_URL=postgres://user:pass@host:5432/db
+# or
+PGHOST=host PGUSER=user PGPASSWORD=pass PGDATABASE=db
+```
+
+Run migrations:
+
+```
+npm run migrate
 ```
 
 ## Bootstrap owner account
 Create the first owner account (idempotent):
 
-```bash
+```
 OWNER_EMAIL=you@example.com OWNER_PASSWORD="StrongP@ss" npx tsx scripts/bootstrap-owner.ts
 ```
 

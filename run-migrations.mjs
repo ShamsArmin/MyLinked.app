@@ -52,12 +52,19 @@ async function markApplied(pool, filename, checksum) {
 }
 
 async function runMigration() {
-  if (!process.env.DATABASE_URL) {
-    console.error('DATABASE_URL is not set');
+  if (!process.env.DATABASE_URL && !(process.env.PGHOST && process.env.PGUSER)) {
+    console.error('DATABASE_URL or PG* variables must be set');
     process.exit(1);
   }
 
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    host: process.env.PGHOST,
+    port: process.env.PGPORT ? Number(process.env.PGPORT) : undefined,
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    database: process.env.PGDATABASE,
+  });
 
   try {
     const migrationsDir = path.join(__dirname, 'migrations');
