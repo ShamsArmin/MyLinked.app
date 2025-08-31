@@ -9,7 +9,7 @@ import {
   systemLogs
 } from "../shared/schema";
 import { db } from "./db";
-import { isAuthenticated, comparePasswords } from "./auth";
+import { isAuthenticated, comparePasswords, requireRole } from "./auth";
 import { sendEmail } from "./email-service";
 import crypto from "crypto";
 
@@ -37,9 +37,8 @@ professionalAdminRouter.post("/login", async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Check if user is admin (database column is is_admin, but TypeScript interface uses isAdmin)
-    const isAdmin = user.isAdmin || (user as any).is_admin;
-    if (!isAdmin) {
+    // Check role
+    if (user.role !== 'admin' && user.role !== 'owner') {
       return res.status(403).json({ message: "Admin access required" });
     }
 
@@ -54,7 +53,7 @@ professionalAdminRouter.post("/login", async (req: Request, res: Response) => {
           id: user.id,
           username: user.username,
           name: user.name,
-          isAdmin: user.isAdmin
+          role: user.role
         }
       });
     });
@@ -75,12 +74,7 @@ professionalAdminRouter.post("/logout", (req: Request, res: Response) => {
 });
 
 // Middleware to check admin privileges
-function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!req.user?.isAdmin) {
-    return res.status(403).json({ message: "Administrator privileges required" });
-  }
-  next();
-}
+const requireAdmin = requireRole('admin', 'owner');
 
 // Enhanced Users with Roles endpoint
 professionalAdminRouter.get("/users-with-roles", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {

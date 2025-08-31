@@ -7,6 +7,7 @@ import {
   comparePasswords,
   hashPassword,
   isAuthenticated,
+  requireRole,
 } from "./auth";
 import { z } from "zod";
 import {
@@ -55,6 +56,7 @@ import emailRouter from "./email-routes";
 import supportRouter from "./support-routes";
 import { setupTikTokOAuth } from "./tiktok-oauth";
 import { sendPasswordResetEmail } from "./email-service";
+import { createAdminUserHandler } from "./admin-users";
 
 // Error handling middleware
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
@@ -2221,13 +2223,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =============================================================================
   // ADMIN ROUTES
   // =============================================================================
+  app.get("/api/admin/me", isAuthenticated, requireRole('admin', 'owner'), (req: any, res: any) => {
+    res.json(req.user);
+  });
 
-  app.get("/api/admin/users", asyncHandler(async (req: any, res: any) => {
-    const users = await storage.getAllUsers();
+  app.get("/api/admin/users", isAuthenticated, requireRole('admin', 'owner'), asyncHandler(async (req: any, res: any) => {
+    const users = (await storage.getAllUsers()).map((u: any) => {
+      const { password, ...rest } = u;
+      return rest;
+    });
     res.json(users);
   }));
 
-  app.get("/api/admin/analytics", asyncHandler(async (req: any, res: any) => {
+  app.post("/api/admin/users", isAuthenticated, requireRole('owner'), asyncHandler(createAdminUserHandler()));
+
+  app.get("/api/admin/analytics", isAuthenticated, requireRole('admin', 'owner'), asyncHandler(async (req: any, res: any) => {
     const totalUsers = await storage.getAllUsers();
     const totalProfileViews = await storage.getTotalProfileViews();
     const allLinks = await storage.getAllLinks();
@@ -2250,38 +2260,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(analytics);
   }));
 
-  app.patch("/api/admin/users/:userId/promote", asyncHandler(async (req: any, res: any) => {
+  app.patch("/api/admin/users/:userId/promote", isAuthenticated, requireRole('owner'), asyncHandler(async (req: any, res: any) => {
     const userId = validateId(req.params.userId);
-    const updatedUser = await storage.updateUser(userId, { isAdmin: true });
+    const updatedUser = await storage.updateUser(userId, { role: 'admin', isAdmin: true });
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
     res.json(updatedUser);
   }));
 
-  app.patch("/api/admin/users/:userId/deactivate", asyncHandler(async (req: any, res: any) => {
+  app.patch("/api/admin/users/:userId/deactivate", isAuthenticated, requireRole('owner'), asyncHandler(async (req: any, res: any) => {
     const userId = validateId(req.params.userId);
-    const updatedUser = await storage.updateUser(userId, { isAdmin: false });
+    const updatedUser = await storage.updateUser(userId, { role: 'user', isAdmin: false });
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
     res.json(updatedUser);
   }));
 
-  app.get("/api/admin/user-reports", asyncHandler(async (req: any, res: any) => {
-    if (!req.user?.isAdmin) {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-
+  app.get("/api/admin/user-reports", isAuthenticated, requireRole('admin', 'owner'), asyncHandler(async (req: any, res: any) => {
     const reports = await storage.getUserReports();
     res.json(reports);
   }));
 
-  app.put("/api/admin/user-reports/:id", asyncHandler(async (req: any, res: any) => {
-    if (!req.user?.isAdmin) {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-
+  app.put("/api/admin/user-reports/:id", isAuthenticated, requireRole('admin', 'owner'), asyncHandler(async (req: any, res: any) => {
     const reportId = validateId(req.params.id);
     const { status, adminNotes } = req.body;
 

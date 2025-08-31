@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2, Users, BarChart3, Settings, Wifi, FileText, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Redirect } from "wouter";
+import { CreateAdminForm } from "@/components/admin/create-admin-form";
 
 interface User {
   id: number;
@@ -18,7 +19,8 @@ interface User {
   email: string;
   bio: string;
   location: string;
-  isAdmin: boolean;
+  role: string;
+  isAdmin?: boolean;
   isActive: boolean;
   lastLoginAt: string;
   createdAt: string;
@@ -67,7 +69,8 @@ export default function AdminPanel() {
   const queryClient = useQueryClient();
 
   // Redirect if not admin
-  if (!authLoading && (!user || !user.isAdmin)) {
+  const isAdminUser = user && (user.role === 'admin' || user.role === 'owner');
+  if (!authLoading && !isAdminUser) {
     return <Redirect to="/" />;
   }
 
@@ -82,31 +85,31 @@ export default function AdminPanel() {
   // Users data
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users"],
-    enabled: !!user?.isAdmin
+    enabled: isAdminUser
   });
 
   // Analytics data
   const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/admin/analytics"],
-    enabled: !!user?.isAdmin
+    enabled: isAdminUser
   });
 
   // Feature toggles
   const { data: featuresData, isLoading: featuresLoading } = useQuery({
     queryKey: ["/api/admin/features"],
-    enabled: !!user?.isAdmin
+    enabled: isAdminUser
   });
 
   // Social status
   const { data: socialData, isLoading: socialLoading } = useQuery({
     queryKey: ["/api/admin/social-status"],
-    enabled: !!user?.isAdmin
+    enabled: isAdminUser
   });
 
   // System logs
   const { data: logsData, isLoading: logsLoading } = useQuery({
     queryKey: ["/api/admin/logs"],
-    enabled: !!user?.isAdmin
+    enabled: isAdminUser
   });
 
   // Feature toggle mutation
@@ -344,6 +347,12 @@ export default function AdminPanel() {
                 <CardDescription>View and manage all platform users</CardDescription>
               </CardHeader>
               <CardContent>
+                {user?.role === 'owner' && (
+                  <div className="mb-6">
+                    <CardTitle className="text-lg mb-2">Create Admin User</CardTitle>
+                    <CreateAdminForm />
+                  </div>
+                )}
                 {usersLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin" />
@@ -355,7 +364,7 @@ export default function AdminPanel() {
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
                             <h3 className="font-medium">{user.name || user.username}</h3>
-                            {user.isAdmin && (
+                            {user.role === 'admin' && (
                               <Badge variant="secondary" className="bg-blue-50 text-blue-700">Admin</Badge>
                             )}
                             {!user.isActive && (
@@ -389,7 +398,7 @@ export default function AdminPanel() {
                               )}
                             </Button>
                           )}
-                          {user.isActive && !user.isAdmin && (
+                          {user.isActive && user.role !== 'admin' && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -404,7 +413,7 @@ export default function AdminPanel() {
                               )}
                             </Button>
                           )}
-                          {!user.isAdmin && (
+                          {user.role !== 'admin' && (
                             <Button
                               variant="outline"
                               size="sm"

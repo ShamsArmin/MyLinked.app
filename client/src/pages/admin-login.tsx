@@ -21,7 +21,7 @@ export default function AdminLogin() {
   });
 
   // Redirect if already logged in as admin
-  if (user?.isAdmin) {
+  if (user && (user.role === 'admin' || user.role === 'owner')) {
     setLocation("/admin");
     return null;
   }

@@ -81,8 +81,16 @@ if (!process.env.DATABASE_URL) {
 console.log('Connecting to database...');
 
 // Create connection pool with more conservative settings for stability
+const poolConfig: any = {};
+if (process.env.DATABASE_URL) poolConfig.connectionString = process.env.DATABASE_URL;
+if (process.env.PGHOST) poolConfig.host = process.env.PGHOST;
+if (process.env.PGPORT) poolConfig.port = Number(process.env.PGPORT);
+if (process.env.PGUSER) poolConfig.user = process.env.PGUSER;
+if (process.env.PGPASSWORD) poolConfig.password = process.env.PGPASSWORD;
+if (process.env.PGDATABASE) poolConfig.database = process.env.PGDATABASE;
+
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  ...poolConfig,
   max: 5, // Reduce max connections for stability
   idleTimeoutMillis: 60000, // Keep connections longer
   connectionTimeoutMillis: 10000, // Increase timeout
