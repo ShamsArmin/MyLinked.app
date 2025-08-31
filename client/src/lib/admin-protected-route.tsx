@@ -9,23 +9,19 @@ export function AdminProtectedRoute({
   path: string;
   component: () => React.JSX.Element;
 }) {
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Check if user has admin access by trying to access an admin endpoint
-    fetch("/api/admin/users-with-roles", {
+    fetch("/api/admin/me", {
       credentials: "include",
     })
       .then((response) => {
-        if (response.ok) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
+        setIsAuthorized(response.ok);
       })
       .catch(() => {
-        setIsAdmin(false);
+        setIsAuthorized(false);
       })
       .finally(() => {
         setIsLoading(false);
@@ -42,7 +38,7 @@ export function AdminProtectedRoute({
     );
   }
 
-  if (!isAdmin) {
+  if (!isAuthorized) {
     return (
       <Route path={path}>
         <Redirect to="/admin/login" />

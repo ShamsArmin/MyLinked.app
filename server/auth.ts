@@ -245,3 +245,14 @@ export function isOwner(paramName: string) {
     return res.status(403).json({ message: "Forbidden" });
   };
 }
+
+// Role-based access control middleware
+export function requireRole(...roles: Array<'admin' | 'owner'>) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const userRole = (req.user as any)?.role;
+    if (req.isAuthenticated() && userRole && roles.includes(userRole)) {
+      return next();
+    }
+    return res.status(403).json({ message: "Forbidden" });
+  };
+}
