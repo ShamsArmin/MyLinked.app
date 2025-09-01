@@ -1,4 +1,5 @@
-import { Pool } from 'pg';
+import pgPkg from 'pg';
+const { Pool } = pgPkg; // ✅ ESM-safe import of Pool from pg
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from '../shared/schema';
 
