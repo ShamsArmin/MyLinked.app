@@ -1,11 +1,8 @@
-// server/db.ts
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from '../shared/schema';
 
-// -------------------------
 // Database guard state
-// -------------------------
 export const dbGuard = {
   bypass: process.env.DB_GUARD_BYPASS === '1',
   reason: undefined as string | undefined,
@@ -70,40 +67,28 @@ export async function isDbAvailable(): Promise<boolean> {
   }
 }
 
-// -------------------------
-// Connection setup
-// -------------------------
-
+// Verify database URL is available
 if (!process.env.DATABASE_URL) {
   throw new Error(
-    'DATABASE_URL must be set. Did you forget to provision a database or add the env var on Render?',
+    'DATABASE_URL must be set. Did you forget to provision a database?',
   );
 }
 
 console.log('Connecting to database...');
 
-// If you use the External URL on Render it will include ?sslmode=require.
-// Internal URL usually doesn't need SSL. We auto-detect.
-const ssl =
-  process.env.DATABASE_URL.includes('sslmode=require')
-    ? { rejectUnauthorized: false }
-    : undefined;
-
+// Create connection pool
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl,
-  max: 5, // conservative for Render free tier
-  idleTimeoutMillis: 60_000,
-  connectionTimeoutMillis: 10_000,
+  max: 5,
+  idleTimeoutMillis: 60000,
+  connectionTimeoutMillis: 10000,
   allowExitOnIdle: true,
 });
 
-// Drizzle ORM (node-postgres adapter)
+// Initialize Drizzle ORM
 export const db = drizzle(pool, { schema });
 
-// -------------------------
-// Error handling & warm-up
-// -------------------------
+// Add connection error handling
 pool.on('error', (err: any) => {
   console.error('Database pool error:', err);
   if (isEndpointDisabledError(err)) {
@@ -111,28 +96,29 @@ pool.on('error', (err: any) => {
   }
 });
 
+// Test database connection with retry logic
 async function testConnection(retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
       const client = await pool.connect();
-      await client.query('SELECT 1');
-      client.release();
       console.log('Database connection successful');
+      client.release();
       return true;
     } catch (err: any) {
       console.error(`Database connection attempt ${i + 1} failed:`, err);
       if (isEndpointDisabledError(err)) {
-        setDbEnabled(false, 'endpoint disabled', err?.code);
+        setDbEnabled(false, 'endpoint disabled', err.code);
         return false;
       }
       if (i === retries - 1) {
-        setDbEnabled(false, err?.message, err?.code);
+        setDbEnabled(false, err.message, err.code);
         console.error('All database connection attempts failed');
         return false;
       }
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
 }
 
+// Start initial connection test
 void testConnection();
