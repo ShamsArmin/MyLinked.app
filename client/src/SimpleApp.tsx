@@ -31,7 +31,6 @@ function AuthPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
     username: '',
     password: '',
     name: '',
@@ -60,7 +59,7 @@ function AuthPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
         },
         credentials: 'include',
         body: JSON.stringify({
-          email: formData.email,
+          username: formData.username,
           password: formData.password
         }),
       });
@@ -191,15 +190,15 @@ function AuthPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
           {activeTab === "login" && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                  Username
                 </label>
                 <input
-                  id="email"
-                  type="email"
+                  id="username"
+                  type="text"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your email"
-                  value={formData.email}
+                  placeholder="Enter your username"
+                  value={formData.username}
                   onChange={handleChange}
                   required
                 />

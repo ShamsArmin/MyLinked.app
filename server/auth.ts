@@ -1,6 +1,5 @@
 import { Express, Request, Response, NextFunction } from "express";
 import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
 import "express-session";
 import bcrypt from "bcrypt";
 import { storage } from "./storage";
@@ -36,40 +35,6 @@ export function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Configure local strategy
-  passport.use(
-    new LocalStrategy(
-      { usernameField: "email", passwordField: "password" },
-      async (email, password, done) => {
-        if (!(await isDbAvailable())) {
-          return done({ type: 'dbUnavailable' });
-        }
-        try {
-          const emailNorm = String(email || '').trim().toLowerCase();
-          console.log('Login attempt for email:', emailNorm);
-          const user = await storage.getUserByEmail(emailNorm);
-          console.log('User lookup result:', !!user);
-          if (!user) {
-            return done(null, false, { message: "Invalid email or password" });
-          }
-          const isPasswordValid = await bcrypt.compare(String(password || ''), user.password);
-          console.log('Password valid:', isPasswordValid);
-          if (!isPasswordValid) {
-            return done(null, false, { message: "Invalid email or password" });
-          }
-          return done(null, user as any);
-        } catch (error: any) {
-          console.error('Login error:', {
-            code: error?.code,
-            column: error?.column,
-            table: error?.table,
-            message: error?.message,
-          });
-          return done(error);
-        }
-      }
-    )
-  );
 
   // Serialize user for session
   passport.serializeUser((user: any, done) => {
@@ -164,35 +129,59 @@ export function setupAuth(app: Express) {
   });
 
   // Login route using Passport.js local strategy
-  app.post("/api/login", (req, res, next) => {
-    const email = String(req.body?.email || '').trim().toLowerCase();
-    console.log('Login route called for email:', email);
-    passport.authenticate("local", (err: any, user: any, info: any) => {
-      console.log('Passport authenticate callback:', { err, user: !!user, info });
-      if (err) {
-        if (err.type === 'dbUnavailable') {
-          return res.status(503).json({ message: "Database temporarily unavailable" });
-        }
-        console.error('Authentication error:', err);
-        return next(err);
+  // Dashboard login with username
+  app.post('/api/login', async (req, res, next) => {
+    try {
+      const username = String(req.body?.username || '').trim();
+      const plain = String(req.body?.password || '');
+      if (!username || !plain) {
+        return res.status(400).json({ message: 'Missing credentials' });
       }
+      const user = await storage.getUserByUsername(username);
       if (!user) {
-        console.log('Authentication failed:', info);
-        return res.status(401).json({ message: info?.message || "Authentication failed" });
+        return res.status(401).json({ message: 'Invalid username or password' });
       }
-      req.logIn(user, (err) => {
-        if (err) {
-          console.error('Login error:', err);
-          return next(err);
-        }
-        console.log('Login successful for user:', user.email);
-        const { password: _pwd, ...safeUser } = user;
-        return res.json({
-          message: "Login successful",
-          user: safeUser
-        });
+      const ok = await bcrypt.compare(plain, user.password);
+      if (!ok) {
+        return res.status(401).json({ message: 'Invalid username or password' });
+      }
+      req.login(user as any, (err) => {
+        if (err) return next(err);
+        const { password: _pw, ...safe } = user;
+        return res.json({ message: 'Login successful', user: safe });
       });
-    })(req, res, next);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Admin login with email
+  app.post('/api/login-admin', async (req, res, next) => {
+    try {
+      const email = String(req.body?.email || '').trim().toLowerCase();
+      const plain = String(req.body?.password || '');
+      if (!email || !plain) {
+        return res.status(400).json({ message: 'Missing credentials' });
+      }
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+      if (user.role !== 'admin') {
+        return res.status(403).json({ message: 'Not an admin account' });
+      }
+      const ok = await bcrypt.compare(plain, user.password);
+      if (!ok) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+      req.login(user as any, (err) => {
+        if (err) return next(err);
+        const { password: _pw, ...safe } = user;
+        return res.json({ message: 'Login successful', user: safe });
+      });
+    } catch (err) {
+      next(err);
+    }
   });
 
   // Admin bootstrap route

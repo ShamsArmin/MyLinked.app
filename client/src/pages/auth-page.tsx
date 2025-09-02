@@ -16,7 +16,7 @@ import { FaGoogle, FaTiktok } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  username: z.string().min(1, "Please enter your username"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -93,7 +93,7 @@ export default function AuthPage() {
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   });
@@ -134,7 +134,7 @@ export default function AuthPage() {
         setLocation('/dashboard');
       },
       onError: () => {
-        setErrorMessage("Invalid email or password");
+        setErrorMessage("Invalid username or password");
       },
     });
   };
@@ -237,7 +237,7 @@ export default function AuthPage() {
                       <span className="w-full border-t border-gray-300 dark:border-gray-600" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="bg-white dark:bg-gray-800 px-4 text-gray-500 dark:text-gray-400">Or continue with email</span>
+                      <span className="bg-white dark:bg-gray-800 px-4 text-gray-500 dark:text-gray-400">Or continue with username</span>
                     </div>
                   </div>
 
@@ -245,16 +245,16 @@ export default function AuthPage() {
                     <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                       <FormField
                         control={loginForm.control}
-                        name="email"
+                        name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel>Username</FormLabel>
                             <FormControl>
                               <Input
-                                type="email"
-                                placeholder="Enter your email"
+                                type="text"
+                                placeholder="Enter your username"
                                 {...field}
-                                autoComplete="email"
+                                autoComplete="username"
                               />
                             </FormControl>
                             <FormMessage />
