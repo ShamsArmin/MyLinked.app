@@ -90,11 +90,11 @@ export default function AdminLogin() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">Email or Username</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Enter admin username"
+                placeholder="Enter admin email or username"
                 value={formData.username}
                 onChange={(e) =>
                   setFormData({ ...formData, username: e.target.value })

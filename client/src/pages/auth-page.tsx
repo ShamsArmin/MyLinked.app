@@ -16,7 +16,7 @@ import { FaGoogle, FaTiktok } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
+  email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -93,7 +93,7 @@ export default function AuthPage() {
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -134,7 +134,7 @@ export default function AuthPage() {
         setLocation('/dashboard');
       },
       onError: () => {
-        setErrorMessage("Invalid username or password");
+        setErrorMessage("Invalid email or password");
       },
     });
   };
@@ -245,15 +245,16 @@ export default function AuthPage() {
                     <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                       <FormField
                         control={loginForm.control}
-                        name="username"
+                        name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel>Email</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="Enter your username" 
-                                {...field} 
-                                autoComplete="username"
+                              <Input
+                                type="email"
+                                placeholder="Enter your email"
+                                {...field}
+                                autoComplete="email"
                               />
                             </FormControl>
                             <FormMessage />

@@ -18,14 +18,21 @@ export const professionalAdminRouter = Router();
 // Admin login route
 professionalAdminRouter.post("/login", async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body as { username?: string; email?: string; password?: string };
 
-    if (!username || !password) {
-      return res.status(400).json({ message: "Username and password are required" });
+    const rawIdentifier = String(email || username || '').trim();
+    if (!rawIdentifier || !password) {
+      return res.status(400).json({ message: "Email or username and password are required" });
     }
 
-    // Find user by username
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    const isEmail = rawIdentifier.includes('@');
+    const identifier = isEmail ? rawIdentifier.toLowerCase() : rawIdentifier;
+
+    // Find user by email or username
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(isEmail ? eq(users.email, identifier) : eq(users.username, identifier));
     
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
