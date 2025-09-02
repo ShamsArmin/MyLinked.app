@@ -2,12 +2,11 @@ import { Express, Request, Response, NextFunction } from "express";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
+import bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { User as UserType, users } from "../shared/schema";
 import { isDbAvailable, db } from "./db";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import { getUserColumnSet } from "./user-columns";
 
 // Extend the Express namespace for TypeScript
@@ -25,20 +24,12 @@ declare global {
   }
 }
 
-const scryptAsync = promisify(scrypt);
-
 export async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
+  return bcrypt.hash(password, 10);
 }
 
 export async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  if (!hashed || !salt) return false;
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+  return bcrypt.compare(supplied, stored);
 }
 
 export function setupAuth(app: Express) {
@@ -47,52 +38,49 @@ export function setupAuth(app: Express) {
 
   // Configure local strategy
   passport.use(
-    new LocalStrategy(async (username, password, done) => {
-      if (!(await isDbAvailable())) {
-        return done({ type: 'dbUnavailable' });
-      }
-      try {
-        console.log('Login attempt for username:', username);
-        const user = await storage.getUserByUsername(username);
-        if (!user) {
-          console.log('User not found:', username);
-          return done(null, false, { message: "Invalid username or password" });
+    new LocalStrategy(
+      { usernameField: "email", passwordField: "password" },
+      async (email, password, done) => {
+        if (!(await isDbAvailable())) {
+          return done({ type: 'dbUnavailable' });
         }
-
-        console.log('User found, checking password...');
-        console.log('Stored password hash:', user.password);
-        const isPasswordValid = await storage.comparePasswords(password, user.password);
-        console.log('Password valid:', isPasswordValid);
-
-        if (!isPasswordValid) {
-          console.log('Password verification failed for user:', username);
-          return done(null, false, { message: "Invalid username or password" });
+        try {
+          const emailNorm = String(email || '').trim().toLowerCase();
+          console.log('Login attempt for email:', emailNorm);
+          const user = await storage.getUserByEmail(emailNorm);
+          console.log('User lookup result:', !!user);
+          if (!user) {
+            return done(null, false, { message: "Invalid email or password" });
+          }
+          const isPasswordValid = await bcrypt.compare(String(password || ''), user.password);
+          console.log('Password valid:', isPasswordValid);
+          if (!isPasswordValid) {
+            return done(null, false, { message: "Invalid email or password" });
+          }
+          return done(null, user as any);
+        } catch (error: any) {
+          console.error('Login error:', {
+            code: error?.code,
+            column: error?.column,
+            table: error?.table,
+            message: error?.message,
+          });
+          return done(error);
         }
-
-        console.log('Login successful for user:', username);
-        return done(null, user as any);
-      } catch (error: any) {
-        console.error('Login error:', {
-          code: error?.code,
-          column: error?.column,
-          table: error?.table,
-          message: error?.message,
-        });
-        return done(error);
       }
-    })
+    )
   );
 
   // Serialize user for session
-  passport.serializeUser((user, done) => {
+  passport.serializeUser((user: any, done) => {
     done(null, user.id);
   });
 
   // Deserialize user from session
-  passport.deserializeUser(async (id: number, done) => {
+  passport.deserializeUser(async (id: string, done) => {
     try {
-      const user = await storage.getUser(id);
-      done(null, user as any);
+      const user = await db.query.users.findFirst({ where: eq(users.id, id) });
+      done(null, user as any || false);
     } catch (error) {
       done(error);
     }
@@ -114,6 +102,9 @@ export function setupAuth(app: Express) {
       } = body;
 
       const userRecord = { name: rest.username, ...rest } as Record<string, any>;
+      if (userRecord.email) {
+        userRecord.email = String(userRecord.email).trim().toLowerCase();
+      }
 
       // Password is required for registration
       if (!userRecord.username || !password) {
@@ -174,7 +165,8 @@ export function setupAuth(app: Express) {
 
   // Login route using Passport.js local strategy
   app.post("/api/login", (req, res, next) => {
-    console.log('Login route called with body:', req.body);
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    console.log('Login route called for email:', email);
     passport.authenticate("local", (err: any, user: any, info: any) => {
       console.log('Passport authenticate callback:', { err, user: !!user, info });
       if (err) {
@@ -193,13 +185,36 @@ export function setupAuth(app: Express) {
           console.error('Login error:', err);
           return next(err);
         }
-        console.log('Login successful for user:', user.username);
-        return res.json({ 
-          message: "Login successful", 
-          user: user 
+        console.log('Login successful for user:', user.email);
+        const { password: _pwd, ...safeUser } = user;
+        return res.json({
+          message: "Login successful",
+          user: safeUser
         });
       });
     })(req, res, next);
+  });
+
+  // Admin bootstrap route
+  app.post('/api/admin/bootstrap', async (req, res) => {
+    const token = req.body?.token || req.query.token;
+    if (!process.env.ADMIN_BOOTSTRAP_TOKEN || token !== process.env.ADMIN_BOOTSTRAP_TOKEN) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    const password = String(req.body?.password || '');
+    const username = String(req.body?.username || 'admin');
+    const name = String(req.body?.name || 'Admin');
+    let user = await storage.getUserByEmail(email);
+    if (!user) {
+      const hashed = await bcrypt.hash(password || 'Admin123!', 10);
+      [user] = await db.insert(users).values({ email, username, name, password: hashed, role: 'admin' }).returning();
+    } else if (user.role !== 'admin') {
+      await db.update(users).set({ role: 'admin' }).where(eq(users.id, user.id));
+      user.role = 'admin';
+    }
+    const { password: _pw, ...safe } = user;
+    res.json({ ok: true, user: safe });
   });
 
   // Logout route
