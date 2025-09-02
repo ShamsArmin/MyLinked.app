@@ -106,37 +106,37 @@ export default function ProfessionalAdminDashboard() {
   // Enhanced queries with role management
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users-with-roles"],
-    enabled: !!user?.isAdmin,
+    enabled: user?.role === 'admin',
   });
 
   const { data: rolesData, isLoading: rolesLoading } = useQuery({
     queryKey: ["/api/admin/roles"],
-    enabled: !!user?.isAdmin,
+    enabled: user?.role === 'admin',
   });
 
   const { data: permissionsData, isLoading: permissionsLoading } = useQuery({
     queryKey: ["/api/admin/permissions"],
-    enabled: !!user?.isAdmin,
+    enabled: user?.role === 'admin',
   });
 
   const { data: employeesData, isLoading: employeesLoading } = useQuery({
     queryKey: ["/api/admin/employees"],
-    enabled: !!user?.isAdmin,
+    enabled: user?.role === 'admin',
   });
 
   const { data: invitationsData, isLoading: invitationsLoading } = useQuery({
     queryKey: ["/api/admin/invitations"],
-    enabled: !!user?.isAdmin,
+    enabled: user?.role === 'admin',
   });
 
   const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/admin/professional/analytics", timeRange],
-    enabled: !!user?.isAdmin,
+    enabled: user?.role === 'admin',
   });
 
   const { data: systemMetrics, isLoading: systemLoading } = useQuery({
     queryKey: ["/api/admin/system/metrics"],
-    enabled: !!user?.isAdmin,
+    enabled: user?.role === 'admin',
     refetchInterval: 30000,
   });
 
@@ -282,7 +282,7 @@ export default function ProfessionalAdminDashboard() {
     },
   });
 
-  if (!user?.isAdmin) {
+  if (user?.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-96">

@@ -109,6 +109,19 @@ passport.deserializeUser(async (id: string, done) => {
   }
 });
 
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if ((req.session as any)?.userId) return next();
+  return res.status(401).json({ message: 'Unauthorized' });
+}
+
+function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  const role = (req.session as any)?.role;
+  if (role !== 'admin') {
+    return res.status(403).json({ message: 'Administrator privileges required' });
+  }
+  next();
+}
+
 passport.use(
   'local-username',
   new LocalStrategy(
@@ -143,13 +156,13 @@ passport.use(
     { usernameField: 'email', passwordField: 'password' },
     async (email, password, done) => {
       const emailNorm = (email || '').trim().toLowerCase();
-      console.log('DBG login email:', emailNorm);
       try {
         const [user] = await db
           .select()
           .from(users)
           .where(sql`lower(${users.email}) = ${emailNorm}`)
           .limit(1);
+        console.log('[ADMIN LOGIN] emailNorm=', emailNorm, 'result=', !!user, 'role=', (user as any)?.role);
         if (!user) {
           return done(null, false, { message: 'Invalid email or password' });
         }
@@ -226,15 +239,22 @@ app.post('/api/login-admin', (req, res, next) => {
       (req.session as any).userId = user.id;
       (req.session as any).role = user.role;
       return res.json({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        isAdmin: user.isAdmin,
+        ok: true,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          isAdmin: user.isAdmin,
+        },
       });
     });
   })(req, res, next);
+});
+
+app.post('/api/logout', (req, res) => {
+  req.session.destroy(() => res.json({ ok: true }));
 });
 
 app.get('/api/user', async (req, res) => {
@@ -254,6 +274,10 @@ app.get('/api/user', async (req, res) => {
     role: user.role,
     isAdmin: user.isAdmin,
   });
+});
+
+app.get('/api/admin/summary', requireAuth, requireAdmin, (_req, res) => {
+  res.json({ ok: true, stats: { users: 0 } });
 });
 
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));

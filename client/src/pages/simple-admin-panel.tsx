@@ -19,12 +19,12 @@ export default function SimpleAdminPanel() {
   // Queries
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users"],
-    enabled: !!user?.isAdmin,
+    enabled: user?.role === 'admin',
   });
 
   const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/admin/analytics"],
-    enabled: !!user?.isAdmin,
+    enabled: user?.role === 'admin',
   });
 
   // Mutations
@@ -70,7 +70,7 @@ export default function SimpleAdminPanel() {
     },
   });
 
-  if (!user?.isAdmin) {
+  if (user?.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-96">
@@ -239,9 +239,9 @@ export default function SimpleAdminPanel() {
                             </TableCell>
                             <TableCell>{user.email}</TableCell>
                             <TableCell>
-                              <Badge variant={user.isAdmin ? "default" : "secondary"}>
-                                {user.isAdmin && <Crown className="h-3 w-3 mr-1" />}
-                                {user.isAdmin ? "Admin" : "User"}
+                              <Badge variant={user.role === 'admin' ? "default" : "secondary"}>
+                                {user.role === 'admin' && <Crown className="h-3 w-3 mr-1" />}
+                                {user.role === 'admin' ? "Admin" : "User"}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -251,7 +251,7 @@ export default function SimpleAdminPanel() {
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-2">
-                                {!user.isAdmin && (
+                                {user.role !== 'admin' && (
                                   <Button
                                     variant="outline"
                                     size="sm"

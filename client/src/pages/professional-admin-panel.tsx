@@ -163,7 +163,7 @@ export default function ProfessionalAdminPanel() {
   const [editFormData, setEditFormData] = useState<Partial<User>>({});
 
   // Redirect if not admin
-  if (!authLoading && (!user || !user.isAdmin)) {
+  if (!authLoading && (!user || user.role !== 'admin')) {
     return <Redirect to="/" />;
   }
 
@@ -178,32 +178,32 @@ export default function ProfessionalAdminPanel() {
   // Fetch comprehensive admin data
   const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/admin/analytics"],
-    enabled: !!user?.isAdmin
+    enabled: user?.role === 'admin'
   });
 
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users"],
-    enabled: !!user?.isAdmin
+    enabled: user?.role === 'admin'
   });
 
   const { data: systemMetrics, isLoading: metricsLoading } = useQuery({
     queryKey: ["/api/admin/system-metrics"],
-    enabled: !!user?.isAdmin
+    enabled: user?.role === 'admin'
   });
 
   const { data: featuresData, isLoading: featuresLoading } = useQuery({
     queryKey: ["/api/admin/features"],
-    enabled: !!user?.isAdmin
+    enabled: user?.role === 'admin'
   });
 
   const { data: auditLogs, isLoading: logsLoading } = useQuery({
     queryKey: ["/api/admin/audit-logs"],
-    enabled: !!user?.isAdmin
+    enabled: user?.role === 'admin'
   });
 
   const { data: rolesData, isLoading: rolesLoading } = useQuery({
     queryKey: ["/api/admin/roles"],
-    enabled: !!user?.isAdmin
+    enabled: user?.role === 'admin'
   });
 
   // Mutations for user management
