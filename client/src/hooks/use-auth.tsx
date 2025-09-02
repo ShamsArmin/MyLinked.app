@@ -12,7 +12,8 @@ console.log("Loading auth hook");
 
 // Data types for login and registration
 type LoginData = {
-  username: string;
+  username?: string;
+  email?: string;
   password: string;
 };
 
@@ -105,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Mutation for login
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      console.log("Login attempt with:", credentials.username);
+      console.log("Login attempt with:", credentials.username || credentials.email);
       try {
         // Use the fetch API directly to ensure consistent behavior
         const res = await fetch("/api/login", {

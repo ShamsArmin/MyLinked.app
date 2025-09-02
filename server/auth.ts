@@ -128,52 +128,30 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Login route using Passport.js local strategy
-  // Dashboard login with username
+  // Login route that supports username or email
   app.post('/api/login', async (req, res, next) => {
     try {
-      const username = String(req.body?.username || '').trim();
+      const identifierRaw = String(req.body?.username || req.body?.email || '').trim();
       const plain = String(req.body?.password || '');
-      if (!username || !plain) {
+      if (!identifierRaw || !plain) {
         return res.status(400).json({ message: 'Missing credentials' });
       }
-      const user = await storage.getUserByUsername(username);
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid username or password' });
-      }
-      const ok = await bcrypt.compare(plain, user.password);
-      if (!ok) {
-        return res.status(401).json({ message: 'Invalid username or password' });
-      }
-      req.login(user as any, (err) => {
-        if (err) return next(err);
-        const { password: _pw, ...safe } = user;
-        return res.json({ message: 'Login successful', user: safe });
-      });
-    } catch (err) {
-      next(err);
-    }
-  });
 
-  // Admin login with email
-  app.post('/api/login-admin', async (req, res, next) => {
-    try {
-      const email = String(req.body?.email || '').trim().toLowerCase();
-      const plain = String(req.body?.password || '');
-      if (!email || !plain) {
-        return res.status(400).json({ message: 'Missing credentials' });
-      }
-      const user = await storage.getUserByEmail(email);
+      const isEmail = identifierRaw.includes('@');
+      const identifier = isEmail ? identifierRaw.toLowerCase() : identifierRaw;
+      const user = isEmail
+        ? await storage.getUserByEmail(identifier)
+        : await storage.getUserByUsername(identifier);
+
       if (!user) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+        return res.status(401).json({ message: 'Invalid credentials' });
       }
-      if (user.role !== 'admin') {
-        return res.status(403).json({ message: 'Not an admin account' });
-      }
+
       const ok = await bcrypt.compare(plain, user.password);
       if (!ok) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+        return res.status(401).json({ message: 'Invalid credentials' });
       }
+
       req.login(user as any, (err) => {
         if (err) return next(err);
         const { password: _pw, ...safe } = user;
