@@ -1,12 +1,13 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { monitor } from "./monitoring";
 import { securityMiddleware } from "./security-middleware";
 import { migrate } from "drizzle-orm/neon-serverless/migrator";
-import { db } from "./db";
+import { db, pool } from "./db";
 import path from "path";
 import { fileURLToPath } from "url";
 import referralRequestsRouter from "./routes/referral-requests";
@@ -17,6 +18,9 @@ import referralRequestsRouter from "./routes/referral-requests";
 
 const app = express();
 app.set("trust proxy", 1);
+
+const PgStore = connectPgSimple(session);
+const isProd = process.env.NODE_ENV === "production";
 
 // Add security middleware (must be first)
 app.use(securityMiddleware.securityHeaders);
@@ -29,7 +33,7 @@ app.use(securityMiddleware.inputValidation);
 // If you keep CORS, restrict to single origin
 app.use(
   cors({
-    origin: "https://mylinked.app",
+    origin: process.env.CLIENT_ORIGIN || true,
     credentials: true,
   })
 );
@@ -69,15 +73,22 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 app.use(session({
-  secret: process.env.SESSION_SECRET!, // set in Render → Environment
+  store: isProd
+    ? new PgStore({
+        pool,
+        tableName: 'session',
+        createTableIfMissing: true,
+      })
+    : undefined,
+  secret: process.env.SESSION_SECRET || 'change-me-in-env',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: true, // HTTPS on Render
-    sameSite: 'lax', // single-origin default
+    sameSite: isProd ? 'none' : 'lax',
+    secure: isProd,
+    maxAge: 30 * 24 * 60 * 60 * 1000,
   },
-  // TODO: move to a persistent store later; MemoryStore is OK short-term
 }));
 
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));

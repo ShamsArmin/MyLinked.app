@@ -110,7 +110,11 @@ export default function AuthPage() {
 
   const onLoginSubmit = (values: z.infer<typeof loginSchema>) => {
     setErrorMessage(null);
-    loginMutation.mutate(values, {
+    const creds = {
+      username: values.username.trim(),
+      password: values.password.trim(),
+    };
+    loginMutation.mutate(creds, {
       onSuccess: async () => {
         await removeAll();
         const userRes = await fetch('/api/user', {
