@@ -24,10 +24,13 @@ import referralRequestsRouter from "./routes/referral-requests";
 const app = express();
 app.set("trust proxy", 1);
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const PgStore = connectPgSimple(session);
 const isProd = process.env.NODE_ENV === "production";
 
-// Add security middleware (must be first)
+// Add security middleware (must be early)
 app.use(securityMiddleware.securityHeaders);
 app.use(securityMiddleware.rateLimiter);
 app.use(securityMiddleware.suspiciousActivityDetection);
@@ -73,9 +76,6 @@ app.use((req, res, next) => {
   
   next();
 });
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
   store: isProd
@@ -168,25 +168,50 @@ passport.use(
   )
 );
 
-app.post('/api/login', (req, res, next) => {
-  passport.authenticate('local-username', (err: any, user: any, info: any) => {
-    if (err) return next(err);
-    if (!user) {
-      const status = info?.status === 403 ? 403 : 401;
-      return res.status(status).json({ message: info?.message || 'Authentication failed' });
+app.post('/api/login', async (req, res, next) => {
+  try {
+    const rawUsername = String(req.body?.username ?? '');
+    const rawPassword = String(req.body?.password ?? '');
+    const usernameNorm = rawUsername.trim().toLowerCase();
+
+    console.log('[LOGIN] username route hit');
+    console.log('[LOGIN] body keys:', Object.keys(req.body || {}));
+    console.log('[LOGIN] normalized username:', usernameNorm);
+
+    if (!usernameNorm || !rawPassword) {
+      console.log('[LOGIN] missing credentials');
+      return res.status(400).json({ message: 'Missing credentials' });
     }
-    req.logIn(user, (err) => {
-      if (err) return next(err);
-      (req.session as any).userId = user.id;
-      return res.json({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      });
+
+    const user = await db.query.users.findFirst({
+      where: sql`lower(${users.username}) = ${usernameNorm}`,
     });
-  })(req, res, next);
+
+    console.log('[LOGIN] user lookup result:', !!user, user ? { id: user.id, username: user.username, email: user.email } : null);
+
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    const ok = await bcrypt.compare(rawPassword, user.password as unknown as string);
+    console.log('[LOGIN] bcrypt compare =>', ok);
+
+    if (!ok) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    (req.session as any).userId = user.id;
+    (req.session as any).role = user.role;
+
+    console.log('[LOGIN] success for:', { id: user.id, username: user.username, role: user.role });
+    return res.json({
+      ok: true,
+      user: { id: user.id, username: user.username, email: user.email, name: user.name, role: user.role },
+    });
+  } catch (err) {
+    console.error('[LOGIN] error:', err);
+    next(err);
+  }
 });
 
 app.post('/api/login-admin', (req, res, next) => {
