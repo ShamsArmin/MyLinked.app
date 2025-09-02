@@ -156,6 +156,7 @@ passport.use(
     { usernameField: 'email', passwordField: 'password' },
     async (email, password, done) => {
       const emailNorm = (email || '').trim().toLowerCase();
+      console.log('DBG login email:', emailNorm);
       try {
         const [user] = await db
           .select()
@@ -219,7 +220,7 @@ app.post('/api/login', async (req, res, next) => {
     console.log('[LOGIN] success for:', { id: user.id, username: user.username, role: user.role });
     return res.json({
       ok: true,
-      user: { id: user.id, username: user.username, email: user.email, name: user.name, role: user.role, isAdmin: user.isAdmin },
+      user: { id: user.id, username: user.username, email: user.email, name: user.name, role: user.role },
     });
   } catch (err) {
     console.error('[LOGIN] error:', err);
@@ -246,7 +247,6 @@ app.post('/api/login-admin', (req, res, next) => {
           email: user.email,
           name: user.name,
           role: user.role,
-          isAdmin: user.isAdmin,
         },
       });
     });
@@ -272,7 +272,6 @@ app.get('/api/user', async (req, res) => {
     email: user.email,
     name: user.name,
     role: user.role,
-    isAdmin: user.isAdmin,
   });
 });
 
