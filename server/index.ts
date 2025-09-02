@@ -1,15 +1,21 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import cors from "cors";
+import bcrypt from "bcrypt";
+import { sql, eq } from "drizzle-orm";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { monitor } from "./monitoring";
 import { securityMiddleware } from "./security-middleware";
 import { migrate } from "drizzle-orm/neon-serverless/migrator";
-import { db } from "./db";
+import { db, pool } from "./db";
+import * as s from "../shared/schema";
 import path from "path";
 import { fileURLToPath } from "url";
 import referralRequestsRouter from "./routes/referral-requests";
+
+const PgStore = connectPgSimple(session);
 // Temporarily disabled problematic imports
 // import { initializeEmailTemplates } from "./init-email-templates";
 // import { initAIEmailTemplates } from "./ai-email-templates";
@@ -29,7 +35,7 @@ app.use(securityMiddleware.inputValidation);
 // If you keep CORS, restrict to single origin
 app.use(
   cors({
-    origin: "https://mylinked.app",
+    origin: process.env.CLIENT_ORIGIN,
     credentials: true,
   })
 );
@@ -69,16 +75,99 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 app.use(session({
-  secret: process.env.SESSION_SECRET!, // set in Render → Environment
+  store: new PgStore({
+    pool,
+    tableName: 'session',
+    createTableIfMissing: true,
+  }),
+  secret: process.env.SESSION_SECRET || 'change-me',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: true, // HTTPS on Render
-    sameSite: 'lax', // single-origin default
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 30 * 24 * 60 * 60 * 1000,
   },
-  // TODO: move to a persistent store later; MemoryStore is OK short-term
 }));
+
+app.post('/api/login', async (req, res, next) => {
+  try {
+    const usernameNorm = String(req.body.username || '').trim().toLowerCase();
+    const plain = String(req.body.password || '');
+    if (!usernameNorm || !plain) {
+      return res.status(400).json({ message: 'Missing credentials' });
+    }
+
+    const user = await db.query.users.findFirst({
+      where: sql`lower(${s.users.username}) = ${usernameNorm}`,
+    });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    const ok = await bcrypt.compare(plain, user.password);
+    if (!ok) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    (req.session as any).userId = user.id;
+    (req.session as any).role = user.role;
+    res.json({ ok: true, user: { id: user.id, username: user.username, email: user.email, name: user.name, role: user.role } });
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.post('/api/login-admin', async (req, res, next) => {
+  try {
+    const emailNorm = String(req.body.email || '').trim().toLowerCase();
+    const plain = String(req.body.password || '');
+    if (!emailNorm || !plain) {
+      return res.status(400).json({ message: 'Missing credentials' });
+    }
+
+    const user = await db.query.users.findFirst({
+      where: sql`lower(${s.users.email}) = ${emailNorm}`,
+    });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const ok = await bcrypt.compare(plain, user.password);
+    if (!ok) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    if (user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not an admin account' });
+    }
+
+    (req.session as any).userId = user.id;
+    (req.session as any).role = user.role;
+    res.json({ ok: true, user: { id: user.id, username: user.username, email: user.email, name: user.name, role: user.role } });
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get('/api/user', async (req, res, next) => {
+  try {
+    const id = (req.session as any)?.userId;
+    if (!id) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+
+    const me = await db.query.users.findFirst({ where: eq(s.users.id, id) });
+    if (!me) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+
+    res.json({ id: me.id, username: me.username, email: me.email, name: me.name, role: me.role });
+  } catch (e) {
+    next(e);
+  }
+});
 
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 
