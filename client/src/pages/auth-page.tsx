@@ -16,7 +16,7 @@ import { FaGoogle, FaTiktok } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
+  username: z.string().min(1, "Please enter your username"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -237,7 +237,7 @@ export default function AuthPage() {
                       <span className="w-full border-t border-gray-300 dark:border-gray-600" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="bg-white dark:bg-gray-800 px-4 text-gray-500 dark:text-gray-400">Or continue with email</span>
+                      <span className="bg-white dark:bg-gray-800 px-4 text-gray-500 dark:text-gray-400">Or continue with username</span>
                     </div>
                   </div>
 
@@ -250,9 +250,10 @@ export default function AuthPage() {
                           <FormItem>
                             <FormLabel>Username</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="Enter your username" 
-                                {...field} 
+                              <Input
+                                type="text"
+                                placeholder="Enter your username"
+                                {...field}
                                 autoComplete="username"
                               />
                             </FormControl>
