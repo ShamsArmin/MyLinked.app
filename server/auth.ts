@@ -2,8 +2,8 @@ import { Express, Request, Response, NextFunction } from "express";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
+import { hashPassword, verifyPassword } from "./auth/password";
+export { hashPassword, verifyPassword as comparePasswords } from "./auth/password";
 import { storage } from "./storage";
 import { User as UserType, users } from "../shared/schema";
 import { isDbAvailable, db } from "./db";
@@ -25,21 +25,6 @@ declare global {
   }
 }
 
-const scryptAsync = promisify(scrypt);
-
-export async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
-}
-
-export async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  if (!hashed || !salt) return false;
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
-}
 
 export function setupAuth(app: Express) {
   app.use(passport.initialize());
@@ -61,7 +46,7 @@ export function setupAuth(app: Express) {
 
         console.log('User found, checking password...');
         console.log('Stored password hash:', user.password);
-        const isPasswordValid = await storage.comparePasswords(password, user.password);
+        const isPasswordValid = await verifyPassword(password, user.password);
         console.log('Password valid:', isPasswordValid);
 
         if (!isPasswordValid) {
