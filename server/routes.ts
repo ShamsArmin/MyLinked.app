@@ -3,8 +3,6 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import {
-  setupAuth,
-  comparePasswords,
   hashPassword,
   isAuthenticated,
 } from "./auth";
@@ -182,9 +180,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to fetch columns' });
     }
   });
-
-  // Set up authentication
-  setupAuth(app);
 
   // Log API requests for debugging auth issues
   app.use((req, _res, next) => {

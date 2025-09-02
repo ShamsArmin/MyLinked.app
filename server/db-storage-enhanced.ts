@@ -215,14 +215,21 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    // Normalize username and email to lowercase
+    const normalized: InsertUser = {
+      ...insertUser,
+      username: insertUser.username?.toLowerCase(),
+      email: insertUser.email?.toLowerCase(),
+    };
+
     // Hash the password before inserting
-    const password = await this.hashPassword(insertUser.password);
+    const password = await this.hashPassword(normalized.password);
 
     const [user] = await db
       .insert(users)
       .values({
-        ...insertUser,
-        password
+        ...normalized,
+        password,
       })
       .returning();
     return user;

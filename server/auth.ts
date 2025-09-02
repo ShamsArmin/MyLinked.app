@@ -7,7 +7,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as UserType, users } from "../shared/schema";
 import { isDbAvailable, db } from "./db";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import { getUserColumnSet } from "./user-columns";
 
 // Extend the Express namespace for TypeScript
@@ -229,17 +229,30 @@ export function setupAuth(app: Express) {
 }
 
 // Middleware to check if user is authenticated
-export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
-  if (req.isAuthenticated()) {
+export async function isAuthenticated(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = (req.session as any)?.userId;
+    if (!id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const user = await db.query.users.findFirst({ where: eq(users.id, id) });
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    (req as any).user = user as any;
     return next();
+  } catch (err) {
+    return next(err);
   }
-  return res.status(401).json({ message: "Unauthorized" });
 }
 
 // Middleware to check if user is the owner of a resource
 export function isOwner(paramName: string) {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (req.isAuthenticated() && req.user && String(req.user.id) === req.params[paramName]) {
+    const id = (req.session as any)?.userId;
+    if (id && String(id) === req.params[paramName]) {
       return next();
     }
     return res.status(403).json({ message: "Forbidden" });
