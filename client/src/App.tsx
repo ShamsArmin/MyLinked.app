@@ -157,6 +157,7 @@ function Router() {
           )}
         <ProtectedRoute path="/social-score" component={SocialScorePage} />
         <ProtectedRoute path="/analytics" component={AnalyticsPage} />
+        <ProtectedRoute path="/dashboard" component={AIEnhancedDashboard} />
         {/* Public profile route - must come before protected /profile route */}
         <Route path="/profile/:username" component={VisitorProfileNew} />
         
