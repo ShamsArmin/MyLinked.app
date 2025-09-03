@@ -109,6 +109,7 @@ passport.deserializeUser(async (id: string, done) => {
   }
 });
 
+// Simple session guards
 function requireAuth(req: Request, res: Response, next: NextFunction) {
   if ((req.session as any)?.userId) return next();
   return res.status(401).json({ message: 'Unauthorized' });
