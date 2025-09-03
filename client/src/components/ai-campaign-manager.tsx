@@ -220,6 +220,7 @@ export function AICampaignManager() {
     const savedScheduled = localStorage.getItem('scheduledToggles');
     const savedCampaigns = localStorage.getItem('aiCampaigns');
     const savedTemplates = localStorage.getItem('aiTemplates');
+    const savedAbTests = localStorage.getItem('aiAbTests');
     if (savedAutomation) {
       try {
         setAutomationToggles(JSON.parse(savedAutomation));
@@ -248,6 +249,13 @@ export function AICampaignManager() {
         // ignore parse error
       }
     }
+    if (savedAbTests) {
+      try {
+        setAbTests(JSON.parse(savedAbTests));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
   }, []);
 
   const persistCampaigns = (updater: (prev: Campaign[]) => Campaign[]) => {
@@ -262,6 +270,14 @@ export function AICampaignManager() {
     setTemplates(prev => {
       const updated = updater(prev);
       localStorage.setItem('aiTemplates', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const persistAbTests = (updater: (prev: ABTest[]) => ABTest[]) => {
+    setAbTests(prev => {
+      const updated = updater(prev);
+      localStorage.setItem('aiAbTests', JSON.stringify(updated));
       return updated;
     });
   };
@@ -405,7 +421,7 @@ export function AICampaignManager() {
       metricB: null,
       status: 'scheduled',
     };
-    setAbTests(prev => [...prev, newTest]);
+    persistAbTests(prev => [...prev, newTest]);
     toast({
       title: 'A/B Test Created',
       description: 'Your test has been scheduled and will start within 24 hours.',
@@ -426,7 +442,7 @@ export function AICampaignManager() {
   };
 
   const handleStopTest = (id: string) => {
-    setAbTests(prev => prev.map(t => t.id === id ? { ...t, status: 'completed' } : t));
+    persistAbTests(prev => prev.map(t => t.id === id ? { ...t, status: 'completed' } : t));
     toast({
       title: 'Test stopped',
       description: 'The test has been stopped.',
@@ -451,7 +467,7 @@ export function AICampaignManager() {
   };
 
   const handleCancelTest = (id: string) => {
-    setAbTests(prev => prev.filter(t => t.id !== id));
+    persistAbTests(prev => prev.filter(t => t.id !== id));
     toast({
       title: 'Test cancelled',
       description: 'The test has been cancelled.',
@@ -1440,6 +1456,9 @@ export function AICampaignManager() {
                 <h4 className="font-medium">Variant B</h4>
                 <p className="text-sm text-gray-600 whitespace-pre-wrap">{viewTest.variantB}</p>
               </div>
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setViewTest(null)}>Close</Button>
+              </div>
             </div>
           )}
         </DialogContent>
@@ -1452,14 +1471,19 @@ export function AICampaignManager() {
             <DialogTitle>Test Results: {analyzeTest?.name}</DialogTitle>
           </DialogHeader>
           {analyzeTest && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium">Variant A</p>
-                <p className="text-sm text-gray-600">{analyzeTest.metricA !== null ? `${analyzeTest.metricA}%` : 'Pending'}</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium">Variant A</p>
+                  <p className="text-sm text-gray-600">{analyzeTest.metricA !== null ? `${analyzeTest.metricA}%` : 'Pending'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Variant B</p>
+                  <p className="text-sm text-gray-600">{analyzeTest.metricB !== null ? `${analyzeTest.metricB}%` : 'Pending'}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium">Variant B</p>
-                <p className="text-sm text-gray-600">{analyzeTest.metricB !== null ? `${analyzeTest.metricB}%` : 'Pending'}</p>
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setAnalyzeTest(null)}>Close</Button>
               </div>
             </div>
           )}

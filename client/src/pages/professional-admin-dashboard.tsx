@@ -147,6 +147,25 @@ export default function ProfessionalAdminDashboard() {
   const [viewAbTest, setViewAbTest] = useState<AbTest | null>(null);
   const [analyzeAbTest, setAnalyzeAbTest] = useState<AbTest | null>(null);
 
+  useEffect(() => {
+    const savedAbTests = localStorage.getItem('adminAbTests');
+    if (savedAbTests) {
+      try {
+        setAbTests(JSON.parse(savedAbTests));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
+  }, []);
+
+  const persistAbTests = (updater: (prev: AbTest[]) => AbTest[]) => {
+    setAbTests(prev => {
+      const updated = updater(prev);
+      localStorage.setItem('adminAbTests', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const handleCreateAbTest = () => {
     const newTest: AbTest = {
       id: Date.now().toString(),
@@ -156,7 +175,7 @@ export default function ProfessionalAdminDashboard() {
       confidence: '0% confidence',
       visitors: '0 visitors',
     };
-    setAbTests(prev => [...prev, newTest]);
+    persistAbTests(prev => [...prev, newTest]);
     toast({
       title: 'A/B Test Created',
       description: `"${newTest.name}" has been added to the dashboard.`,
@@ -1018,6 +1037,9 @@ export default function ProfessionalAdminDashboard() {
                     <p className="text-sm">{viewAbTest.details}</p>
                   </div>
                 )}
+                <div className="mt-4 flex justify-end">
+                  <Button variant="outline" onClick={() => setViewAbTest(null)}>Close</Button>
+                </div>
               </DialogContent>
             </Dialog>
             <Dialog open={!!analyzeAbTest} onOpenChange={(open) => !open && setAnalyzeAbTest(null)}>
@@ -1031,6 +1053,9 @@ export default function ProfessionalAdminDashboard() {
                     <p>{analyzeAbTest.visitors}</p>
                   </div>
                 )}
+                <div className="mt-4 flex justify-end">
+                  <Button variant="outline" onClick={() => setAnalyzeAbTest(null)}>Close</Button>
+                </div>
               </DialogContent>
             </Dialog>
           </TabsContent>
