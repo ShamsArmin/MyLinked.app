@@ -674,8 +674,8 @@ export default function ProfessionalAdminDashboard() {
                             {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never'}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={user.isActive ? "default" : "secondary"}>
-                              {user.isActive ? "Active" : "Inactive"}
+                            <Badge variant={user.status === 'active' ? "default" : "secondary"}>
+                              {user.status === 'active' ? "Active" : "Suspended"}
                             </Badge>
                           </TableCell>
                           <TableCell>

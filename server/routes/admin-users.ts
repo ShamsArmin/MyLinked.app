@@ -44,7 +44,10 @@ router.patch("/:id/status", async (req, res) => {
   try {
     const userId = req.params.id;
     const { status } = statusSchema.parse(req.body);
-    await db.update(users).set({ status }).where(eq(users.id, userId));
+    await db
+      .update(users)
+      .set({ status, isActive: status === "active" })
+      .where(eq(users.id, userId));
     if (status === "suspended") {
       await db.delete(sessions).where(sql`sess->'passport'->>'user' = ${userId}`);
     }
@@ -102,8 +105,8 @@ router.post("/:id/reset-password", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const userId = req.params.id;
-    await db.delete(users).where(eq(users.id, userId));
     await logAction((req.user as any).id, userId, "delete_user");
+    await db.delete(users).where(eq(users.id, userId));
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ message: err.message || "Failed to delete user" });
