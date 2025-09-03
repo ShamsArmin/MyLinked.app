@@ -48,6 +48,7 @@ import { aiSupportRouter } from "./ai-support-routes";
 import { adminRouter } from "./admin-routes";
 import { professionalAdminRouter } from "./professional-admin-routes";
 import adminUsersRouter from "./routes/admin-users";
+import adminSegmentsRouter from "./routes/admin-segments";
 import { monitoringRouter } from "./monitoring-routes";
 import { securityRouter } from "./security-routes";
 import bcrypt from "bcrypt";
@@ -2508,6 +2509,7 @@ GITHUB_CLIENT_SECRET=your_github_client_secret
   app.use("/api/admin-legacy", adminRouter);
   app.use("/api/admin", professionalAdminRouter);
   app.use("/api/admin/users", adminUsersRouter);
+  app.use("/api/admin/segments", adminSegmentsRouter);
 
   // Add Monitoring routes
   app.use("/api/monitoring", monitoringRouter);

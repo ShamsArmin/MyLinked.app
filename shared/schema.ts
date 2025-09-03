@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, json, boolean, varchar, jsonb, decimal, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, json, boolean, varchar, jsonb, decimal, uuid, primaryKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations, sql } from "drizzle-orm";
@@ -904,3 +904,56 @@ export const updateCollaborationRequestSchema = createInsertSchema(collaboration
 export type CollaborationRequest = typeof collaborationRequests.$inferSelect;
 export type InsertCollaborationRequest = z.infer<typeof insertCollaborationRequestSchema>;
 export type UpdateCollaborationRequest = z.infer<typeof updateCollaborationRequestSchema>;
+
+// ---------------------------------------------------------------------------
+// Segmentation tables
+// ---------------------------------------------------------------------------
+
+export const segments = pgTable("segments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  type: text("type").default("dynamic"),
+  rules: jsonb("rules_json"),
+  ownerUserId: uuid("owner_user_id").references(() => users.id),
+  isShared: boolean("is_shared").default(true),
+  tags: text("tags").array().default(sql`'{}'::text[]`),
+  lastRefreshedAt: timestamp("last_refreshed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  archivedAt: timestamp("archived_at"),
+});
+
+export const segmentMemberships = pgTable(
+  "segment_memberships",
+  {
+    segmentId: uuid("segment_id").references(() => segments.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    snapshotAt: timestamp("snapshot_at"),
+  },
+  t => ({
+    pk: primaryKey({ columns: [t.segmentId, t.userId, t.snapshotAt] }),
+  })
+);
+
+export const segmentSnapshots = pgTable("segment_snapshots", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  segmentId: uuid("segment_id").references(() => segments.id, { onDelete: "cascade" }).notNull(),
+  memberCount: integer("member_count"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSegmentSchema = createInsertSchema(segments).pick({
+  name: true,
+  description: true,
+  type: true,
+  rules: true,
+  tags: true,
+  isShared: true,
+});
+
+export const updateSegmentSchema = insertSegmentSchema.partial();
+
+export type Segment = typeof segments.$inferSelect;
+export type InsertSegment = z.infer<typeof insertSegmentSchema>;
+export type UpdateSegment = z.infer<typeof updateSegmentSchema>;
