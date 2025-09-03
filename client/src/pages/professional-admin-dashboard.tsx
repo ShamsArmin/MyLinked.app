@@ -90,6 +90,12 @@ export default function ProfessionalAdminDashboard() {
     description: "",
     permissions: [] as string[],
   });
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    email: "",
+    department: "",
+    isActive: true,
+  });
   const [employeeFormData, setEmployeeFormData] = useState({
     userId: "",
     employeeId: "",
@@ -102,6 +108,17 @@ export default function ProfessionalAdminDashboard() {
     manager: "",
     performanceRating: "",
   });
+
+  useEffect(() => {
+    if (selectedUser) {
+      setEditFormData({
+        name: selectedUser.name || "",
+        email: selectedUser.email || "",
+        department: selectedUser.department || "",
+        isActive: selectedUser.isActive !== false,
+      });
+    }
+  }, [selectedUser]);
 
   // Enhanced queries with role management
   const { data: usersData, isLoading: usersLoading } = useQuery({
@@ -261,6 +278,23 @@ export default function ProfessionalAdminDashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/invitations"] });
       setIsInviteDialogOpen(false);
       setInviteFormData({ email: "", recipientName: "", roleId: "" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Update user mutation
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ id, ...updates }: any) => {
+      const response = await apiRequest("PUT", `/api/admin/users/${id}`, updates);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users-with-roles"] });
+      toast({ title: "Success", description: "User updated successfully" });
+      setIsEditUserDialogOpen(false);
+      setSelectedUser(null);
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -601,33 +635,39 @@ export default function ProfessionalAdminDashboard() {
                                     <div className="space-y-4">
                                       <div>
                                         <Label htmlFor="editName">Name</Label>
-                                        <Input 
-                                          id="editName" 
-                                          defaultValue={selectedUser.name} 
+                                        <Input
+                                          id="editName"
+                                          value={editFormData.name}
+                                          onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
                                           placeholder="User name"
                                         />
                                       </div>
                                       <div>
                                         <Label htmlFor="editEmail">Email</Label>
-                                        <Input 
-                                          id="editEmail" 
+                                        <Input
+                                          id="editEmail"
                                           type="email"
-                                          defaultValue={selectedUser.email} 
+                                          value={editFormData.email}
+                                          onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
                                           placeholder="user@example.com"
                                         />
                                       </div>
                                       <div>
                                         <Label htmlFor="editDepartment">Department</Label>
-                                        <Input 
-                                          id="editDepartment" 
-                                          defaultValue={selectedUser.department} 
+                                        <Input
+                                          id="editDepartment"
+                                          value={editFormData.department}
+                                          onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
                                           placeholder="Department"
                                         />
                                       </div>
                                       <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="editActive" 
-                                          defaultChecked={selectedUser.isActive}
+                                        <Checkbox
+                                          id="editActive"
+                                          checked={editFormData.isActive}
+                                          onCheckedChange={(checked) =>
+                                            setEditFormData({ ...editFormData, isActive: !!checked })
+                                          }
                                         />
                                         <Label htmlFor="editActive">Active User</Label>
                                       </div>
@@ -635,11 +675,15 @@ export default function ProfessionalAdminDashboard() {
                                         <Button variant="outline" onClick={() => setIsEditUserDialogOpen(false)}>
                                           Cancel
                                         </Button>
-                                        <Button onClick={() => {
-                                          toast({ title: "Success", description: "User updated successfully" });
-                                          setIsEditUserDialogOpen(false);
-                                        }}>
-                                          Update User
+                                        <Button
+                                          onClick={() => updateUserMutation.mutate({ id: selectedUser.id, ...editFormData })}
+                                          disabled={updateUserMutation.isPending}
+                                        >
+                                          {updateUserMutation.isPending ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                            "Update User"
+                                          )}
                                         </Button>
                                       </div>
                                     </div>

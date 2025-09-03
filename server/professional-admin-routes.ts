@@ -110,6 +110,47 @@ professionalAdminRouter.get("/users-with-roles", isAuthenticated, requireAdmin, 
   }
 });
 
+// Update user details
+professionalAdminRouter.put("/users/:id", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, email, department, isActive } = req.body;
+
+    const updates: any = { updatedAt: new Date() };
+    if (name !== undefined) updates.name = name;
+    if (email !== undefined) updates.email = email;
+    if (department !== undefined) updates.department = department;
+    if (isActive !== undefined) updates.isActive = isActive;
+
+    const [updatedUser] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        profileImage: users.profileImage,
+        role: users.role,
+        department: users.department,
+        position: users.position,
+        isAdmin: users.isAdmin,
+        isActive: users.isActive,
+        lastLoginAt: users.lastLoginAt,
+        createdAt: users.createdAt,
+      });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Failed to update user" });
+  }
+});
+
 // Roles management endpoints
 professionalAdminRouter.get("/roles", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
   try {
