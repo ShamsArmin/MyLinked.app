@@ -59,6 +59,17 @@ interface Template {
   performance: number;
 }
 
+interface ABTest {
+  id: string;
+  name: string;
+  description: string;
+  variantA: string;
+  variantB: string;
+  metricA: number | null;
+  metricB: number | null;
+  status: 'running' | 'completed' | 'scheduled';
+}
+
 const mockCampaigns: Campaign[] = [
   {
     id: '1',
@@ -128,6 +139,39 @@ const mockTemplates: Template[] = [
   }
 ];
 
+const mockAbTests: ABTest[] = [
+  {
+    id: '1',
+    name: 'Welcome Email Subject Test',
+    description: 'Testing formal vs casual subject lines',
+    variantA: 'Variant A',
+    variantB: 'Variant B',
+    metricA: 23.4,
+    metricB: 31.8,
+    status: 'running',
+  },
+  {
+    id: '2',
+    name: 'CTA Button Color Test',
+    description: 'Blue vs Orange call-to-action buttons',
+    variantA: 'Variant A',
+    variantB: 'Variant B',
+    metricA: 18.2,
+    metricB: 17.9,
+    status: 'completed',
+  },
+  {
+    id: '3',
+    name: 'Email Send Time Test',
+    description: 'Morning 9 AM vs Evening 6 PM send times',
+    variantA: 'Variant A',
+    variantB: 'Variant B',
+    metricA: null,
+    metricB: null,
+    status: 'scheduled',
+  },
+];
+
 export function AICampaignManager() {
   const { toast } = useToast();
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
@@ -141,6 +185,10 @@ export function AICampaignManager() {
   const [newTestDialog, setNewTestDialog] = useState(false);
   const [campaigns, setCampaigns] = useState(mockCampaigns);
   const [templates, setTemplates] = useState(mockTemplates);
+  const [abTests, setAbTests] = useState(mockAbTests);
+  const [newTestName, setNewTestName] = useState('');
+  const [newVariantA, setNewVariantA] = useState('');
+  const [newVariantB, setNewVariantB] = useState('');
 
   const toggleCampaignStatus = (campaignId: string) => {
     setCampaigns(prev => prev.map(campaign => {
@@ -220,6 +268,97 @@ export function AICampaignManager() {
     }
     setSelectedTemplate(null);
     setEditTemplate(null);
+  };
+
+  const handleCreateTest = () => {
+    const newTest: ABTest = {
+      id: Date.now().toString(),
+      name: newTestName || 'Untitled Test',
+      description: 'Custom A/B test',
+      variantA: newVariantA,
+      variantB: newVariantB,
+      metricA: null,
+      metricB: null,
+      status: 'scheduled',
+    };
+    setAbTests(prev => [...prev, newTest]);
+    toast({
+      title: 'A/B Test Created',
+      description: 'Your test has been scheduled and will start within 24 hours.',
+      duration: 3000,
+    });
+    setNewTestDialog(false);
+    setNewTestName('');
+    setNewVariantA('');
+    setNewVariantB('');
+  };
+
+  const handleViewResults = (test: ABTest) => {
+    toast({
+      title: 'Viewing Results',
+      description: `${test.name} analytics coming soon.`,
+      duration: 3000,
+    });
+  };
+
+  const handleStopTest = (id: string) => {
+    setAbTests(prev => prev.map(t => t.id === id ? { ...t, status: 'completed' } : t));
+    toast({
+      title: 'Test stopped',
+      description: 'The test has been stopped.',
+      duration: 3000,
+    });
+  };
+
+  const handleImplementWinner = (id: string) => {
+    toast({
+      title: 'Winner implemented',
+      description: 'The winning variant has been applied.',
+      duration: 3000,
+    });
+  };
+
+  const handleEditTest = (test: ABTest) => {
+    toast({
+      title: 'Edit test',
+      description: `${test.name} editing not implemented.`,
+      duration: 3000,
+    });
+  };
+
+  const handleCancelTest = (id: string) => {
+    setAbTests(prev => prev.filter(t => t.id !== id));
+    toast({
+      title: 'Test cancelled',
+      description: 'The test has been cancelled.',
+      duration: 3000,
+    });
+  };
+
+  const getTestStatusColor = (status: ABTest['status']) => {
+    switch (status) {
+      case 'running':
+        return 'bg-green-100 text-green-800';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800';
+      case 'scheduled':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getTestIconClasses = (status: ABTest['status']) => {
+    switch (status) {
+      case 'running':
+        return { bg: 'bg-green-100', text: 'text-green-600' };
+      case 'completed':
+        return { bg: 'bg-blue-100', text: 'text-blue-600' };
+      case 'scheduled':
+        return { bg: 'bg-orange-100', text: 'text-orange-600' };
+      default:
+        return { bg: 'bg-gray-100', text: 'text-gray-600' };
+    }
   };
 
   const getStatusColor = (status: Campaign['status']) => {
@@ -532,7 +671,7 @@ export function AICampaignManager() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            });
           </div>
         </TabsContent>
         
@@ -594,7 +733,7 @@ export function AICampaignManager() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            })}
           </div>
         </TabsContent>
 
@@ -604,12 +743,9 @@ export function AICampaignManager() {
               <h3 className="text-lg font-semibold">A/B Test Management</h3>
               <p className="text-sm text-gray-600">Compare email variations to optimize performance</p>
             </div>
-            <Button 
+            <Button
               className="bg-gradient-to-r from-green-500 to-blue-500"
-              onClick={() => {
-                console.log('New Test button clicked!');
-                setNewTestDialog(true);
-              }}
+              onClick={() => setNewTestDialog(true)}
             >
               <Plus className="w-4 h-4 mr-2" />
               New Test
@@ -624,7 +760,12 @@ export function AICampaignManager() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="test-name">Test Name</Label>
-                      <Input id="test-name" placeholder="e.g., Subject Line Optimization" />
+                      <Input
+                        id="test-name"
+                        placeholder="e.g., Subject Line Optimization"
+                        value={newTestName}
+                        onChange={(e) => setNewTestName(e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="test-type">Test Type</Label>
@@ -661,18 +802,22 @@ export function AICampaignManager() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="variant-a">Variant A (Control)</Label>
-                      <Textarea 
-                        id="variant-a" 
+                      <Textarea
+                        id="variant-a"
                         placeholder="Enter your control version..."
                         rows={4}
+                        value={newVariantA}
+                        onChange={(e) => setNewVariantA(e.target.value)}
                       />
                     </div>
                     <div>
                       <Label htmlFor="variant-b">Variant B (Test)</Label>
-                      <Textarea 
-                        id="variant-b" 
+                      <Textarea
+                        id="variant-b"
                         placeholder="Enter your test version..."
                         rows={4}
+                        value={newVariantB}
+                        onChange={(e) => setNewVariantB(e.target.value)}
                       />
                     </div>
                   </div>
@@ -732,16 +877,9 @@ export function AICampaignManager() {
                     <Button variant="outline" onClick={() => setNewTestDialog(false)}>
                       Cancel
                     </Button>
-                    <Button 
+                    <Button
                       className="bg-gradient-to-r from-green-500 to-blue-500"
-                      onClick={() => {
-                        toast({
-                          title: "A/B Test Created",
-                          description: "Your test has been scheduled and will start within 24 hours.",
-                          duration: 3000,
-                        });
-                        setNewTestDialog(false);
-                      }}
+                      onClick={handleCreateTest}
                     >
                       <Target className="w-4 h-4 mr-2" />
                       Create Test
@@ -751,116 +889,70 @@ export function AICampaignManager() {
               </DialogContent>
             </Dialog>
           </div>
-
           <div className="grid gap-4">
-            {/* Sample A/B Tests */}
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-green-100 p-2 rounded-full">
-                      <Target className="w-4 h-4 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Welcome Email Subject Test</h3>
-                      <p className="text-sm text-gray-600">Testing formal vs casual subject lines</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-4">
-                    <div className="text-center">
-                      <p className="text-sm font-medium">23.4%</p>
-                      <p className="text-xs text-gray-500">Variant A</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium text-green-600">31.8%</p>
-                      <p className="text-xs text-gray-500">Variant B</p>
-                    </div>
-                    <Badge className="bg-green-100 text-green-800">Running</Badge>
-                    <div className="flex space-x-1">
-                      <Button size="sm" variant="outline" title="View Results">
-                        <BarChart3 className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" title="Stop Test">
-                        <Square className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {abTests.map(test => {
+              const iconClasses = getTestIconClasses(test.status);
+              return (
+                <Card key={test.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`${iconClasses.bg} p-2 rounded-full`}>
+                          <Target className={`w-4 h-4 ${iconClasses.text}`} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{test.name}</h3>
+                          <p className="text-sm text-gray-600">{test.description}</p>
+                        </div>
+                      </div>
 
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-blue-100 p-2 rounded-full">
-                      <Target className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">CTA Button Color Test</h3>
-                      <p className="text-sm text-gray-600">Blue vs Orange call-to-action buttons</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-4">
-                    <div className="text-center">
-                      <p className="text-sm font-medium">18.2%</p>
-                      <p className="text-xs text-gray-500">Variant A</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium">17.9%</p>
-                      <p className="text-xs text-gray-500">Variant B</p>
-                    </div>
-                    <Badge className="bg-blue-100 text-blue-800">Completed</Badge>
-                    <div className="flex space-x-1">
-                      <Button size="sm" variant="outline" title="View Results">
-                        <BarChart3 className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" title="Implement Winner">
-                        <CheckCircle className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-orange-100 p-2 rounded-full">
-                      <Target className="w-4 h-4 text-orange-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Email Send Time Test</h3>
-                      <p className="text-sm text-gray-600">Morning 9 AM vs Evening 6 PM send times</p>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-center">
+                        <p className="text-sm font-medium">{test.metricA !== null ? `${test.metricA}%` : '-'}</p>
+                        <p className="text-xs text-gray-500">Variant A</p>
+                      </div>
+                      <div className="text-center">
+                        <p className={`text-sm font-medium ${test.metricB !== null ? '' : ''}`}>{test.metricB !== null ? `${test.metricB}%` : '-'}</p>
+                        <p className="text-xs text-gray-500">Variant B</p>
+                      </div>
+                      <Badge className={getTestStatusColor(test.status)}>{test.status.charAt(0).toUpperCase() + test.status.slice(1)}</Badge>
+                      <div className="flex space-x-1">
+                        {test.status === 'running' && (
+                          <>
+                            <Button size="sm" variant="outline" title="View Results" onClick={() => handleViewResults(test)}>
+                              <BarChart3 className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" title="Stop Test" onClick={() => handleStopTest(test.id)}>
+                              <Square className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
+                        {test.status === 'completed' && (
+                          <>
+                            <Button size="sm" variant="outline" title="View Results" onClick={() => handleViewResults(test)}>
+                              <BarChart3 className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" title="Implement Winner" onClick={() => handleImplementWinner(test.id)}>
+                              <CheckCircle className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
+                        {test.status === 'scheduled' && (
+                          <>
+                            <Button size="sm" variant="outline" title="Edit Test" onClick={() => handleEditTest(test)}>
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" title="Cancel Test" onClick={() => handleCancelTest(test.id)}>
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center space-x-4">
-                    <div className="text-center">
-                      <p className="text-sm font-medium">-</p>
-                      <p className="text-xs text-gray-500">Variant A</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium">-</p>
-                      <p className="text-xs text-gray-500">Variant B</p>
-                    </div>
-                    <Badge className="bg-gray-100 text-gray-800">Scheduled</Badge>
-                    <div className="flex space-x-1">
-                      <Button size="sm" variant="outline" title="Edit Test">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" title="Cancel Test">
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            })}
           </div>
         </TabsContent>
         
