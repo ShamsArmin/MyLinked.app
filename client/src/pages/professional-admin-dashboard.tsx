@@ -304,6 +304,19 @@ export default function ProfessionalAdminDashboard() {
   const analytics = analyticsData || {};
   const metrics = systemMetrics || {};
 
+  // Apply search and role filters
+  const filteredUsers = users.filter((u: any) => {
+    const matchesSearch =
+      u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const role = u.role || (u.isAdmin ? "admin" : "user");
+    const matchesFilter = userFilter === "all" || role === userFilter;
+
+    return matchesSearch && matchesFilter;
+  });
+
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'super_admin': return 'bg-red-100 text-red-800';
@@ -530,7 +543,7 @@ export default function ProfessionalAdminDashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {users.map((user: any) => (
+                      {filteredUsers.map((user: any) => (
                         <TableRow key={user.id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
