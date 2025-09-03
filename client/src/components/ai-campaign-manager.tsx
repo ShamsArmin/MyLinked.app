@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -200,6 +200,53 @@ export function AICampaignManager() {
   const [templateTone, setTemplateTone] = useState('');
   const [templateIndustry, setTemplateIndustry] = useState('');
   const [templateCta, setTemplateCta] = useState('');
+
+  const [automationToggles, setAutomationToggles] = useState({
+    newUserWelcome: true,
+    engagementBoost: true,
+    winBackCampaign: false,
+  });
+
+  const [scheduledToggles, setScheduledToggles] = useState({
+    monthlyNewsletter: true,
+    weeklyTips: false,
+    featureUpdates: true,
+  });
+
+  useEffect(() => {
+    const savedAutomation = localStorage.getItem('automationToggles');
+    const savedScheduled = localStorage.getItem('scheduledToggles');
+    if (savedAutomation) {
+      try {
+        setAutomationToggles(JSON.parse(savedAutomation));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
+    if (savedScheduled) {
+      try {
+        setScheduledToggles(JSON.parse(savedScheduled));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
+  }, []);
+
+  const updateAutomationToggle = (key: keyof typeof automationToggles, value: boolean) => {
+    setAutomationToggles(prev => {
+      const updated = { ...prev, [key]: value };
+      localStorage.setItem('automationToggles', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const updateScheduledToggle = (key: keyof typeof scheduledToggles, value: boolean) => {
+    setScheduledToggles(prev => {
+      const updated = { ...prev, [key]: value };
+      localStorage.setItem('scheduledToggles', JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   const toggleCampaignStatus = (campaignId: string) => {
     setCampaigns(prev => prev.map(campaign => {
@@ -1039,25 +1086,34 @@ export function AICampaignManager() {
                     <p className="font-medium">New User Welcome</p>
                     <p className="text-sm text-gray-600">Triggered on registration</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={automationToggles.newUserWelcome}
+                    onCheckedChange={(checked) => updateAutomationToggle('newUserWelcome', checked)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Engagement Boost</p>
                     <p className="text-sm text-gray-600">Triggered on high activity</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={automationToggles.engagementBoost}
+                    onCheckedChange={(checked) => updateAutomationToggle('engagementBoost', checked)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Win-Back Campaign</p>
                     <p className="text-sm text-gray-600">Triggered after 30 days inactive</p>
                   </div>
-                  <Switch />
+                  <Switch
+                    checked={automationToggles.winBackCampaign}
+                    onCheckedChange={(checked) => updateAutomationToggle('winBackCampaign', checked)}
+                  />
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -1074,21 +1130,30 @@ export function AICampaignManager() {
                     <p className="font-medium">Monthly Newsletter</p>
                     <p className="text-sm text-gray-600">1st of every month</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={scheduledToggles.monthlyNewsletter}
+                    onCheckedChange={(checked) => updateScheduledToggle('monthlyNewsletter', checked)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Weekly Tips</p>
                     <p className="text-sm text-gray-600">Every Monday</p>
                   </div>
-                  <Switch />
+                  <Switch
+                    checked={scheduledToggles.weeklyTips}
+                    onCheckedChange={(checked) => updateScheduledToggle('weeklyTips', checked)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Feature Updates</p>
                     <p className="text-sm text-gray-600">Bi-weekly</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={scheduledToggles.featureUpdates}
+                    onCheckedChange={(checked) => updateScheduledToggle('featureUpdates', checked)}
+                  />
                 </div>
               </CardContent>
             </Card>
