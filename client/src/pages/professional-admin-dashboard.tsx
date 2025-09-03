@@ -65,6 +65,17 @@ interface Employee {
   performanceRating: number;
 }
 
+interface AbTest {
+  id: string;
+  name: string;
+  description: string;
+  status: 'running' | 'completed';
+  confidence?: string;
+  visitors?: string;
+  conversion?: string;
+  details?: string;
+}
+
 export default function ProfessionalAdminDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -112,6 +123,67 @@ export default function ProfessionalAdminDashboard() {
     manager: "",
     performanceRating: "",
   });
+
+  const [abTests, setAbTests] = useState<AbTest[]>([
+    {
+      id: '1',
+      name: 'Homepage CTA Button',
+      description: 'Blue vs Green button color',
+      status: 'running',
+      confidence: '85% confidence',
+      visitors: '2,340 visitors',
+    },
+    {
+      id: '2',
+      name: 'Signup Form Fields',
+      description: '5 fields vs 3 fields',
+      status: 'completed',
+      conversion: '+24% conversion',
+      details: 'Winner: 3 fields',
+    },
+  ]);
+  const [newAbTestName, setNewAbTestName] = useState('');
+  const [abTestDialogOpen, setAbTestDialogOpen] = useState(false);
+  const [viewAbTest, setViewAbTest] = useState<AbTest | null>(null);
+  const [analyzeAbTest, setAnalyzeAbTest] = useState<AbTest | null>(null);
+
+  useEffect(() => {
+    const savedAbTests = localStorage.getItem('adminAbTests');
+    if (savedAbTests) {
+      try {
+        setAbTests(JSON.parse(savedAbTests));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
+  }, []);
+
+  const persistAbTests = (updater: (prev: AbTest[]) => AbTest[]) => {
+    setAbTests(prev => {
+      const updated = updater(prev);
+      localStorage.setItem('adminAbTests', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleCreateAbTest = () => {
+    const newTest: AbTest = {
+      id: Date.now().toString(),
+      name: newAbTestName || 'Untitled Test',
+      description: 'Custom A/B test',
+      status: 'running',
+      confidence: '0% confidence',
+      visitors: '0 visitors',
+    };
+    persistAbTests(prev => [...prev, newTest]);
+    toast({
+      title: 'A/B Test Created',
+      description: `"${newTest.name}" has been added to the dashboard.`,
+      duration: 3000,
+    });
+    setNewAbTestName('');
+    setAbTestDialogOpen(false);
+  };
 
   useEffect(() => {
     if (selectedUser) {
@@ -871,60 +943,121 @@ export default function ProfessionalAdminDashboard() {
                     <CardTitle>A/B Test Management</CardTitle>
                     <CardDescription>Create and analyze A/B tests</CardDescription>
                   </div>
-                  <Button>
-                    <TestTube className="h-4 w-4 mr-2" />
-                    New Test
-                  </Button>
+                  <Dialog open={abTestDialogOpen} onOpenChange={setAbTestDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <TestTube className="h-4 w-4 mr-2" />
+                        New Test
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create A/B Test</DialogTitle>
+                        <DialogDescription>Define variants to start testing.</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="ab-test-name">Test Name</Label>
+                          <Input
+                            id="ab-test-name"
+                            placeholder="Homepage CTA Button"
+                            value={newAbTestName}
+                            onChange={(e) => setNewAbTestName(e.target.value)}
+                          />
+                        </div>
+                        <Button onClick={handleCreateAbTest}>Create Test</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <TestTube className="h-5 w-5 text-green-600" />
+                  {abTests.map((test) => (
+                    <div key={test.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            test.status === 'running' ? 'bg-green-100' : 'bg-yellow-100'
+                          }`}
+                        >
+                          <TestTube
+                            className={`h-5 w-5 ${
+                              test.status === 'running' ? 'text-green-600' : 'text-yellow-600'
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{test.name}</h4>
+                          <p className="text-sm text-muted-foreground">{test.description}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium">Homepage CTA Button</h4>
-                        <p className="text-sm text-muted-foreground">Blue vs Green button color</p>
+                      <div className="flex items-center gap-4">
+                        {test.status === 'running' ? (
+                          <>
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                              Running
+                            </Badge>
+                            <div className="text-sm">
+                              <div className="font-medium">{test.confidence}</div>
+                              <div className="text-muted-foreground">{test.visitors}</div>
+                            </div>
+                            <Button variant="outline" size="sm" onClick={() => setAnalyzeAbTest(test)}>
+                              <BarChart3 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Badge variant="secondary" className="bg-green-100 text-green-700">
+                              Completed
+                            </Badge>
+                            <div className="text-sm">
+                              <div className="font-medium">{test.conversion}</div>
+                              <div className="text-muted-foreground">{test.details}</div>
+                            </div>
+                            <Button variant="outline" size="sm" onClick={() => setViewAbTest(test)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-700">Running</Badge>
-                      <div className="text-sm">
-                        <div className="font-medium">85% confidence</div>
-                        <div className="text-muted-foreground">2,340 visitors</div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <BarChart3 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <TestTube className="h-5 w-5 text-yellow-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Signup Form Fields</h4>
-                        <p className="text-sm text-muted-foreground">5 fields vs 3 fields</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">Completed</Badge>
-                      <div className="text-sm">
-                        <div className="font-medium">+24% conversion</div>
-                        <div className="text-muted-foreground">Winner: 3 fields</div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
+            <Dialog open={!!viewAbTest} onOpenChange={(open) => !open && setViewAbTest(null)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{viewAbTest?.name}</DialogTitle>
+                </DialogHeader>
+                {viewAbTest && (
+                  <div className="space-y-2">
+                    <p className="text-sm">{viewAbTest.conversion}</p>
+                    <p className="text-sm">{viewAbTest.details}</p>
+                  </div>
+                )}
+                <div className="mt-4 flex justify-end">
+                  <Button variant="outline" onClick={() => setViewAbTest(null)}>Close</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Dialog open={!!analyzeAbTest} onOpenChange={(open) => !open && setAnalyzeAbTest(null)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Results: {analyzeAbTest?.name}</DialogTitle>
+                </DialogHeader>
+                {analyzeAbTest && (
+                  <div className="space-y-1 text-sm">
+                    <p>{analyzeAbTest.confidence}</p>
+                    <p>{analyzeAbTest.visitors}</p>
+                  </div>
+                )}
+                <div className="mt-4 flex justify-end">
+                  <Button variant="outline" onClick={() => setAnalyzeAbTest(null)}>Close</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* User Segmentation */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,6 +57,17 @@ interface Template {
   variables: string[];
   lastUsed: string;
   performance: number;
+}
+
+interface ABTest {
+  id: string;
+  name: string;
+  description: string;
+  variantA: string;
+  variantB: string;
+  metricA: number | null;
+  metricB: number | null;
+  status: 'running' | 'completed' | 'scheduled';
 }
 
 const mockCampaigns: Campaign[] = [
@@ -128,16 +139,164 @@ const mockTemplates: Template[] = [
   }
 ];
 
+const mockAbTests: ABTest[] = [
+  {
+    id: '1',
+    name: 'Welcome Email Subject Test',
+    description: 'Testing formal vs casual subject lines',
+    variantA: 'Variant A',
+    variantB: 'Variant B',
+    metricA: 23.4,
+    metricB: 31.8,
+    status: 'running',
+  },
+  {
+    id: '2',
+    name: 'CTA Button Color Test',
+    description: 'Blue vs Orange call-to-action buttons',
+    variantA: 'Variant A',
+    variantB: 'Variant B',
+    metricA: 18.2,
+    metricB: 17.9,
+    status: 'completed',
+  },
+  {
+    id: '3',
+    name: 'Email Send Time Test',
+    description: 'Morning 9 AM vs Evening 6 PM send times',
+    variantA: 'Variant A',
+    variantB: 'Variant B',
+    metricA: null,
+    metricB: null,
+    status: 'scheduled',
+  },
+];
+
 export function AICampaignManager() {
   const { toast } = useToast();
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [editCampaign, setEditCampaign] = useState<Campaign | null>(null);
+  const [editTemplate, setEditTemplate] = useState<Template | null>(null);
   const [analyticsViewCampaign, setAnalyticsViewCampaign] = useState<Campaign | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
   const [newCampaignDialog, setNewCampaignDialog] = useState(false);
   const [newTemplateDialog, setNewTemplateDialog] = useState(false);
   const [newTestDialog, setNewTestDialog] = useState(false);
   const [campaigns, setCampaigns] = useState(mockCampaigns);
+  const [templates, setTemplates] = useState(mockTemplates);
+  const [abTests, setAbTests] = useState(mockAbTests);
+  const [newTestName, setNewTestName] = useState('');
+  const [newVariantA, setNewVariantA] = useState('');
+  const [newVariantB, setNewVariantB] = useState('');
+  const [viewTest, setViewTest] = useState<ABTest | null>(null);
+  const [analyzeTest, setAnalyzeTest] = useState<ABTest | null>(null);
+
+  const [newCampaignName, setNewCampaignName] = useState('');
+  const [newCampaignType, setNewCampaignType] = useState<Campaign['type'] | ''>('');
+  const [newCampaignTemplate, setNewCampaignTemplate] = useState('');
+  const [newCampaignAudience, setNewCampaignAudience] = useState('');
+  const [newCampaignAutoSend, setNewCampaignAutoSend] = useState(false);
+
+  const [templatePurpose, setTemplatePurpose] = useState('');
+  const [templateTone, setTemplateTone] = useState('');
+  const [templateIndustry, setTemplateIndustry] = useState('');
+  const [templateCta, setTemplateCta] = useState('');
+
+  const [automationToggles, setAutomationToggles] = useState({
+    newUserWelcome: true,
+    engagementBoost: true,
+    winBackCampaign: false,
+  });
+
+  const [scheduledToggles, setScheduledToggles] = useState({
+    monthlyNewsletter: true,
+    weeklyTips: false,
+    featureUpdates: true,
+  });
+
+  useEffect(() => {
+    const savedAutomation = localStorage.getItem('automationToggles');
+    const savedScheduled = localStorage.getItem('scheduledToggles');
+    const savedCampaigns = localStorage.getItem('aiCampaigns');
+    const savedTemplates = localStorage.getItem('aiTemplates');
+    const savedAbTests = localStorage.getItem('aiAbTests');
+    if (savedAutomation) {
+      try {
+        setAutomationToggles(JSON.parse(savedAutomation));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
+    if (savedScheduled) {
+      try {
+        setScheduledToggles(JSON.parse(savedScheduled));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
+    if (savedCampaigns) {
+      try {
+        setCampaigns(JSON.parse(savedCampaigns));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
+    if (savedTemplates) {
+      try {
+        setTemplates(JSON.parse(savedTemplates));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
+    if (savedAbTests) {
+      try {
+        setAbTests(JSON.parse(savedAbTests));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
+  }, []);
+
+  const persistCampaigns = (updater: (prev: Campaign[]) => Campaign[]) => {
+    setCampaigns(prev => {
+      const updated = updater(prev);
+      localStorage.setItem('aiCampaigns', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const persistTemplates = (updater: (prev: Template[]) => Template[]) => {
+    setTemplates(prev => {
+      const updated = updater(prev);
+      localStorage.setItem('aiTemplates', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const persistAbTests = (updater: (prev: ABTest[]) => ABTest[]) => {
+    setAbTests(prev => {
+      const updated = updater(prev);
+      localStorage.setItem('aiAbTests', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const updateAutomationToggle = (key: keyof typeof automationToggles, value: boolean) => {
+    setAutomationToggles(prev => {
+      const updated = { ...prev, [key]: value };
+      localStorage.setItem('automationToggles', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const updateScheduledToggle = (key: keyof typeof scheduledToggles, value: boolean) => {
+    setScheduledToggles(prev => {
+      const updated = { ...prev, [key]: value };
+      localStorage.setItem('scheduledToggles', JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   const toggleCampaignStatus = (campaignId: string) => {
     setCampaigns(prev => prev.map(campaign => {
@@ -173,6 +332,173 @@ export function AICampaignManager() {
         duration: 3000,
       });
     });
+  };
+
+  const handleCreateCampaign = () => {
+    const newCampaign: Campaign = {
+      id: Date.now().toString(),
+      name: newCampaignName || 'Untitled Campaign',
+      status: newCampaignAutoSend ? 'active' : 'draft',
+      type: (newCampaignType as Campaign['type']) || 'promotion',
+      recipients: 0,
+      openRate: 0,
+      clickRate: 0,
+      lastSent: 'Not sent',
+      nextSend: newCampaignAutoSend ? 'Scheduled' : 'Not scheduled',
+      template: newCampaignTemplate || (templates[0]?.id || ''),
+    };
+    persistCampaigns(prev => [...prev, newCampaign]);
+    toast({
+      title: "Campaign created",
+      description: "Your campaign has been created successfully.",
+      duration: 3000,
+    });
+    setNewCampaignDialog(false);
+    setNewCampaignName('');
+    setNewCampaignType('');
+    setNewCampaignTemplate('');
+    setNewCampaignAudience('');
+    setNewCampaignAutoSend(false);
+  };
+
+  const handleGenerateTemplate = () => {
+    const newTemplate: Template = {
+      id: Date.now().toString(),
+      name: templatePurpose || 'AI Template',
+      subject: templateCta || 'AI Generated Template',
+      type: 'welcome',
+      variables: ['name'],
+      lastUsed: 'Just now',
+      performance: 0,
+    };
+    persistTemplates(prev => [...prev, newTemplate]);
+    toast({
+      title: "Template generated",
+      description: "AI template generated successfully.",
+      duration: 3000,
+    });
+    setNewTemplateDialog(false);
+    setTemplatePurpose('');
+    setTemplateTone('');
+    setTemplateIndustry('');
+    setTemplateCta('');
+  };
+
+  const handleUpdateCampaign = () => {
+    if (editCampaign) {
+      persistCampaigns(prev => prev.map(c => c.id === editCampaign.id ? editCampaign : c));
+      toast({
+        title: "Campaign updated",
+        description: `"${editCampaign.name}" has been updated.`,
+        duration: 3000,
+      });
+    }
+    setSelectedCampaign(null);
+    setEditCampaign(null);
+  };
+
+  const handleUpdateTemplate = () => {
+    if (editTemplate) {
+      persistTemplates(prev => prev.map(t => t.id === editTemplate.id ? editTemplate : t));
+      toast({
+        title: "Template updated",
+        description: `"${editTemplate.name}" has been updated.`,
+        duration: 3000,
+      });
+    }
+    setSelectedTemplate(null);
+    setEditTemplate(null);
+  };
+
+  const handleCreateTest = () => {
+    const newTest: ABTest = {
+      id: Date.now().toString(),
+      name: newTestName || 'Untitled Test',
+      description: 'Custom A/B test',
+      variantA: newVariantA,
+      variantB: newVariantB,
+      metricA: null,
+      metricB: null,
+      status: 'scheduled',
+    };
+    persistAbTests(prev => [...prev, newTest]);
+    toast({
+      title: 'A/B Test Created',
+      description: 'Your test has been scheduled and will start within 24 hours.',
+      duration: 3000,
+    });
+    setNewTestDialog(false);
+    setNewTestName('');
+    setNewVariantA('');
+    setNewVariantB('');
+  };
+
+  const handleViewTest = (test: ABTest) => {
+    setViewTest(test);
+  };
+
+  const handleAnalyzeTest = (test: ABTest) => {
+    setAnalyzeTest(test);
+  };
+
+  const handleStopTest = (id: string) => {
+    persistAbTests(prev => prev.map(t => t.id === id ? { ...t, status: 'completed' } : t));
+    toast({
+      title: 'Test stopped',
+      description: 'The test has been stopped.',
+      duration: 3000,
+    });
+  };
+
+  const handleImplementWinner = (id: string) => {
+    toast({
+      title: 'Winner implemented',
+      description: 'The winning variant has been applied.',
+      duration: 3000,
+    });
+  };
+
+  const handleEditTest = (test: ABTest) => {
+    toast({
+      title: 'Edit test',
+      description: `${test.name} editing not implemented.`,
+      duration: 3000,
+    });
+  };
+
+  const handleCancelTest = (id: string) => {
+    persistAbTests(prev => prev.filter(t => t.id !== id));
+    toast({
+      title: 'Test cancelled',
+      description: 'The test has been cancelled.',
+      duration: 3000,
+    });
+  };
+
+  const getTestStatusColor = (status: ABTest['status']) => {
+    switch (status) {
+      case 'running':
+        return 'bg-green-100 text-green-800';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800';
+      case 'scheduled':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getTestIconClasses = (status: ABTest['status']) => {
+    switch (status) {
+      case 'running':
+        return { bg: 'bg-green-100', text: 'text-green-600' };
+      case 'completed':
+        return { bg: 'bg-blue-100', text: 'text-blue-600' };
+      case 'scheduled':
+        return { bg: 'bg-orange-100', text: 'text-orange-600' };
+      default:
+        return { bg: 'bg-gray-100', text: 'text-gray-600' };
+    }
   };
 
   const getStatusColor = (status: Campaign['status']) => {
@@ -222,11 +548,16 @@ export function AICampaignManager() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="campaign-name">Campaign Name</Label>
-                    <Input id="campaign-name" placeholder="e.g., Summer Promotion" />
+                    <Input
+                      id="campaign-name"
+                      placeholder="e.g., Summer Promotion"
+                      value={newCampaignName}
+                      onChange={(e) => setNewCampaignName(e.target.value)}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="campaign-type">Campaign Type</Label>
-                    <Select>
+                    <Select value={newCampaignType} onValueChange={(value) => setNewCampaignType(value as Campaign['type'])}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
@@ -242,12 +573,15 @@ export function AICampaignManager() {
                 </div>
                 <div>
                   <Label htmlFor="campaign-template">Email Template</Label>
-                  <Select>
+                  <Select
+                    value={newCampaignTemplate}
+                    onValueChange={(value) => setNewCampaignTemplate(value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select template" />
                     </SelectTrigger>
                     <SelectContent>
-                      {mockTemplates.map(template => (
+                      {templates.map(template => (
                         <SelectItem key={template.id} value={template.id}>
                           {template.name}
                         </SelectItem>
@@ -257,7 +591,10 @@ export function AICampaignManager() {
                 </div>
                 <div>
                   <Label htmlFor="campaign-audience">Target Audience</Label>
-                  <Select>
+                  <Select
+                    value={newCampaignAudience}
+                    onValueChange={(value) => setNewCampaignAudience(value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select audience" />
                     </SelectTrigger>
@@ -271,14 +608,14 @@ export function AICampaignManager() {
                   </Select>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Switch id="auto-send" />
+                  <Switch id="auto-send" checked={newCampaignAutoSend} onCheckedChange={setNewCampaignAutoSend} />
                   <Label htmlFor="auto-send">Enable automatic sending</Label>
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setNewCampaignDialog(false)}>
                     Cancel
                   </Button>
-                  <Button>Create Campaign</Button>
+                  <Button onClick={handleCreateCampaign}>Create Campaign</Button>
                 </div>
               </div>
             </DialogContent>
@@ -298,11 +635,16 @@ export function AICampaignManager() {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="template-purpose">Template Purpose</Label>
-                  <Input id="template-purpose" placeholder="e.g., Welcome new users and guide setup" />
+                  <Input
+                    id="template-purpose"
+                    placeholder="e.g., Welcome new users and guide setup"
+                    value={templatePurpose}
+                    onChange={(e) => setTemplatePurpose(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="template-tone">Tone & Style</Label>
-                  <Select>
+                  <Select value={templateTone} onValueChange={(value) => setTemplateTone(value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select tone" />
                     </SelectTrigger>
@@ -316,7 +658,7 @@ export function AICampaignManager() {
                 </div>
                 <div>
                   <Label htmlFor="template-industry">Industry Focus</Label>
-                  <Select>
+                  <Select value={templateIndustry} onValueChange={(value) => setTemplateIndustry(value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select industry" />
                     </SelectTrigger>
@@ -331,13 +673,18 @@ export function AICampaignManager() {
                 </div>
                 <div>
                   <Label htmlFor="template-cta">Call-to-Action</Label>
-                  <Input id="template-cta" placeholder="e.g., Complete your profile, Upgrade to premium" />
+                  <Input
+                    id="template-cta"
+                    placeholder="e.g., Complete your profile, Upgrade to premium"
+                    value={templateCta}
+                    onChange={(e) => setTemplateCta(e.target.value)}
+                  />
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setNewTemplateDialog(false)}>
                     Cancel
                   </Button>
-                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500">
+                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500" onClick={handleGenerateTemplate}>
                     <Bot className="w-4 h-4 mr-2" />
                     Generate Template
                   </Button>
@@ -445,10 +792,13 @@ export function AICampaignManager() {
                         {campaign.status}
                       </Badge>
                       <div className="flex space-x-2">
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
-                          onClick={() => setSelectedCampaign(campaign)}
+                          onClick={() => {
+                            setSelectedCampaign(campaign);
+                            setEditCampaign({ ...campaign });
+                          }}
                           title="Edit Campaign"
                         >
                           <Edit className="w-4 h-4" />
@@ -488,7 +838,7 @@ export function AICampaignManager() {
         
         <TabsContent value="templates" className="space-y-4">
           <div className="grid gap-4">
-            {mockTemplates.map(template => (
+            {templates.map(template => (
               <Card key={template.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -520,10 +870,13 @@ export function AICampaignManager() {
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
-                          onClick={() => setSelectedTemplate(template)}
+                          onClick={() => {
+                            setSelectedTemplate(template);
+                            setEditTemplate({ ...template });
+                          }}
                           title="Edit Template"
                         >
                           <Edit className="w-4 h-4" />
@@ -551,18 +904,13 @@ export function AICampaignManager() {
               <h3 className="text-lg font-semibold">A/B Test Management</h3>
               <p className="text-sm text-gray-600">Compare email variations to optimize performance</p>
             </div>
-            <Button 
-              className="bg-gradient-to-r from-green-500 to-blue-500"
-              onClick={() => {
-                console.log('New Test button clicked!');
-                setNewTestDialog(true);
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              New Test
-            </Button>
-            
             <Dialog open={newTestDialog} onOpenChange={setNewTestDialog}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-green-500 to-blue-500" onClick={() => setNewTestDialog(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Test
+                </Button>
+              </DialogTrigger>
               <DialogContent className="max-w-3xl">
                 <DialogHeader>
                   <DialogTitle>Create A/B Test</DialogTitle>
@@ -571,7 +919,12 @@ export function AICampaignManager() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="test-name">Test Name</Label>
-                      <Input id="test-name" placeholder="e.g., Subject Line Optimization" />
+                      <Input
+                        id="test-name"
+                        placeholder="e.g., Subject Line Optimization"
+                        value={newTestName}
+                        onChange={(e) => setNewTestName(e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="test-type">Test Type</Label>
@@ -608,18 +961,22 @@ export function AICampaignManager() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="variant-a">Variant A (Control)</Label>
-                      <Textarea 
-                        id="variant-a" 
+                      <Textarea
+                        id="variant-a"
                         placeholder="Enter your control version..."
                         rows={4}
+                        value={newVariantA}
+                        onChange={(e) => setNewVariantA(e.target.value)}
                       />
                     </div>
                     <div>
                       <Label htmlFor="variant-b">Variant B (Test)</Label>
-                      <Textarea 
-                        id="variant-b" 
+                      <Textarea
+                        id="variant-b"
                         placeholder="Enter your test version..."
                         rows={4}
+                        value={newVariantB}
+                        onChange={(e) => setNewVariantB(e.target.value)}
                       />
                     </div>
                   </div>
@@ -679,16 +1036,9 @@ export function AICampaignManager() {
                     <Button variant="outline" onClick={() => setNewTestDialog(false)}>
                       Cancel
                     </Button>
-                    <Button 
+                    <Button
                       className="bg-gradient-to-r from-green-500 to-blue-500"
-                      onClick={() => {
-                        toast({
-                          title: "A/B Test Created",
-                          description: "Your test has been scheduled and will start within 24 hours.",
-                          duration: 3000,
-                        });
-                        setNewTestDialog(false);
-                      }}
+                      onClick={handleCreateTest}
                     >
                       <Target className="w-4 h-4 mr-2" />
                       Create Test
@@ -698,116 +1048,103 @@ export function AICampaignManager() {
               </DialogContent>
             </Dialog>
           </div>
-
           <div className="grid gap-4">
-            {/* Sample A/B Tests */}
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-green-100 p-2 rounded-full">
-                      <Target className="w-4 h-4 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Welcome Email Subject Test</h3>
-                      <p className="text-sm text-gray-600">Testing formal vs casual subject lines</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-4">
-                    <div className="text-center">
-                      <p className="text-sm font-medium">23.4%</p>
-                      <p className="text-xs text-gray-500">Variant A</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium text-green-600">31.8%</p>
-                      <p className="text-xs text-gray-500">Variant B</p>
-                    </div>
-                    <Badge className="bg-green-100 text-green-800">Running</Badge>
-                    <div className="flex space-x-1">
-                      <Button size="sm" variant="outline" title="View Results">
-                        <BarChart3 className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" title="Stop Test">
-                        <Square className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {abTests.map(test => {
+              const iconClasses = getTestIconClasses(test.status);
+              return (
+                <Card key={test.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`${iconClasses.bg} p-2 rounded-full`}>
+                          <Target className={`w-4 h-4 ${iconClasses.text}`} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{test.name}</h3>
+                          <p className="text-sm text-gray-600">{test.description}</p>
+                        </div>
+                      </div>
 
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-blue-100 p-2 rounded-full">
-                      <Target className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">CTA Button Color Test</h3>
-                      <p className="text-sm text-gray-600">Blue vs Orange call-to-action buttons</p>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-center">
+                        <p className="text-sm font-medium">{test.metricA !== null ? `${test.metricA}%` : '-'}</p>
+                        <p className="text-xs text-gray-500">Variant A</p>
+                      </div>
+                      <div className="text-center">
+                        <p className={`text-sm font-medium ${test.metricB !== null ? '' : ''}`}>{test.metricB !== null ? `${test.metricB}%` : '-'}</p>
+                        <p className="text-xs text-gray-500">Variant B</p>
+                      </div>
+                      <Badge className={getTestStatusColor(test.status)}>{test.status.charAt(0).toUpperCase() + test.status.slice(1)}</Badge>
+                      <div className="flex space-x-1">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          title="View Test"
+                          onClick={() => handleViewTest(test)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          title="Analyze Results"
+                          onClick={() => handleAnalyzeTest(test)}
+                        >
+                          <BarChart3 className="w-4 h-4" />
+                        </Button>
+                        {test.status === 'running' && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            title="Stop Test"
+                            onClick={() => handleStopTest(test.id)}
+                          >
+                            <Square className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {test.status === 'completed' && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            title="Implement Winner"
+                            onClick={() => handleImplementWinner(test.id)}
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {test.status === 'scheduled' && (
+                          <>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              title="Edit Test"
+                              onClick={() => handleEditTest(test)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              title="Cancel Test"
+                              onClick={() => handleCancelTest(test.id)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center space-x-4">
-                    <div className="text-center">
-                      <p className="text-sm font-medium">18.2%</p>
-                      <p className="text-xs text-gray-500">Variant A</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium">17.9%</p>
-                      <p className="text-xs text-gray-500">Variant B</p>
-                    </div>
-                    <Badge className="bg-blue-100 text-blue-800">Completed</Badge>
-                    <div className="flex space-x-1">
-                      <Button size="sm" variant="outline" title="View Results">
-                        <BarChart3 className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" title="Implement Winner">
-                        <CheckCircle className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-orange-100 p-2 rounded-full">
-                      <Target className="w-4 h-4 text-orange-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Email Send Time Test</h3>
-                      <p className="text-sm text-gray-600">Morning 9 AM vs Evening 6 PM send times</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-4">
-                    <div className="text-center">
-                      <p className="text-sm font-medium">-</p>
-                      <p className="text-xs text-gray-500">Variant A</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium">-</p>
-                      <p className="text-xs text-gray-500">Variant B</p>
-                    </div>
-                    <Badge className="bg-gray-100 text-gray-800">Scheduled</Badge>
-                    <div className="flex space-x-1">
-                      <Button size="sm" variant="outline" title="Edit Test">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" title="Cancel Test">
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+              );
+            })}
           </div>
         </TabsContent>
         
@@ -829,25 +1166,34 @@ export function AICampaignManager() {
                     <p className="font-medium">New User Welcome</p>
                     <p className="text-sm text-gray-600">Triggered on registration</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={automationToggles.newUserWelcome}
+                    onCheckedChange={(checked) => updateAutomationToggle('newUserWelcome', checked)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Engagement Boost</p>
                     <p className="text-sm text-gray-600">Triggered on high activity</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={automationToggles.engagementBoost}
+                    onCheckedChange={(checked) => updateAutomationToggle('engagementBoost', checked)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Win-Back Campaign</p>
                     <p className="text-sm text-gray-600">Triggered after 30 days inactive</p>
                   </div>
-                  <Switch />
+                  <Switch
+                    checked={automationToggles.winBackCampaign}
+                    onCheckedChange={(checked) => updateAutomationToggle('winBackCampaign', checked)}
+                  />
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -864,21 +1210,30 @@ export function AICampaignManager() {
                     <p className="font-medium">Monthly Newsletter</p>
                     <p className="text-sm text-gray-600">1st of every month</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={scheduledToggles.monthlyNewsletter}
+                    onCheckedChange={(checked) => updateScheduledToggle('monthlyNewsletter', checked)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Weekly Tips</p>
                     <p className="text-sm text-gray-600">Every Monday</p>
                   </div>
-                  <Switch />
+                  <Switch
+                    checked={scheduledToggles.weeklyTips}
+                    onCheckedChange={(checked) => updateScheduledToggle('weeklyTips', checked)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Feature Updates</p>
                     <p className="text-sm text-gray-600">Bi-weekly</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch
+                    checked={scheduledToggles.featureUpdates}
+                    onCheckedChange={(checked) => updateScheduledToggle('featureUpdates', checked)}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -887,25 +1242,34 @@ export function AICampaignManager() {
       </Tabs>
 
       {/* Edit Campaign Dialog */}
-      <Dialog open={!!selectedCampaign} onOpenChange={(open) => !open && setSelectedCampaign(null)}>
+      <Dialog open={!!selectedCampaign} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedCampaign(null);
+          setEditCampaign(null);
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Campaign: {selectedCampaign?.name}</DialogTitle>
+            <DialogTitle>Edit Campaign: {editCampaign?.name}</DialogTitle>
           </DialogHeader>
-          {selectedCampaign && (
+          {editCampaign && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-campaign-name">Campaign Name</Label>
-                  <Input 
-                    id="edit-campaign-name" 
-                    defaultValue={selectedCampaign.name}
-                    placeholder="e.g., Summer Promotion" 
+                  <Input
+                    id="edit-campaign-name"
+                    value={editCampaign.name}
+                    onChange={(e) => setEditCampaign(prev => prev ? { ...prev, name: e.target.value } : prev)}
+                    placeholder="e.g., Summer Promotion"
                   />
                 </div>
                 <div>
                   <Label htmlFor="edit-campaign-status">Status</Label>
-                  <Select defaultValue={selectedCampaign.status}>
+                  <Select
+                    value={editCampaign.status}
+                    onValueChange={(value) => setEditCampaign(prev => prev ? { ...prev, status: value as Campaign['status'] } : prev)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -921,7 +1285,10 @@ export function AICampaignManager() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-campaign-type">Campaign Type</Label>
-                  <Select defaultValue={selectedCampaign.type}>
+                  <Select
+                    value={editCampaign.type}
+                    onValueChange={(value) => setEditCampaign(prev => prev ? { ...prev, type: value as Campaign['type'] } : prev)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -936,17 +1303,21 @@ export function AICampaignManager() {
                 </div>
                 <div>
                   <Label htmlFor="edit-campaign-recipients">Recipients</Label>
-                  <Input 
-                    id="edit-campaign-recipients" 
+                  <Input
+                    id="edit-campaign-recipients"
                     type="number"
-                    defaultValue={selectedCampaign.recipients}
-                    placeholder="Number of recipients" 
+                    value={editCampaign.recipients}
+                    onChange={(e) => setEditCampaign(prev => prev ? { ...prev, recipients: Number(e.target.value) } : prev)}
+                    placeholder="Number of recipients"
                   />
                 </div>
               </div>
               <div>
                 <Label htmlFor="edit-campaign-template">Email Template</Label>
-                <Select defaultValue={selectedCampaign.template}>
+                <Select
+                  value={editCampaign.template}
+                  onValueChange={(value) => setEditCampaign(prev => prev ? { ...prev, template: value } : prev)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -960,10 +1331,16 @@ export function AICampaignManager() {
                 </Select>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setSelectedCampaign(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedCampaign(null);
+                    setEditCampaign(null);
+                  }}
+                >
                   Cancel
                 </Button>
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-500">
+                <Button className="bg-gradient-to-r from-blue-500 to-purple-500" onClick={handleUpdateCampaign}>
                   <Edit className="w-4 h-4 mr-2" />
                   Update Campaign
                 </Button>
@@ -974,25 +1351,34 @@ export function AICampaignManager() {
       </Dialog>
 
       {/* Edit Template Dialog */}
-      <Dialog open={!!selectedTemplate} onOpenChange={(open) => !open && setSelectedTemplate(null)}>
+      <Dialog open={!!selectedTemplate} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedTemplate(null);
+          setEditTemplate(null);
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Template: {selectedTemplate?.name}</DialogTitle>
+            <DialogTitle>Edit Template: {editTemplate?.name}</DialogTitle>
           </DialogHeader>
-          {selectedTemplate && (
+          {editTemplate && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-template-name">Template Name</Label>
-                  <Input 
-                    id="edit-template-name" 
-                    defaultValue={selectedTemplate.name}
-                    placeholder="e.g., Welcome Email" 
+                  <Input
+                    id="edit-template-name"
+                    value={editTemplate.name}
+                    onChange={(e) => setEditTemplate(prev => prev ? { ...prev, name: e.target.value } : prev)}
+                    placeholder="e.g., Welcome Email"
                   />
                 </div>
                 <div>
                   <Label htmlFor="edit-template-type">Template Type</Label>
-                  <Select defaultValue={selectedTemplate.type}>
+                  <Select
+                    value={editTemplate.type}
+                    onValueChange={(value) => setEditTemplate(prev => prev ? { ...prev, type: value as Template['type'] } : prev)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1008,10 +1394,11 @@ export function AICampaignManager() {
               </div>
               <div>
                 <Label htmlFor="edit-template-subject">Subject Line</Label>
-                <Input 
-                  id="edit-template-subject" 
-                  defaultValue={selectedTemplate.subject}
-                  placeholder="Enter email subject" 
+                <Input
+                  id="edit-template-subject"
+                  value={editTemplate.subject}
+                  onChange={(e) => setEditTemplate(prev => prev ? { ...prev, subject: e.target.value } : prev)}
+                  placeholder="Enter email subject"
                 />
               </div>
               <div>
@@ -1026,7 +1413,7 @@ export function AICampaignManager() {
               <div>
                 <Label>Template Variables</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedTemplate.variables.map((variable, index) => (
+                  {editTemplate.variables.map((variable, index) => (
                     <Badge key={index} variant="secondary">
                       {`{${variable}}`}
                     </Badge>
@@ -1034,13 +1421,69 @@ export function AICampaignManager() {
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setSelectedTemplate(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedTemplate(null);
+                    setEditTemplate(null);
+                  }}
+                >
                   Cancel
                 </Button>
-                <Button className="bg-gradient-to-r from-purple-500 to-pink-500">
+                <Button className="bg-gradient-to-r from-purple-500 to-pink-500" onClick={handleUpdateTemplate}>
                   <Edit className="w-4 h-4 mr-2" />
                   Update Template
                 </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* A/B Test View Dialog */}
+      <Dialog open={!!viewTest} onOpenChange={(open) => !open && setViewTest(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>A/B Test Details: {viewTest?.name}</DialogTitle>
+          </DialogHeader>
+          {viewTest && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium">Variant A</h4>
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{viewTest.variantA}</p>
+              </div>
+              <div>
+                <h4 className="font-medium">Variant B</h4>
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{viewTest.variantB}</p>
+              </div>
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setViewTest(null)}>Close</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* A/B Test Analysis Dialog */}
+      <Dialog open={!!analyzeTest} onOpenChange={(open) => !open && setAnalyzeTest(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Test Results: {analyzeTest?.name}</DialogTitle>
+          </DialogHeader>
+          {analyzeTest && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium">Variant A</p>
+                  <p className="text-sm text-gray-600">{analyzeTest.metricA !== null ? `${analyzeTest.metricA}%` : 'Pending'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Variant B</p>
+                  <p className="text-sm text-gray-600">{analyzeTest.metricB !== null ? `${analyzeTest.metricB}%` : 'Pending'}</p>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setAnalyzeTest(null)}>Close</Button>
               </div>
             </div>
           )}
@@ -1218,9 +1661,12 @@ export function AICampaignManager() {
                   <Copy className="w-4 h-4 mr-2" />
                   Copy Subject
                 </Button>
-                <Button 
+                <Button
                   onClick={() => {
-                    setSelectedTemplate(previewTemplate);
+                    if (previewTemplate) {
+                      setSelectedTemplate(previewTemplate);
+                      setEditTemplate({ ...previewTemplate });
+                    }
                     setPreviewTemplate(null);
                   }}
                 >
