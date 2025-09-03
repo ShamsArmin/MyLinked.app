@@ -159,9 +159,8 @@ export default function ProfessionalAdminDashboard() {
 
   // Role management mutations
   const assignRoleMutation = useMutation({
-    mutationFn: async ({ userId, roleId }: { userId: number, roleId: number }) => {
-      const response = await apiRequest("POST", "/api/admin/assign-role", { userId, roleId });
-      return response.json();
+    mutationFn: async ({ userId, roleId }: { userId: number; roleId: number }) => {
+      return apiRequest("POST", "/api/admin/assign-role", { userId, roleId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users-with-roles"] });
@@ -174,8 +173,7 @@ export default function ProfessionalAdminDashboard() {
 
   const createRoleMutation = useMutation({
     mutationFn: async (roleData: Partial<Role>) => {
-      const response = await apiRequest("POST", "/api/admin/roles", roleData);
-      return response.json();
+      return apiRequest("POST", "/api/admin/roles", roleData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
@@ -190,8 +188,7 @@ export default function ProfessionalAdminDashboard() {
 
   const updateRoleMutation = useMutation({
     mutationFn: async ({ id, ...roleData }: any) => {
-      const response = await apiRequest("PUT", `/api/admin/roles/${id}`, roleData);
-      return response.json();
+      return apiRequest("PUT", `/api/admin/roles/${id}`, roleData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
@@ -207,8 +204,7 @@ export default function ProfessionalAdminDashboard() {
 
   const deleteRoleMutation = useMutation({
     mutationFn: async (roleId: number) => {
-      const response = await apiRequest("DELETE", `/api/admin/roles/${roleId}`);
-      return response.json();
+      return apiRequest("DELETE", `/api/admin/roles/${roleId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
@@ -242,8 +238,7 @@ export default function ProfessionalAdminDashboard() {
 
   const createEmployeeMutation = useMutation({
     mutationFn: async (employeeData: any) => {
-      const response = await apiRequest("POST", "/api/admin/employees", employeeData);
-      return response.json();
+      return apiRequest("POST", "/api/admin/employees", employeeData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/employees"] });
@@ -270,8 +265,7 @@ export default function ProfessionalAdminDashboard() {
   // Invite user mutation
   const inviteUserMutation = useMutation({
     mutationFn: async (data: { email: string; roleId: number; recipientName?: string }) => {
-      const response = await apiRequest("POST", "/api/admin/invite-user", data);
-      return response.json();
+      return apiRequest("POST", "/api/admin/invite-user", data);
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Invitation sent successfully" });
@@ -287,11 +281,13 @@ export default function ProfessionalAdminDashboard() {
   // Update user mutation
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, ...updates }: any) => {
-      const response = await apiRequest("PUT", `/api/admin/users/${id}`, updates);
-      return response.json();
+      return apiRequest("PUT", `/api/admin/users/${id}`, updates);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users-with-roles"] });
+    onSuccess: (updatedUser: any) => {
+      queryClient.setQueryData(["/api/admin/users-with-roles"], (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((u: any) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u));
+      });
       toast({ title: "Success", description: "User updated successfully" });
       setIsEditUserDialogOpen(false);
       setSelectedUser(null);
@@ -304,8 +300,7 @@ export default function ProfessionalAdminDashboard() {
   // Cancel invitation mutation
   const cancelInvitationMutation = useMutation({
     mutationFn: async (invitationId: number) => {
-      const response = await apiRequest("DELETE", `/api/admin/invitations/${invitationId}`);
-      return response.json();
+      return apiRequest("DELETE", `/api/admin/invitations/${invitationId}`);
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Invitation cancelled" });
