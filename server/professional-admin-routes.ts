@@ -77,7 +77,8 @@ professionalAdminRouter.post("/logout", (req: Request, res: Response) => {
 // Middleware to check admin privileges
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const user = req.user as any;
-  if (!user || (!user.isAdmin && user.role !== 'admin')) {
+  const role = user?.role;
+  if (!user || (!user.isAdmin && role !== 'admin' && role !== 'super_admin')) {
     return res.status(403).json({ message: "Administrator privileges required" });
   }
   next();
@@ -97,6 +98,9 @@ professionalAdminRouter.get("/users-with-roles", isAuthenticated, requireAdmin, 
         position: users.position,
         isAdmin: users.isAdmin,
         isActive: users.isActive,
+        status: users.status,
+        maxLinks: users.maxLinks,
+        dailyClickQuota: users.dailyClickQuota,
         lastLoginAt: users.lastLoginAt,
         createdAt: users.createdAt,
       })
@@ -110,10 +114,108 @@ professionalAdminRouter.get("/users-with-roles", isAuthenticated, requireAdmin, 
   }
 });
 
+// Update user details
+professionalAdminRouter.put("/users/:id", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, email, department, isActive } = req.body;
+
+    const updates: any = { updatedAt: new Date() };
+    if (name !== undefined) updates.name = name;
+    if (email !== undefined) updates.email = email;
+    if (department !== undefined) updates.department = department;
+    if (isActive !== undefined) updates.isActive = isActive;
+
+    const [updatedUser] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        profileImage: users.profileImage,
+        role: users.role,
+        department: users.department,
+        position: users.position,
+        isAdmin: users.isAdmin,
+        isActive: users.isActive,
+        lastLoginAt: users.lastLoginAt,
+        createdAt: users.createdAt,
+      });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Failed to update user" });
+  }
+});
+
 // Roles management endpoints
 professionalAdminRouter.get("/roles", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
   try {
-    const allRoles = await db.select().from(roles).orderBy(roles.name);
+    let allRoles = await db.select().from(roles).orderBy(roles.name);
+
+    // If no roles exist yet, seed the table with default system roles so the
+    // admin UI has options to display in the "Assign Role" dialog.
+    if (allRoles.length === 0) {
+      const defaultRoles = [
+        {
+          name: "super_admin",
+          displayName: "Super Administrator",
+          description: "Full system access with all permissions",
+          permissions: [
+            "user_read",
+            "user_write",
+            "user_delete",
+            "role_manage",
+            "system_admin",
+            "analytics_view",
+            "employee_manage",
+          ],
+          isSystem: true,
+        },
+        {
+          name: "admin",
+          displayName: "Administrator",
+          description: "Administrative access with user management",
+          permissions: ["user_read", "user_write", "analytics_view", "employee_manage"],
+          isSystem: true,
+        },
+        {
+          name: "developer",
+          displayName: "Developer",
+          description: "Development team member",
+          permissions: ["user_read", "analytics_view"],
+          isSystem: true,
+        },
+        {
+          name: "employee",
+          displayName: "Employee",
+          description: "Standard employee access",
+          permissions: ["user_read"],
+          isSystem: true,
+        },
+        {
+          name: "moderator",
+          displayName: "Moderator",
+          description: "Content moderation privileges",
+          permissions: ["user_read", "user_write"],
+          isSystem: true,
+        },
+      ];
+
+      for (const role of defaultRoles) {
+        await db.insert(roles).values(role).onConflictDoNothing();
+      }
+
+      allRoles = await db.select().from(roles).orderBy(roles.name);
+    }
+
     res.json(allRoles);
   } catch (error) {
     console.error("Error fetching roles:", error);

@@ -67,7 +67,7 @@ export default function AdminPanel() {
   const queryClient = useQueryClient();
 
   // Redirect if not admin
-  if (!authLoading && (!user || user.role !== 'admin')) {
+  if (!authLoading && (!user || (user.role !== 'admin' && user.role !== 'super_admin'))) {
     return <Redirect to="/" />;
   }
 
@@ -82,31 +82,31 @@ export default function AdminPanel() {
   // Users data
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users"],
-    enabled: user?.role === 'admin'
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
   // Analytics data
   const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/admin/analytics"],
-    enabled: user?.role === 'admin'
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
   // Feature toggles
   const { data: featuresData, isLoading: featuresLoading } = useQuery({
     queryKey: ["/api/admin/features"],
-    enabled: user?.role === 'admin'
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
   // Social status
   const { data: socialData, isLoading: socialLoading } = useQuery({
     queryKey: ["/api/admin/social-status"],
-    enabled: user?.role === 'admin'
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
   // System logs
   const { data: logsData, isLoading: logsLoading } = useQuery({
     queryKey: ["/api/admin/logs"],
-    enabled: user?.role === 'admin'
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
   // Feature toggle mutation
@@ -355,7 +355,7 @@ export default function AdminPanel() {
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
                             <h3 className="font-medium">{user.name || user.username}</h3>
-                            {user.role === 'admin' && (
+                            {(user.role === 'admin' || user.role === 'super_admin') && (
                               <Badge variant="secondary" className="bg-blue-50 text-blue-700">Admin</Badge>
                             )}
                             {!user.isActive && (
@@ -389,7 +389,7 @@ export default function AdminPanel() {
                               )}
                             </Button>
                           )}
-                          {user.isActive && user.role !== 'admin' && (
+                          {user.isActive && user.role !== 'admin' && user.role !== 'super_admin' && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -404,7 +404,7 @@ export default function AdminPanel() {
                               )}
                             </Button>
                           )}
-                          {user.role !== 'admin' && (
+                          {user.role !== 'admin' && user.role !== 'super_admin' && (
                             <Button
                               variant="outline"
                               size="sm"

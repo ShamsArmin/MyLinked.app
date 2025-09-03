@@ -47,6 +47,7 @@ import { facebookComplianceRouter } from "./facebook-compliance";
 import { aiSupportRouter } from "./ai-support-routes";
 import { adminRouter } from "./admin-routes";
 import { professionalAdminRouter } from "./professional-admin-routes";
+import adminUsersRouter from "./routes/admin-users";
 import { monitoringRouter } from "./monitoring-routes";
 import { securityRouter } from "./security-routes";
 import bcrypt from "bcrypt";
@@ -2506,6 +2507,7 @@ GITHUB_CLIENT_SECRET=your_github_client_secret
   // Add Admin routes
   app.use("/api/admin-legacy", adminRouter);
   app.use("/api/admin", professionalAdminRouter);
+  app.use("/api/admin/users", adminUsersRouter);
 
   // Add Monitoring routes
   app.use("/api/monitoring", monitoringRouter);

@@ -12,8 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Crown, Users, Activity, Settings, Shield, AlertTriangle, 
+import {
+  Crown, Users, Activity, Settings, Shield, AlertTriangle,
   TrendingUp, Database, Globe, Link, Eye, BarChart, 
   PieChart, Calendar, Download, Upload, Server, 
   Wifi, HardDrive, Cpu, Monitor, UserPlus, Edit, Trash2,
@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { EmailManagement } from "@/components/email-management";
 import { AICampaignManager } from "@/components/ai-campaign-manager";
+import { UserActionsMenu } from "@/components/admin/user-actions-menu";
 
 // Role and Permission types
 interface Role {
@@ -73,6 +74,9 @@ export default function ProfessionalAdminDashboard() {
   const [timeRange, setTimeRange] = useState("7d");
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
+  const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
+  const [roleToAssign, setRoleToAssign] = useState<number | null>(null);
+  const [noRolesDialogOpen, setNoRolesDialogOpen] = useState(false);
   const [isEmployeeDialogOpen, setIsEmployeeDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
@@ -90,6 +94,12 @@ export default function ProfessionalAdminDashboard() {
     description: "",
     permissions: [] as string[],
   });
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    email: "",
+    department: "",
+    isActive: true,
+  });
   const [employeeFormData, setEmployeeFormData] = useState({
     userId: "",
     employeeId: "",
@@ -103,48 +113,58 @@ export default function ProfessionalAdminDashboard() {
     performanceRating: "",
   });
 
+  useEffect(() => {
+    if (selectedUser) {
+      setEditFormData({
+        name: selectedUser.name || "",
+        email: selectedUser.email || "",
+        department: selectedUser.department || "",
+        isActive: selectedUser.isActive !== false,
+      });
+    }
+  }, [selectedUser]);
+
   // Enhanced queries with role management
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users-with-roles"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: rolesData, isLoading: rolesLoading } = useQuery({
     queryKey: ["/api/admin/roles"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: permissionsData, isLoading: permissionsLoading } = useQuery({
     queryKey: ["/api/admin/permissions"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: employeesData, isLoading: employeesLoading } = useQuery({
     queryKey: ["/api/admin/employees"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: invitationsData, isLoading: invitationsLoading } = useQuery({
     queryKey: ["/api/admin/invitations"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/admin/professional/analytics", timeRange],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: systemMetrics, isLoading: systemLoading } = useQuery({
     queryKey: ["/api/admin/system/metrics"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
     refetchInterval: 30000,
   });
 
   // Role management mutations
   const assignRoleMutation = useMutation({
-    mutationFn: async ({ userId, roleId }: { userId: number, roleId: number }) => {
-      const response = await apiRequest("POST", "/api/admin/assign-role", { userId, roleId });
-      return response.json();
+    mutationFn: async ({ userId, roleId }: { userId: string; roleId: number }) => {
+      return apiRequest("PATCH", `/api/admin/users/${userId}/role`, { roleId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users-with-roles"] });
@@ -157,8 +177,7 @@ export default function ProfessionalAdminDashboard() {
 
   const createRoleMutation = useMutation({
     mutationFn: async (roleData: Partial<Role>) => {
-      const response = await apiRequest("POST", "/api/admin/roles", roleData);
-      return response.json();
+      return apiRequest("POST", "/api/admin/roles", roleData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
@@ -173,8 +192,7 @@ export default function ProfessionalAdminDashboard() {
 
   const updateRoleMutation = useMutation({
     mutationFn: async ({ id, ...roleData }: any) => {
-      const response = await apiRequest("PUT", `/api/admin/roles/${id}`, roleData);
-      return response.json();
+      return apiRequest("PUT", `/api/admin/roles/${id}`, roleData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
@@ -190,8 +208,7 @@ export default function ProfessionalAdminDashboard() {
 
   const deleteRoleMutation = useMutation({
     mutationFn: async (roleId: number) => {
-      const response = await apiRequest("DELETE", `/api/admin/roles/${roleId}`);
-      return response.json();
+      return apiRequest("DELETE", `/api/admin/roles/${roleId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
@@ -201,6 +218,73 @@ export default function ProfessionalAdminDashboard() {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
+
+  const handleAssignRole = async (user: any) => {
+    try {
+      const roles = await apiRequest("GET", "/api/admin/roles");
+      if (!Array.isArray(roles) || roles.length === 0) {
+        setNoRolesDialogOpen(true);
+        return;
+      }
+      setAvailableRoles(roles);
+      setSelectedUser(user);
+      const current = roles.find((r: any) => r.name === user.role);
+      setRoleToAssign(current ? current.id : null);
+      setIsRoleDialogOpen(true);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleChangeStatus = async (user: any, status: 'active' | 'suspended') => {
+    try {
+      await apiRequest("PATCH", `/api/admin/users/${user.id}/status`, { status });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users-with-roles"] });
+      toast({ title: "Success", description: "Status updated" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleSetLimits = async (user: any, limits: { maxLinks?: number | null; dailyClickQuota?: number | null }) => {
+    try {
+      await apiRequest("PATCH", `/api/admin/users/${user.id}/limits`, limits);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users-with-roles"] });
+      toast({ title: "Success", description: "Limits updated" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleForceLogout = async (user: any) => {
+    try {
+      await apiRequest("POST", `/api/admin/users/${user.id}/force-logout`);
+      toast({ title: "Success", description: "User logged out" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleResetPassword = async (user: any) => {
+    try {
+      await apiRequest("POST", `/api/admin/users/${user.id}/reset-password`);
+      toast({ title: "Success", description: "Password reset email sent" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async (user: any) => {
+    const confirmation = window.prompt(`Type ${user.email} to confirm deletion`);
+    if (confirmation !== user.email) return;
+    try {
+      await apiRequest("DELETE", `/api/admin/users/${user.id}`);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users-with-roles"] });
+      toast({ title: "Deleted", description: "User removed" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -225,8 +309,7 @@ export default function ProfessionalAdminDashboard() {
 
   const createEmployeeMutation = useMutation({
     mutationFn: async (employeeData: any) => {
-      const response = await apiRequest("POST", "/api/admin/employees", employeeData);
-      return response.json();
+      return apiRequest("POST", "/api/admin/employees", employeeData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/employees"] });
@@ -253,8 +336,7 @@ export default function ProfessionalAdminDashboard() {
   // Invite user mutation
   const inviteUserMutation = useMutation({
     mutationFn: async (data: { email: string; roleId: number; recipientName?: string }) => {
-      const response = await apiRequest("POST", "/api/admin/invite-user", data);
-      return response.json();
+      return apiRequest("POST", "/api/admin/invite-user", data);
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Invitation sent successfully" });
@@ -267,11 +349,29 @@ export default function ProfessionalAdminDashboard() {
     },
   });
 
+  // Update user mutation
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ id, ...updates }: any) => {
+      return apiRequest("PUT", `/api/admin/users/${id}`, updates);
+    },
+    onSuccess: (updatedUser: any) => {
+      queryClient.setQueryData(["/api/admin/users-with-roles"], (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((u: any) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u));
+      });
+      toast({ title: "Success", description: "User updated successfully" });
+      setIsEditUserDialogOpen(false);
+      setSelectedUser(null);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   // Cancel invitation mutation
   const cancelInvitationMutation = useMutation({
     mutationFn: async (invitationId: number) => {
-      const response = await apiRequest("DELETE", `/api/admin/invitations/${invitationId}`);
-      return response.json();
+      return apiRequest("DELETE", `/api/admin/invitations/${invitationId}`);
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Invitation cancelled" });
@@ -282,7 +382,7 @@ export default function ProfessionalAdminDashboard() {
     },
   });
 
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-96">
@@ -303,6 +403,19 @@ export default function ProfessionalAdminDashboard() {
   const invitations = Array.isArray(invitationsData) ? invitationsData : [];
   const analytics = analyticsData || {};
   const metrics = systemMetrics || {};
+
+  // Apply search and role filters
+  const filteredUsers = users.filter((u: any) => {
+    const matchesSearch =
+      u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const role = u.role || (u.isAdmin ? "admin" : "user");
+    const matchesFilter = userFilter === "all" || role === userFilter;
+
+    return matchesSearch && matchesFilter;
+  });
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -530,7 +643,7 @@ export default function ProfessionalAdminDashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {users.map((user: any) => (
+                      {filteredUsers.map((user: any) => (
                         <TableRow key={user.id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
@@ -561,106 +674,31 @@ export default function ProfessionalAdminDashboard() {
                             {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never'}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={user.isActive ? "default" : "secondary"}>
-                              {user.isActive ? "Active" : "Inactive"}
+                            <Badge variant={user.status === 'active' ? "default" : "secondary"}>
+                              {user.status === 'active' ? "Active" : "Suspended"}
                             </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
-                                <DialogTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => setSelectedUser(user)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Edit User</DialogTitle>
-                                    <DialogDescription>
-                                      Update user information for {selectedUser?.name}
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  {selectedUser && (
-                                    <div className="space-y-4">
-                                      <div>
-                                        <Label htmlFor="editName">Name</Label>
-                                        <Input 
-                                          id="editName" 
-                                          defaultValue={selectedUser.name} 
-                                          placeholder="User name"
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="editEmail">Email</Label>
-                                        <Input 
-                                          id="editEmail" 
-                                          type="email"
-                                          defaultValue={selectedUser.email} 
-                                          placeholder="user@example.com"
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="editDepartment">Department</Label>
-                                        <Input 
-                                          id="editDepartment" 
-                                          defaultValue={selectedUser.department} 
-                                          placeholder="Department"
-                                        />
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="editActive" 
-                                          defaultChecked={selectedUser.isActive}
-                                        />
-                                        <Label htmlFor="editActive">Active User</Label>
-                                      </div>
-                                      <div className="flex justify-end gap-2">
-                                        <Button variant="outline" onClick={() => setIsEditUserDialogOpen(false)}>
-                                          Cancel
-                                        </Button>
-                                        <Button onClick={() => {
-                                          toast({ title: "Success", description: "User updated successfully" });
-                                          setIsEditUserDialogOpen(false);
-                                        }}>
-                                          Update User
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </DialogContent>
-                              </Dialog>
-                              <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
-                                <DialogTrigger asChild>
-                                  <Button variant="outline" size="sm">
-                                    <Shield className="h-4 w-4" />
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Assign Role</DialogTitle>
-                                    <DialogDescription>
-                                      Select a role to assign to {user.name}
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    {roles.map((role: Role) => (
-                                      <div key={role.id} className="flex items-center space-x-2">
-                                        <Button
-                                          variant="outline"
-                                          onClick={() => assignRoleMutation.mutate({ userId: user.id, roleId: role.id })}
-                                          className="w-full justify-start"
-                                        >
-                                          {role.displayName}
-                                        </Button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setIsEditUserDialogOpen(true);
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <UserActionsMenu
+                                user={user}
+                                onAssignRole={() => handleAssignRole(user)}
+                                onChangeStatus={(status) => handleChangeStatus(user, status)}
+                                onSetLimits={(limits) => handleSetLimits(user, limits)}
+                                onForceLogout={() => handleForceLogout(user)}
+                                onResetPassword={() => handleResetPassword(user)}
+                                onDelete={() => handleDelete(user)}
+                              />
                             </div>
                           </TableCell>
                         </TableRow>
@@ -671,6 +709,123 @@ export default function ProfessionalAdminDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Edit User Dialog rendered once */}
+          <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit User</DialogTitle>
+                <DialogDescription>
+                  Update user information for {selectedUser?.name}
+                </DialogDescription>
+              </DialogHeader>
+              {selectedUser && (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="editName">Name</Label>
+                    <Input
+                      id="editName"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      placeholder="User name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editEmail">Email</Label>
+                    <Input
+                      id="editEmail"
+                      type="email"
+                      value={editFormData.email}
+                      onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                      placeholder="user@example.com"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editDepartment">Department</Label>
+                    <Input
+                      id="editDepartment"
+                      value={editFormData.department}
+                      onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
+                      placeholder="Department"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="editActive"
+                      checked={editFormData.isActive}
+                      onCheckedChange={(checked) =>
+                        setEditFormData({ ...editFormData, isActive: !!checked })
+                      }
+                    />
+                    <Label htmlFor="editActive">Active User</Label>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setIsEditUserDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => updateUserMutation.mutate({ id: selectedUser.id, ...editFormData })}
+                      disabled={updateUserMutation.isPending}
+                    >
+                      {updateUserMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        "Update User"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Assign Role</DialogTitle>
+                <DialogDescription>Select a role to assign to {selectedUser?.name}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                {availableRoles.map((role) => (
+                  <Button
+                    key={role.id}
+                    variant={roleToAssign === role.id ? "default" : "outline"}
+                    className="w-full justify-start"
+                    onClick={() => setRoleToAssign(role.id)}
+                  >
+                    {role.displayName}
+                  </Button>
+                ))}
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setIsRoleDialogOpen(false)}>Cancel</Button>
+                  <Button
+                    disabled={roleToAssign === null || roleToAssign === availableRoles.find(r => r.name === selectedUser?.role)?.id}
+                    onClick={() => {
+                      if (roleToAssign !== null && selectedUser) {
+                        assignRoleMutation.mutate({ userId: selectedUser.id, roleId: roleToAssign });
+                      }
+                      setIsRoleDialogOpen(false);
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={noRolesDialogOpen} onOpenChange={setNoRolesDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>No roles yet</DialogTitle>
+                <DialogDescription>Create a role before assigning.</DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setNoRolesDialogOpen(false)}>Cancel</Button>
+                <Button onClick={() => { setNoRolesDialogOpen(false); setLocation("/admin/roles"); }}>Go to Roles</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* AI Campaign Manager */}
           <TabsContent value="campaigns" className="space-y-4">

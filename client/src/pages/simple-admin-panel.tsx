@@ -19,12 +19,12 @@ export default function SimpleAdminPanel() {
   // Queries
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/admin/analytics"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   // Mutations
@@ -70,7 +70,7 @@ export default function SimpleAdminPanel() {
     },
   });
 
-  if (user?.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-96">

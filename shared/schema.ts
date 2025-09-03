@@ -68,6 +68,9 @@ export const users = pgTable("users", {
   hireDate: timestamp("hire_date"),
   lastLoginAt: timestamp("last_login_at"),
   isActive: boolean("is_active").default(true),
+  status: varchar("status", { length: 50 }).default("active"), // active, suspended
+  maxLinks: integer("max_links"),
+  dailyClickQuota: integer("daily_click_quota"),
   settings: jsonb("settings").default(sql`'{}'::jsonb`),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -115,6 +118,16 @@ export const systemLogs = pgTable("system_logs", {
   source: text("source"), // oauth, api, auth, etc.
   userId: uuid("user_id").references(() => users.id),
   metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Audit logs for admin actions
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  actorId: uuid("actor_id").references(() => users.id),
+  targetUserId: uuid("target_user_id").references(() => users.id, { onDelete: "cascade" }),
+  action: text("action").notNull(),
+  payload: jsonb("payload"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

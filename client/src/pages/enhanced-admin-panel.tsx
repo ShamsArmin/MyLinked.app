@@ -29,43 +29,43 @@ export default function EnhancedAdminPanel() {
   // Advanced queries
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/enhanced/users"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/admin/enhanced/analytics", timeRange],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: systemMetrics, isLoading: systemLoading } = useQuery({
     queryKey: ["/api/admin/system/metrics"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   const { data: userActivity, isLoading: activityLoading } = useQuery({
     queryKey: ["/api/admin/user-activity", timeRange],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: linkAnalytics, isLoading: linkLoading } = useQuery({
     queryKey: ["/api/admin/link-analytics"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: platformStats, isLoading: platformLoading } = useQuery({
     queryKey: ["/api/admin/platform-stats"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: auditLogs, isLoading: auditLoading } = useQuery({
     queryKey: ["/api/admin/audit-logs"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: userReports, isLoading: reportsLoading } = useQuery({
     queryKey: ["/api/admin/user-reports"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   // Mutations for advanced operations
@@ -189,8 +189,8 @@ export default function EnhancedAdminPanel() {
                          u.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          u.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesFilter = userFilter === "all" || 
-                         (userFilter === "admin" && u.role === 'admin') ||
+    const matchesFilter = userFilter === "all" ||
+                         (userFilter === "admin" && (u.role === 'admin' || u.role === 'super_admin' || u.isAdmin)) ||
                          (userFilter === "active" && u.isActive !== false) ||
                          (userFilter === "inactive" && u.isActive === false);
     
@@ -483,9 +483,9 @@ export default function EnhancedAdminPanel() {
                             </TableCell>
                             <TableCell>{user.email}</TableCell>
                             <TableCell>
-                              <Badge variant={user.role === 'admin' ? "default" : "secondary"}>
-                                {user.role === 'admin' && <Crown className="h-3 w-3 mr-1" />}
-                                {user.role === 'admin' ? "Admin" : "User"}
+                              <Badge variant={(user.role === 'admin' || user.role === 'super_admin') ? "default" : "secondary"}>
+                                {(user.role === 'admin' || user.role === 'super_admin') && <Crown className="h-3 w-3 mr-1" />}
+                                {(user.role === 'admin' || user.role === 'super_admin') ? "Admin" : "User"}
                               </Badge>
                             </TableCell>
                             <TableCell>

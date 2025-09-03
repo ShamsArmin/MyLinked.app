@@ -11,7 +11,8 @@ export const adminRouter = Router();
 // Admin middleware - check if user is admin
 function isAdmin(req: Request, res: Response, next: NextFunction) {
   const user = (req as any).user;
-  if (!user || (!user.isAdmin && user.role !== 'admin')) {
+  const role = user?.role;
+  if (!user || (!user.isAdmin && role !== 'admin' && role !== 'super_admin')) {
     return res.status(403).json({ message: "Admin access required" });
   }
   next();
@@ -30,6 +31,7 @@ adminRouter.get("/users", async (req: Request, res: Response) => {
         username: users.username,
         name: users.name,
         email: users.email,
+        role: users.role,
         bio: users.bio,
         location: users.location,
         isAdmin: users.isAdmin,
