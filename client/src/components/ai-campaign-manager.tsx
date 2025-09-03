@@ -189,6 +189,8 @@ export function AICampaignManager() {
   const [newTestName, setNewTestName] = useState('');
   const [newVariantA, setNewVariantA] = useState('');
   const [newVariantB, setNewVariantB] = useState('');
+  const [viewTest, setViewTest] = useState<ABTest | null>(null);
+  const [analyzeTest, setAnalyzeTest] = useState<ABTest | null>(null);
 
   const [newCampaignName, setNewCampaignName] = useState('');
   const [newCampaignType, setNewCampaignType] = useState<Campaign['type'] | ''>('');
@@ -384,19 +386,11 @@ export function AICampaignManager() {
   };
 
   const handleViewTest = (test: ABTest) => {
-    toast({
-      title: 'Viewing Test',
-      description: `${test.name} details coming soon.`,
-      duration: 3000,
-    });
+    setViewTest(test);
   };
 
   const handleAnalyzeTest = (test: ABTest) => {
-    toast({
-      title: 'Analyzing Results',
-      description: `${test.name} performance analysis coming soon.`,
-      duration: 3000,
-    });
+    setAnalyzeTest(test);
   };
 
   const handleStopTest = (id: string) => {
@@ -864,7 +858,7 @@ export function AICampaignManager() {
             </div>
             <Dialog open={newTestDialog} onOpenChange={setNewTestDialog}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-green-500 to-blue-500">
+                <Button className="bg-gradient-to-r from-green-500 to-blue-500" onClick={() => setNewTestDialog(true)}>
                   <Plus className="w-4 h-4 mr-2" />
                   New Test
                 </Button>
@@ -1392,6 +1386,48 @@ export function AICampaignManager() {
                   <Edit className="w-4 h-4 mr-2" />
                   Update Template
                 </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* A/B Test View Dialog */}
+      <Dialog open={!!viewTest} onOpenChange={(open) => !open && setViewTest(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>A/B Test Details: {viewTest?.name}</DialogTitle>
+          </DialogHeader>
+          {viewTest && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium">Variant A</h4>
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{viewTest.variantA}</p>
+              </div>
+              <div>
+                <h4 className="font-medium">Variant B</h4>
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{viewTest.variantB}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* A/B Test Analysis Dialog */}
+      <Dialog open={!!analyzeTest} onOpenChange={(open) => !open && setAnalyzeTest(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Test Results: {analyzeTest?.name}</DialogTitle>
+          </DialogHeader>
+          {analyzeTest && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium">Variant A</p>
+                <p className="text-sm text-gray-600">{analyzeTest.metricA !== null ? `${analyzeTest.metricA}%` : 'Pending'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Variant B</p>
+                <p className="text-sm text-gray-600">{analyzeTest.metricB !== null ? `${analyzeTest.metricB}%` : 'Pending'}</p>
               </div>
             </div>
           )}

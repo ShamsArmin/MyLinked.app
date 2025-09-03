@@ -113,6 +113,10 @@ export default function ProfessionalAdminDashboard() {
     performanceRating: "",
   });
 
+  const [abTestDialogOpen, setAbTestDialogOpen] = useState(false);
+  const [viewAbTest, setViewAbTest] = useState<any>(null);
+  const [analyzeAbTest, setAnalyzeAbTest] = useState<any>(null);
+
   useEffect(() => {
     if (selectedUser) {
       setEditFormData({
@@ -871,10 +875,27 @@ export default function ProfessionalAdminDashboard() {
                     <CardTitle>A/B Test Management</CardTitle>
                     <CardDescription>Create and analyze A/B tests</CardDescription>
                   </div>
-                  <Button>
-                    <TestTube className="h-4 w-4 mr-2" />
-                    New Test
-                  </Button>
+                  <Dialog open={abTestDialogOpen} onOpenChange={setAbTestDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <TestTube className="h-4 w-4 mr-2" />
+                        New Test
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create A/B Test</DialogTitle>
+                        <DialogDescription>Define variants to start testing.</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="ab-test-name">Test Name</Label>
+                          <Input id="ab-test-name" placeholder="Homepage CTA Button" />
+                        </div>
+                        <Button onClick={() => setAbTestDialogOpen(false)}>Create Test</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardHeader>
               <CardContent>
@@ -895,12 +916,22 @@ export default function ProfessionalAdminDashboard() {
                         <div className="font-medium">85% confidence</div>
                         <div className="text-muted-foreground">2,340 visitors</div>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setAnalyzeAbTest({
+                            name: 'Homepage CTA Button',
+                            confidence: '85% confidence',
+                            visitors: '2,340 visitors',
+                          })
+                        }
+                      >
                         <BarChart3 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -917,7 +948,17 @@ export default function ProfessionalAdminDashboard() {
                         <div className="font-medium">+24% conversion</div>
                         <div className="text-muted-foreground">Winner: 3 fields</div>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setViewAbTest({
+                            name: 'Signup Form Fields',
+                            details: 'Winner: 3 fields',
+                            conversion: '+24% conversion',
+                          })
+                        }
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
                     </div>
@@ -925,6 +966,32 @@ export default function ProfessionalAdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+            <Dialog open={!!viewAbTest} onOpenChange={(open) => !open && setViewAbTest(null)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{viewAbTest?.name}</DialogTitle>
+                </DialogHeader>
+                {viewAbTest && (
+                  <div className="space-y-2">
+                    <p className="text-sm">{viewAbTest.conversion}</p>
+                    <p className="text-sm">{viewAbTest.details}</p>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+            <Dialog open={!!analyzeAbTest} onOpenChange={(open) => !open && setAnalyzeAbTest(null)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Results: {analyzeAbTest?.name}</DialogTitle>
+                </DialogHeader>
+                {analyzeAbTest && (
+                  <div className="space-y-1 text-sm">
+                    <p>{analyzeAbTest.confidence}</p>
+                    <p>{analyzeAbTest.visitors}</p>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* User Segmentation */}
