@@ -383,10 +383,18 @@ export function AICampaignManager() {
     setNewVariantB('');
   };
 
-  const handleViewResults = (test: ABTest) => {
+  const handleViewTest = (test: ABTest) => {
     toast({
-      title: 'Viewing Results',
-      description: `${test.name} analytics coming soon.`,
+      title: 'Viewing Test',
+      description: `${test.name} details coming soon.`,
+      duration: 3000,
+    });
+  };
+
+  const handleAnalyzeTest = (test: ABTest) => {
+    toast({
+      title: 'Analyzing Results',
+      description: `${test.name} performance analysis coming soon.`,
       duration: 3000,
     });
   };
@@ -854,15 +862,13 @@ export function AICampaignManager() {
               <h3 className="text-lg font-semibold">A/B Test Management</h3>
               <p className="text-sm text-gray-600">Compare email variations to optimize performance</p>
             </div>
-            <Button
-              className="bg-gradient-to-r from-green-500 to-blue-500"
-              onClick={() => setNewTestDialog(true)}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              New Test
-            </Button>
-            
             <Dialog open={newTestDialog} onOpenChange={setNewTestDialog}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-green-500 to-blue-500">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Test
+                </Button>
+              </DialogTrigger>
               <DialogContent className="max-w-3xl">
                 <DialogHeader>
                   <DialogTitle>Create A/B Test</DialogTitle>
@@ -1028,32 +1034,64 @@ export function AICampaignManager() {
                       </div>
                       <Badge className={getTestStatusColor(test.status)}>{test.status.charAt(0).toUpperCase() + test.status.slice(1)}</Badge>
                       <div className="flex space-x-1">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          title="View Test"
+                          onClick={() => handleViewTest(test)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          title="Analyze Results"
+                          onClick={() => handleAnalyzeTest(test)}
+                        >
+                          <BarChart3 className="w-4 h-4" />
+                        </Button>
                         {test.status === 'running' && (
-                          <>
-                            <Button size="sm" variant="outline" title="View Results" onClick={() => handleViewResults(test)}>
-                              <BarChart3 className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="outline" title="Stop Test" onClick={() => handleStopTest(test.id)}>
-                              <Square className="w-4 h-4" />
-                            </Button>
-                          </>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            title="Stop Test"
+                            onClick={() => handleStopTest(test.id)}
+                          >
+                            <Square className="w-4 h-4" />
+                          </Button>
                         )}
                         {test.status === 'completed' && (
-                          <>
-                            <Button size="sm" variant="outline" title="View Results" onClick={() => handleViewResults(test)}>
-                              <BarChart3 className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="outline" title="Implement Winner" onClick={() => handleImplementWinner(test.id)}>
-                              <CheckCircle className="w-4 h-4" />
-                            </Button>
-                          </>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            title="Implement Winner"
+                            onClick={() => handleImplementWinner(test.id)}
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </Button>
                         )}
                         {test.status === 'scheduled' && (
                           <>
-                            <Button size="sm" variant="outline" title="Edit Test" onClick={() => handleEditTest(test)}>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              title="Edit Test"
+                              onClick={() => handleEditTest(test)}
+                            >
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" variant="outline" title="Cancel Test" onClick={() => handleCancelTest(test.id)}>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              title="Cancel Test"
+                              onClick={() => handleCancelTest(test.id)}
+                            >
                               <X className="w-4 h-4" />
                             </Button>
                           </>
