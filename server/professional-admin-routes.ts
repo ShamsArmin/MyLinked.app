@@ -154,7 +154,64 @@ professionalAdminRouter.put("/users/:id", isAuthenticated, requireAdmin, async (
 // Roles management endpoints
 professionalAdminRouter.get("/roles", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
   try {
-    const allRoles = await db.select().from(roles).orderBy(roles.name);
+    let allRoles = await db.select().from(roles).orderBy(roles.name);
+
+    // If no roles exist yet, seed the table with default system roles so the
+    // admin UI has options to display in the "Assign Role" dialog.
+    if (allRoles.length === 0) {
+      const defaultRoles = [
+        {
+          name: "super_admin",
+          displayName: "Super Administrator",
+          description: "Full system access with all permissions",
+          permissions: [
+            "user_read",
+            "user_write",
+            "user_delete",
+            "role_manage",
+            "system_admin",
+            "analytics_view",
+            "employee_manage",
+          ],
+          isSystem: true,
+        },
+        {
+          name: "admin",
+          displayName: "Administrator",
+          description: "Administrative access with user management",
+          permissions: ["user_read", "user_write", "analytics_view", "employee_manage"],
+          isSystem: true,
+        },
+        {
+          name: "developer",
+          displayName: "Developer",
+          description: "Development team member",
+          permissions: ["user_read", "analytics_view"],
+          isSystem: true,
+        },
+        {
+          name: "employee",
+          displayName: "Employee",
+          description: "Standard employee access",
+          permissions: ["user_read"],
+          isSystem: true,
+        },
+        {
+          name: "moderator",
+          displayName: "Moderator",
+          description: "Content moderation privileges",
+          permissions: ["user_read", "user_write"],
+          isSystem: true,
+        },
+      ];
+
+      for (const role of defaultRoles) {
+        await db.insert(roles).values(role).onConflictDoNothing();
+      }
+
+      allRoles = await db.select().from(roles).orderBy(roles.name);
+    }
+
     res.json(allRoles);
   } catch (error) {
     console.error("Error fetching roles:", error);
