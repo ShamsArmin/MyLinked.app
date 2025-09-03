@@ -16,21 +16,23 @@ import { db, pool } from "./db";
 import path from "path";
 import { fileURLToPath } from "url";
 import referralRequestsRouter from "./routes/referral-requests";
-// Temporarily disabled problematic imports
-// import { initializeEmailTemplates } from "./init-email-templates";
-// import { initAIEmailTemplates } from "./ai-email-templates";
-// import { initMarketingCampaigns } from "./marketing-campaigns";
 
+// const { something } = require('something') // (none)
+
+// ---------------------------------------------------------------------------
+// App init & core middleware
+// ---------------------------------------------------------------------------
 const app = express();
 app.set("trust proxy", 1);
 
+// Body parsers MUST be before any routes/passport
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const PgStore = connectPgSimple(session);
 const isProd = process.env.NODE_ENV === "production";
 
-// Add security middleware (must be early)
+// Security middleware (early)
 app.use(securityMiddleware.securityHeaders);
 app.use(securityMiddleware.rateLimiter);
 app.use(securityMiddleware.suspiciousActivityDetection);
@@ -38,64 +40,61 @@ app.use(securityMiddleware.sqlInjectionProtection);
 app.use(securityMiddleware.xssProtection);
 app.use(securityMiddleware.inputValidation);
 
-// If you keep CORS, restrict to single origin
+// CORS
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || true,
+    origin: process.env.CLIENT_ORIGIN || true, // set exact URL if cross-origin
     credentials: true,
   })
 );
 
-// Add monitoring middleware
+// Monitoring
 app.use(monitor.requestTracker);
 
-// Enhanced custom domain handling middleware
+// Custom-domain helper
 app.use((req, res, next) => {
-  const host = req.get('host');
-  
-  // Handle custom domain requests with extensive logging
-  if (host === 'mylinked.app' || host === 'www.mylinked.app' || host === 'app.mylinked.app') {
+  const host = req.get("host");
+  if (host === "mylinked.app" || host === "www.mylinked.app" || host === "app.mylinked.app") {
     console.log(`✅ Custom domain request received: ${host}${req.path}`);
     console.log(`Request headers:`, {
-      host: req.get('host'),
-      'x-forwarded-for': req.get('x-forwarded-for'),
-      'user-agent': req.get('user-agent'),
-      'x-forwarded-proto': req.get('x-forwarded-proto')
+      host: req.get("host"),
+      "x-forwarded-for": req.get("x-forwarded-for"),
+      "user-agent": req.get("user-agent"),
+      "x-forwarded-proto": req.get("x-forwarded-proto"),
     });
-    
-    // Set custom domain headers
-    req.headers['x-forwarded-host'] = host;
-    req.headers['x-custom-domain'] = 'true';
-    
-    // Force HTTPS for custom domains
-    if (req.get('x-forwarded-proto') !== 'https' && req.get('x-forwarded-proto')) {
+    req.headers["x-forwarded-host"] = host;
+    req.headers["x-custom-domain"] = "true";
+    if (req.get("x-forwarded-proto") && req.get("x-forwarded-proto") !== "https") {
       console.log(`🔄 Redirecting to HTTPS: ${host}${req.path}`);
       return res.redirect(308, `https://${host}${req.path}`);
     }
   }
-  
   next();
 });
 
-app.use(session({
-  store: isProd
-    ? new PgStore({
-        pool,
-        tableName: 'session',
-        createTableIfMissing: true,
-      })
-    : undefined,
-  secret: process.env.SESSION_SECRET || 'change-me-in-env',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    sameSite: isProd ? 'none' : 'lax',
-    secure: isProd,
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-  },
-}));
+// Sessions (PG store in prod; MemoryStore in dev)
+app.use(
+  session({
+    store: isProd
+      ? new PgStore({
+          pool,
+          tableName: "session",
+          createTableIfMissing: true,
+        })
+      : undefined,
+    secret: process.env.SESSION_SECRET || "change-me-in-env",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    },
+  })
+);
 
+// Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -109,40 +108,41 @@ passport.deserializeUser(async (id: string, done) => {
   }
 });
 
-// Simple session guards
+// ---------------------------------------------------------------------------
+// Guards
+// ---------------------------------------------------------------------------
 function requireAuth(req: Request, res: Response, next: NextFunction) {
   if ((req.session as any)?.userId) return next();
-  return res.status(401).json({ message: 'Unauthorized' });
+  return res.status(401).json({ message: "Unauthorized" });
 }
 
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const role = (req.session as any)?.role;
-  if (role !== 'admin') {
-    return res.status(403).json({ message: 'Administrator privileges required' });
+  if (role !== "admin") {
+    return res.status(403).json({ message: "Administrator privileges required" });
   }
   next();
 }
 
+// ---------------------------------------------------------------------------
+// Passport strategies (username / email)
+// ---------------------------------------------------------------------------
 passport.use(
-  'local-username',
+  "local-username",
   new LocalStrategy(
-    { usernameField: 'username', passwordField: 'password' },
+    { usernameField: "username", passwordField: "password" },
     async (username, password, done) => {
-      const usernameNorm = (username || '').trim().toLowerCase();
-      console.log('DBG login uname:', usernameNorm);
+      const usernameNorm = (username || "").trim().toLowerCase();
+      console.log("DBG login uname:", usernameNorm);
       try {
         const [user] = await db
           .select()
           .from(users)
           .where(sql`lower(${users.username}) = ${usernameNorm}`)
           .limit(1);
-        if (!user) {
-          return done(null, false, { message: 'Invalid username or password' });
-        }
+        if (!user) return done(null, false, { message: "Invalid username or password" });
         const ok = await bcrypt.compare(password, (user as any).password);
-        if (!ok) {
-          return done(null, false, { message: 'Invalid username or password' });
-        }
+        if (!ok) return done(null, false, { message: "Invalid username or password" });
         return done(null, user);
       } catch (err) {
         return done(err);
@@ -152,29 +152,23 @@ passport.use(
 );
 
 passport.use(
-  'local-email',
+  "local-email",
   new LocalStrategy(
-    { usernameField: 'email', passwordField: 'password' },
+    { usernameField: "email", passwordField: "password" },
     async (email, password, done) => {
-      const emailNorm = (email || '').trim().toLowerCase();
-      console.log('DBG login email:', emailNorm);
+      const emailNorm = (email || "").trim().toLowerCase();
+      console.log("DBG login email:", emailNorm);
       try {
         const [user] = await db
           .select()
           .from(users)
           .where(sql`lower(${users.email}) = ${emailNorm}`)
           .limit(1);
-        console.log('[ADMIN LOGIN] emailNorm=', emailNorm, 'result=', !!user, 'role=', (user as any)?.role);
-        if (!user) {
-          return done(null, false, { message: 'Invalid email or password' });
-        }
-        if ((user as any).role !== 'admin') {
-          return done(null, false, { status: 403, message: 'Forbidden' });
-        }
+        console.log("[ADMIN LOGIN] emailNorm=", emailNorm, "result=", !!user, "role=", (user as any)?.role);
+        if (!user) return done(null, false, { message: "Invalid email or password" });
+        if ((user as any).role !== "admin") return done(null, false, { status: 403, message: "Forbidden" });
         const ok = await bcrypt.compare(password, (user as any).password);
-        if (!ok) {
-          return done(null, false, { message: 'Invalid email or password' });
-        }
+        if (!ok) return done(null, false, { message: "Invalid email or password" });
         return done(null, user);
       } catch (err) {
         return done(err);
@@ -183,58 +177,76 @@ passport.use(
   )
 );
 
-app.post('/api/login', async (req, res, next) => {
+// ---------------------------------------------------------------------------
+// Auth routes
+// ---------------------------------------------------------------------------
+
+// Dashboard (username) login – explicit handler with deep logs
+app.post("/api/login", async (req, res, next) => {
   try {
-    const rawUsername = String(req.body?.username ?? '');
-    const rawPassword = String(req.body?.password ?? '');
+    const rawUsername = String(req.body?.username ?? "");
+    const rawPassword = String(req.body?.password ?? "");
     const usernameNorm = rawUsername.trim().toLowerCase();
 
-    console.log('[LOGIN] username route hit');
-    console.log('[LOGIN] body keys:', Object.keys(req.body || {}));
-    console.log('[LOGIN] normalized username:', usernameNorm);
+    console.log("[LOGIN] username route hit");
+    console.log("[LOGIN] body keys:", Object.keys(req.body || {}));
+    console.log("[LOGIN] normalized username:", usernameNorm);
 
     if (!usernameNorm || !rawPassword) {
-      console.log('[LOGIN] missing credentials');
-      return res.status(400).json({ message: 'Missing credentials' });
+      console.log("[LOGIN] missing credentials");
+      return res.status(400).json({ message: "Missing credentials" });
     }
 
-    const user = await db.query.users.findFirst({
-      where: sql`lower(${users.username}) = ${usernameNorm}`,
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(sql`lower(${users.username}) = ${usernameNorm}`)
+      .limit(1);
+
+    console.log(
+      "[LOGIN] user lookup result:",
+      !!user,
+      user ? { id: (user as any).id, username: (user as any).username, email: (user as any).email } : null
+    );
+
+    if (!user) return res.status(401).json({ message: "Invalid username or password" });
+
+    const ok = await bcrypt.compare(rawPassword, (user as any).password);
+    console.log("[LOGIN] bcrypt compare =>", ok);
+    if (!ok) return res.status(401).json({ message: "Invalid username or password" });
+
+    (req.session as any).userId = (user as any).id;
+    (req.session as any).role = (user as any).role;
+
+    console.log("[LOGIN] success for:", {
+      id: (user as any).id,
+      username: (user as any).username,
+      role: (user as any).role,
     });
 
-    console.log('[LOGIN] user lookup result:', !!user, user ? { id: user.id, username: user.username, email: user.email } : null);
-
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid username or password' });
-    }
-
-    const ok = await bcrypt.compare(rawPassword, user.password as unknown as string);
-    console.log('[LOGIN] bcrypt compare =>', ok);
-
-    if (!ok) {
-      return res.status(401).json({ message: 'Invalid username or password' });
-    }
-
-    (req.session as any).userId = user.id;
-    (req.session as any).role = user.role;
-
-    console.log('[LOGIN] success for:', { id: user.id, username: user.username, role: user.role });
     return res.json({
       ok: true,
-      user: { id: user.id, username: user.username, email: user.email, name: user.name, role: user.role },
+      user: {
+        id: (user as any).id,
+        username: (user as any).username,
+        email: (user as any).email,
+        name: (user as any).name,
+        role: (user as any).role,
+      },
     });
   } catch (err) {
-    console.error('[LOGIN] error:', err);
+    console.error("[LOGIN] error:", err);
     next(err);
   }
 });
 
-app.post('/api/login-admin', (req, res, next) => {
-  passport.authenticate('local-email', (err: any, user: any, info: any) => {
+// Admin (email) login – via passport, sets session + returns dto
+app.post("/api/login-admin", (req, res, next) => {
+  passport.authenticate("local-email", (err: any, user: any, info: any) => {
     if (err) return next(err);
     if (!user) {
       const status = info?.status === 403 ? 403 : 401;
-      return res.status(status).json({ message: info?.message || 'Authentication failed' });
+      return res.status(status).json({ message: info?.message || "Authentication failed" });
     }
     req.logIn(user, (err) => {
       if (err) return next(err);
@@ -254,32 +266,34 @@ app.post('/api/login-admin', (req, res, next) => {
   })(req, res, next);
 });
 
-app.post('/api/logout', (req, res) => {
+// Logout
+app.post("/api/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
-app.get('/api/user', async (req, res) => {
+// Who am I
+app.get("/api/user", async (req, res) => {
   const userId = (req.session as any).userId;
-  if (!userId) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
+  if (!userId) return res.status(401).json({ message: "Unauthorized" });
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  if (!user) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
+  if (!user) return res.status(401).json({ message: "Unauthorized" });
   return res.json({
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    name: user.name,
-    role: user.role,
+    id: (user as any).id,
+    username: (user as any).username,
+    email: (user as any).email,
+    name: (user as any).name,
+    role: (user as any).role,
   });
 });
 
-app.get('/api/admin/summary', requireAuth, requireAdmin, (_req, res) => {
+// Simple protected admin example
+app.get("/api/admin/summary", requireAuth, requireAdmin, (_req, res) => {
   res.json({ ok: true, stats: { users: 0 } });
 });
 
+// ---------------------------------------------------------------------------
+// Debug helpers
+// ---------------------------------------------------------------------------
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 
 app.get("/api/auth/whoami", (req, res) => {
@@ -287,12 +301,12 @@ app.get("/api/auth/whoami", (req, res) => {
   res.json({ user });
 });
 
-// Optional debug endpoint to verify JSON parsing
-app.post('/api/referral-requests/debug-echo', (req, res) => {
-  console.log('[debug-echo] body ->', req.body);
+app.post("/api/referral-requests/debug-echo", (req, res) => {
+  console.log("[debug-echo] body ->", req.body);
   res.json({ ok: true, received: req.body });
 });
 
+// API response logger
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -311,11 +325,7 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
+      if (logLine.length > 80) logLine = logLine.slice(0, 79) + "…";
       log(logLine);
     }
   });
@@ -323,7 +333,9 @@ app.use((req, res, next) => {
   next();
 });
 
-
+// ---------------------------------------------------------------------------
+// Bootstrap & start
+// ---------------------------------------------------------------------------
 (async () => {
   const runMigrations = process.env.RUN_MIGRATIONS_ON_START !== "0";
   if (runMigrations) {
@@ -333,8 +345,6 @@ app.use((req, res, next) => {
       await migrate(db, { migrationsFolder });
       console.log("db bootstrap: ok");
     } catch (err: any) {
-      // Ignore "already exists" errors since some tables may have been
-      // created outside of the migrations tracked by Drizzle.
       if (err?.code === "42P07") {
         console.log("db bootstrap: tables already exist");
       } else {
@@ -349,43 +359,33 @@ app.use((req, res, next) => {
 
   app.use(referralRequestsRouter);
 
-  // Add custom domain route handler AFTER API routes are registered
-  app.get('*', (req, res, next) => {
-    const host = req.get('host');
-    
-    // If request is from custom domain and not an API route
-    if ((host === 'mylinked.app' || host === 'www.mylinked.app') && !req.path.startsWith('/api')) {
+  // Custom domain handler after API routes
+  app.get("*", (req, res, next) => {
+    const host = req.get("host");
+    if ((host === "mylinked.app" || host === "www.mylinked.app") && !req.path.startsWith("/api")) {
       console.log(`Serving custom domain request: ${host}${req.path}`);
-      // Continue to next middleware (Vite/static serving)
       next();
     } else {
-      // Continue normally
       next();
     }
   });
 
+  // Global error handler
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-    if (res.headersSent) {
-      return next(err);
-    }
+    if (res.headersSent) return next(err);
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
     console.error("Server error:", err);
     return res.status(status).json({ message });
-    // Don't throw the error again as it could crash the server
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Vite/static
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // Use the port provided by the environment (Render sets PORT)
-  // fallback to 5000 for local development
   const port = Number(process.env.PORT) || 5000;
 
   app.use((req, res, next) => {
@@ -395,23 +395,24 @@ app.use((req, res, next) => {
     next();
   });
 
-  // Add error handling for port conflicts
-  server.on('error', (err: any) => {
-    if (err.code === 'EADDRINUSE') {
+  server.on("error", (err: any) => {
+    if (err.code === "EADDRINUSE") {
       console.error(`Port ${port} is already in use. Trying to kill existing process...`);
       process.exit(1);
     } else {
-      console.error('Server error:', err);
+      console.error("Server error:", err);
       process.exit(1);
     }
   });
-  
-  server.listen({
-    port,
-    host: "0.0.0.0",
-  }, () => {
-    log(`serving on port ${port}`);
-    // Skip initialization functions for now to get app running
-    console.log('Server started successfully');
-  });
+
+  server.listen(
+    {
+      port,
+      host: "0.0.0.0",
+    },
+    () => {
+      log(`serving on port ${port}`);
+      console.log("Server started successfully");
+    }
+  );
 })();
