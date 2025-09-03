@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
 
 export function AdminProtectedRoute({
   path,
@@ -9,28 +9,7 @@ export function AdminProtectedRoute({
   path: string;
   component: () => React.JSX.Element;
 }) {
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Check if user has admin access by trying to access an admin endpoint
-    fetch("/api/admin/users-with-roles", {
-      credentials: "include",
-    })
-      .then((response) => {
-        if (response.ok) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
-      })
-      .catch(() => {
-        setIsAdmin(false);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
+  const { user, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -42,7 +21,7 @@ export function AdminProtectedRoute({
     );
   }
 
-  if (!isAdmin) {
+  if (!user || user.role !== 'admin') {
     return (
       <Route path={path}>
         <Redirect to="/admin/login" />
