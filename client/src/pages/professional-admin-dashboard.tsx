@@ -127,37 +127,37 @@ export default function ProfessionalAdminDashboard() {
   // Enhanced queries with role management
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users-with-roles"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: rolesData, isLoading: rolesLoading } = useQuery({
     queryKey: ["/api/admin/roles"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: permissionsData, isLoading: permissionsLoading } = useQuery({
     queryKey: ["/api/admin/permissions"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: employeesData, isLoading: employeesLoading } = useQuery({
     queryKey: ["/api/admin/employees"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: invitationsData, isLoading: invitationsLoading } = useQuery({
     queryKey: ["/api/admin/invitations"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/admin/professional/analytics", timeRange],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
   const { data: systemMetrics, isLoading: systemLoading } = useQuery({
     queryKey: ["/api/admin/system/metrics"],
-    enabled: user?.role === 'admin',
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
     refetchInterval: 30000,
   });
 

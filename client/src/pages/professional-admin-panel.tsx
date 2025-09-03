@@ -163,7 +163,7 @@ export default function ProfessionalAdminPanel() {
   const [editFormData, setEditFormData] = useState<Partial<User>>({});
 
   // Redirect if not admin
-  if (!authLoading && (!user || user.role !== 'admin')) {
+  if (!authLoading && (!user || (user.role !== 'admin' && user.role !== 'super_admin'))) {
     return <Redirect to="/" />;
   }
 
@@ -178,32 +178,32 @@ export default function ProfessionalAdminPanel() {
   // Fetch comprehensive admin data
   const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
     queryKey: ["/api/admin/analytics"],
-    enabled: user?.role === 'admin'
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users"],
-    enabled: user?.role === 'admin'
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
   const { data: systemMetrics, isLoading: metricsLoading } = useQuery({
     queryKey: ["/api/admin/system-metrics"],
-    enabled: user?.role === 'admin'
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
   const { data: featuresData, isLoading: featuresLoading } = useQuery({
     queryKey: ["/api/admin/features"],
-    enabled: user?.role === 'admin'
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
   const { data: auditLogs, isLoading: logsLoading } = useQuery({
     queryKey: ["/api/admin/audit-logs"],
-    enabled: user?.role === 'admin'
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
   const { data: rolesData, isLoading: rolesLoading } = useQuery({
     queryKey: ["/api/admin/roles"],
-    enabled: user?.role === 'admin'
+    enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
   // Mutations for user management
@@ -686,8 +686,8 @@ export default function ProfessionalAdminPanel() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={(user.role || user.isAdmin) === 'admin' || user.isAdmin ? 'default' : 'secondary'}>
-                            {(user.isAdmin || user.role === 'admin') && <Crown className="h-3 w-3 mr-1" />}
+                          <Badge variant={(user.role === 'admin' || user.role === 'super_admin' || user.isAdmin) ? 'default' : 'secondary'}>
+                            {(user.isAdmin || user.role === 'admin' || user.role === 'super_admin') && <Crown className="h-3 w-3 mr-1" />}
                             {(user.role || (user.isAdmin ? 'admin' : 'user')).charAt(0).toUpperCase() + (user.role || (user.isAdmin ? 'admin' : 'user')).slice(1)}
                           </Badge>
                         </TableCell>

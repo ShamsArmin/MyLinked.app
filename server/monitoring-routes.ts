@@ -6,7 +6,8 @@ export const monitoringRouter = Router();
 
 // Admin-only middleware (you can adjust this based on your admin system)
 function isAdmin(req: any, res: any, next: any) {
-  if (req.user && req.user.role === 'admin') {
+  const role = req.user?.role;
+  if (role === 'admin' || role === 'super_admin') {
     next();
   } else {
     res.status(403).json({ error: 'Admin access required' });

@@ -77,7 +77,8 @@ professionalAdminRouter.post("/logout", (req: Request, res: Response) => {
 // Middleware to check admin privileges
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const user = req.user as any;
-  if (!user || (!user.isAdmin && user.role !== 'admin')) {
+  const role = user?.role;
+  if (!user || (!user.isAdmin && role !== 'admin' && role !== 'super_admin')) {
     return res.status(403).json({ message: "Administrator privileges required" });
   }
   next();
