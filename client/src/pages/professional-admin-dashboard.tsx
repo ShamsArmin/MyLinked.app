@@ -32,6 +32,7 @@ import { useLocation } from "wouter";
 import { EmailManagement } from "@/components/email-management";
 import { AICampaignManager } from "@/components/ai-campaign-manager";
 import { UserActionsMenu } from "@/components/admin/user-actions-menu";
+import { SegmentActionsMenu } from "@/components/admin/segment-actions-menu";
 
 // Role and Permission types
 interface Role {
@@ -84,6 +85,8 @@ interface Segment {
   type: 'dynamic' | 'static';
   memberCount?: number | null;
   lastRefreshedAt?: string | null;
+  ownerName?: string | null;
+  tags?: string[] | null;
 }
 
 export default function ProfessionalAdminDashboard() {
@@ -210,6 +213,57 @@ export default function ProfessionalAdminDashboard() {
       toast({ title: 'Segment updated' });
     } catch {
       toast({ title: 'Failed to update segment', variant: 'destructive' });
+    }
+  };
+
+  const handlePreviewMembers = (segment: Segment) => {
+    toast({ title: `Previewing ${segment.name}`, description: 'Preview not implemented' });
+  };
+
+  const handleRefreshSegment = async (segment: Segment) => {
+    try {
+      await apiRequest('POST', `/api/admin/segments/${segment.id}/refresh`);
+      queryClient.invalidateQueries({ queryKey: ['segments'] });
+      toast({ title: 'Segment refreshed' });
+    } catch {
+      toast({ title: 'Failed to refresh segment', variant: 'destructive' });
+    }
+  };
+
+  const handleSnapshotSegment = async (segment: Segment) => {
+    try {
+      await apiRequest('POST', `/api/admin/segments/${segment.id}/snapshot`);
+      toast({ title: 'Snapshot created' });
+    } catch {
+      toast({ title: 'Failed to create snapshot', variant: 'destructive' });
+    }
+  };
+
+  const handleBulkAction = (segment: Segment, action: string) => {
+    toast({ title: `Bulk action: ${action}`, description: 'Not implemented' });
+  };
+
+  const handleAttachAbTest = (segment: Segment) => {
+    toast({ title: 'Attach to A/B test', description: 'Not implemented' });
+  };
+
+  const handleDuplicateSegment = (segment: Segment) => {
+    toast({ title: 'Duplicate segment', description: 'Not implemented' });
+  };
+
+  const handleArchiveSegment = (segment: Segment) => {
+    toast({ title: 'Archive segment', description: 'Not implemented' });
+  };
+
+  const handleDeleteSegment = async (segment: Segment) => {
+    const confirmed = window.confirm(`Delete segment "${segment.name}"?`);
+    if (!confirmed) return;
+    try {
+      await apiRequest('DELETE', `/api/admin/segments/${segment.id}`);
+      queryClient.invalidateQueries({ queryKey: ['segments'] });
+      toast({ title: 'Segment deleted' });
+    } catch {
+      toast({ title: 'Failed to delete segment', variant: 'destructive' });
     }
   };
 
@@ -1162,38 +1216,47 @@ export default function ProfessionalAdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {segments.map(segment => (
-                    <div key={segment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">{segment.name}</h4>
-                        {segment.description && (
-                          <p className="text-sm text-muted-foreground">{segment.description}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-sm text-right">
-                          <div className="font-medium">{segment.memberCount ?? 0} users</div>
-                          {segment.lastRefreshedAt && (
-                            <div className="text-muted-foreground">
-                              {new Date(segment.lastRefreshedAt).toLocaleDateString()}
-                            </div>
-                          )}
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setEditingSegment(segment);
-                            setEditSegmentData({ name: segment.name, description: segment.description || '' });
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Members</TableHead>
+                      <TableHead>Last refresh</TableHead>
+                      <TableHead>Owner</TableHead>
+                      <TableHead>Tags</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {segments.map(segment => (
+                      <TableRow key={segment.id}>
+                        <TableCell className="font-medium">{segment.name}</TableCell>
+                        <TableCell className="capitalize">{segment.type}</TableCell>
+                        <TableCell>{segment.memberCount ?? 0}</TableCell>
+                        <TableCell>{segment.lastRefreshedAt ? new Date(segment.lastRefreshedAt).toLocaleDateString() : '-'}</TableCell>
+                        <TableCell>{segment.ownerName || '-'}</TableCell>
+                        <TableCell>{segment.tags && segment.tags.length ? segment.tags.join(', ') : '-'}</TableCell>
+                        <TableCell className="text-right">
+                          <SegmentActionsMenu
+                            onEdit={() => {
+                              setEditingSegment(segment);
+                              setEditSegmentData({ name: segment.name, description: segment.description || '' });
+                            }}
+                            onPreview={() => handlePreviewMembers(segment)}
+                            onRefresh={() => handleRefreshSegment(segment)}
+                            onSnapshot={() => handleSnapshotSegment(segment)}
+                            onBulkAction={(action) => handleBulkAction(segment, action)}
+                            onAttachAbTest={() => handleAttachAbTest(segment)}
+                            onDuplicate={() => handleDuplicateSegment(segment)}
+                            onArchive={() => handleArchiveSegment(segment)}
+                            onDelete={() => handleDeleteSegment(segment)}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
             <Dialog open={segmentDialogOpen} onOpenChange={setSegmentDialogOpen}>
