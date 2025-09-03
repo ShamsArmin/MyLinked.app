@@ -735,7 +735,7 @@ export function AICampaignManager() {
                   </div>
                 </CardContent>
               </Card>
-            });
+            ))}
           </div>
         </TabsContent>
         
