@@ -218,6 +218,8 @@ export function AICampaignManager() {
   useEffect(() => {
     const savedAutomation = localStorage.getItem('automationToggles');
     const savedScheduled = localStorage.getItem('scheduledToggles');
+    const savedCampaigns = localStorage.getItem('aiCampaigns');
+    const savedTemplates = localStorage.getItem('aiTemplates');
     if (savedAutomation) {
       try {
         setAutomationToggles(JSON.parse(savedAutomation));
@@ -232,7 +234,37 @@ export function AICampaignManager() {
         // ignore parse error
       }
     }
+    if (savedCampaigns) {
+      try {
+        setCampaigns(JSON.parse(savedCampaigns));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
+    if (savedTemplates) {
+      try {
+        setTemplates(JSON.parse(savedTemplates));
+      } catch (_) {
+        // ignore parse error
+      }
+    }
   }, []);
+
+  const persistCampaigns = (updater: (prev: Campaign[]) => Campaign[]) => {
+    setCampaigns(prev => {
+      const updated = updater(prev);
+      localStorage.setItem('aiCampaigns', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const persistTemplates = (updater: (prev: Template[]) => Template[]) => {
+    setTemplates(prev => {
+      const updated = updater(prev);
+      localStorage.setItem('aiTemplates', JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   const updateAutomationToggle = (key: keyof typeof automationToggles, value: boolean) => {
     setAutomationToggles(prev => {
@@ -299,7 +331,7 @@ export function AICampaignManager() {
       nextSend: newCampaignAutoSend ? 'Scheduled' : 'Not scheduled',
       template: newCampaignTemplate || (templates[0]?.id || ''),
     };
-    setCampaigns(prev => [...prev, newCampaign]);
+    persistCampaigns(prev => [...prev, newCampaign]);
     toast({
       title: "Campaign created",
       description: "Your campaign has been created successfully.",
@@ -323,7 +355,7 @@ export function AICampaignManager() {
       lastUsed: 'Just now',
       performance: 0,
     };
-    setTemplates(prev => [...prev, newTemplate]);
+    persistTemplates(prev => [...prev, newTemplate]);
     toast({
       title: "Template generated",
       description: "AI template generated successfully.",
@@ -338,7 +370,7 @@ export function AICampaignManager() {
 
   const handleUpdateCampaign = () => {
     if (editCampaign) {
-      setCampaigns(prev => prev.map(c => c.id === editCampaign.id ? editCampaign : c));
+      persistCampaigns(prev => prev.map(c => c.id === editCampaign.id ? editCampaign : c));
       toast({
         title: "Campaign updated",
         description: `"${editCampaign.name}" has been updated.`,
@@ -351,7 +383,7 @@ export function AICampaignManager() {
 
   const handleUpdateTemplate = () => {
     if (editTemplate) {
-      setTemplates(prev => prev.map(t => t.id === editTemplate.id ? editTemplate : t));
+      persistTemplates(prev => prev.map(t => t.id === editTemplate.id ? editTemplate : t));
       toast({
         title: "Template updated",
         description: `"${editTemplate.name}" has been updated.`,
