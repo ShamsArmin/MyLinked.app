@@ -52,12 +52,12 @@ export interface IStorage {
   resetPassword(token: string, newPassword: string): Promise<User | undefined>;
   
   // Links
-  getLinks(userId: string): Promise<Link[]>;
+  getLinks(userId: number): Promise<Link[]>;
   getLinkById(id: number): Promise<Link | undefined>;
-  createLink(userId: string, link: InsertLink): Promise<Link>;
+  createLink(userId: number, link: InsertLink): Promise<Link>;
   updateLink(id: number, updates: UpdateLink): Promise<Link | undefined>;
-  deleteLink(id: number, userId?: string): Promise<boolean>;
-  deleteLinkOwned(id: number, userId: string): Promise<boolean>;
+  deleteLink(id: number, userId?: number): Promise<boolean>;
+  deleteLinkOwned(id: number, userId: number): Promise<boolean>;
   incrementLinkClicks(id: number): Promise<Link | undefined>;
   incrementLinkViews(id: number): Promise<Link | undefined>;
   updateLinkAiScore(id: number, score: number): Promise<Link | undefined>;
@@ -111,9 +111,9 @@ export interface IStorage {
   discoverUsers(userId: number, filters: any): Promise<User[]>;
   
   // Referral Links Feature
-  getReferralLinks(userId: string): Promise<ReferralLink[]>;
+  getReferralLinks(userId: number): Promise<ReferralLink[]>;
   getReferralLinkById(id: number): Promise<ReferralLink | undefined>;
-  createReferralLink(userId: string, link: InsertReferralLink): Promise<ReferralLink>;
+  createReferralLink(userId: number, link: InsertReferralLink): Promise<ReferralLink>;
   updateReferralLink(id: number, updates: Partial<InsertReferralLink>): Promise<ReferralLink | undefined>;
   deleteReferralLink(id: number): Promise<boolean>;
   incrementReferralLinkClicks(id: number): Promise<ReferralLink | undefined>;

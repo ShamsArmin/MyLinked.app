@@ -9,7 +9,7 @@ export type NotificationItem = {
   link?: string;
 };
 
-export function useNotifications(userId?: string) {
+export function useNotifications(userId?: number) {
   const enabled = Boolean(userId);
 
   return useQuery<NotificationItem[]>({
@@ -35,11 +35,11 @@ export function useNotifications(userId?: string) {
 export function useNotificationsActions() {
   const qc = useQueryClient();
   return {
-    invalidateByUser: async (userId?: string) =>
+    invalidateByUser: async (userId?: number) =>
       qc.invalidateQueries({ queryKey: ['notifications', userId] }),
     removeAll: async () =>
       qc.removeQueries({ queryKey: ['notifications'] }),
-    setWarmData: (userId: string, data: NotificationItem[]) =>
+    setWarmData: (userId: number, data: NotificationItem[]) =>
       qc.setQueryData(['notifications', userId], data),
   };
 }

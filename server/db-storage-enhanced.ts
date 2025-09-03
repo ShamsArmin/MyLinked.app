@@ -370,7 +370,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Link methods
-  async getLinks(userId: string): Promise<Link[]> {
+  async getLinks(userId: number): Promise<Link[]> {
     return db
       .select()
       .from(links)
@@ -388,7 +388,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Backfill links that have null owner to the provided user
-  async createLink(userId: string, linkData: any): Promise<Link> {
+  async createLink(userId: number, linkData: any): Promise<Link> {
     // Get the count of existing links to set the order
     const [result] = await db
       .select({ count: count() })
@@ -427,7 +427,7 @@ export class EnhancedDatabaseStorage implements IStorage {
     return link;
   }
 
-  async deleteLink(id: number, userId?: string): Promise<boolean> {
+  async deleteLink(id: number, userId?: number): Promise<boolean> {
     if (userId) {
       const result = await db
         .delete(links)
@@ -440,7 +440,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Delete link enforcing ownership but allowing legacy null owners
-  async deleteLinkOwned(id: number, userId: string): Promise<boolean> {
+  async deleteLinkOwned(id: number, userId: number): Promise<boolean> {
     const res = await db
       .delete(links)
       .where(and(eq(links.id, id), eq(links.userId, userId)));
@@ -1069,7 +1069,7 @@ export class EnhancedDatabaseStorage implements IStorage {
     `);
   }
 
-  async getSkills(userId: string): Promise<any[]> {
+  async getSkills(userId: number): Promise<any[]> {
     await this.ensureUserSkillsTable();
     try {
       const rows = await db.execute(
@@ -1146,7 +1146,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Referral Links Feature
-  async getReferralLinks(userId: string): Promise<ReferralLink[]> {
+  async getReferralLinks(userId: number): Promise<ReferralLink[]> {
     return await db
       .select()
       .from(referralLinks)
@@ -1162,7 +1162,7 @@ export class EnhancedDatabaseStorage implements IStorage {
     return link;
   }
 
-  async createReferralLink(userId: string, link: InsertReferralLink): Promise<ReferralLink> {
+  async createReferralLink(userId: number, link: InsertReferralLink): Promise<ReferralLink> {
     const [newLink] = await db
       .insert(referralLinks)
       .values({
@@ -1903,7 +1903,7 @@ export class EnhancedDatabaseStorage implements IStorage {
   }
 
   // Skills methods that are missing
-  async addUserSkill(userId: string, skill: string, level: number = 3): Promise<any> {
+  async addUserSkill(userId: number, skill: string, level: number = 3): Promise<any> {
     await this.ensureUserSkillsTable();
     const result = await db.execute(
       sql`INSERT INTO user_skills (user_id, skill, level)

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, json, boolean, varchar, jsonb, decimal, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, json, boolean, varchar, jsonb, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations, sql } from "drizzle-orm";
@@ -14,7 +14,7 @@ export const sessions = pgTable("sessions", {
 export const oauthStates = pgTable("oauth_states", {
   id: serial("id").primaryKey(),
   state: text("state").notNull().unique(),
-  userId: uuid("user_id").notNull(),
+  userId: integer("user_id").notNull(),
   platform: text("platform").notNull(),
   codeVerifier: text("code_verifier"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -31,7 +31,7 @@ export const industries = pgTable("industries", {
 
 // Users table
 export const users = pgTable("users", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   name: text("name").notNull(),
@@ -89,7 +89,7 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
 // User themes table for custom theme preferences
 export const userThemes = pgTable("user_themes", {
   id: serial("id").primaryKey(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   themeId: text("theme_id").notNull(),
   name: text("name").notNull(),
   colors: jsonb("colors").notNull(),
@@ -106,7 +106,7 @@ export const featureToggles = pgTable("feature_toggles", {
   featureName: text("feature_name").notNull().unique(),
   isEnabled: boolean("is_enabled").default(true),
   description: text("description"),
-  updatedBy: uuid("updated_by").references(() => users.id),
+  updatedBy: integer("updated_by").references(() => users.id),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
@@ -116,7 +116,7 @@ export const systemLogs = pgTable("system_logs", {
   level: text("level").notNull(), // error, warning, info
   message: text("message").notNull(),
   source: text("source"), // oauth, api, auth, etc.
-  userId: uuid("user_id").references(() => users.id),
+  userId: integer("user_id").references(() => users.id),
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -154,21 +154,21 @@ export const permissions = pgTable("permissions", {
 
 export const userRoles = pgTable("user_roles", {
   id: serial("id").primaryKey(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   roleId: integer("role_id").references(() => roles.id, { onDelete: "cascade" }).notNull(),
-  assignedBy: uuid("assigned_by").references(() => users.id),
+  assignedBy: integer("assigned_by").references(() => users.id),
   assignedAt: timestamp("assigned_at").defaultNow(),
 });
 
 export const employeeProfiles = pgTable("employee_profiles", {
   id: serial("id").primaryKey(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   employeeId: varchar("employee_id", { length: 20 }).unique(),
   department: varchar("department", { length: 100 }),
   position: varchar("position", { length: 100 }),
   salary: integer("salary"),
   hireDate: timestamp("hire_date"),
-  manager: uuid("manager").references(() => users.id),
+  manager: integer("manager").references(() => users.id),
   workLocation: varchar("work_location", { length: 100 }),
   workType: varchar("work_type", { length: 50 }), // full-time, part-time, contract, intern
   status: varchar("status", { length: 50 }).default("active"), // active, inactive, terminated
@@ -197,13 +197,13 @@ export const userThemesRelations = relations(userThemes, ({ one }) => ({
 // Referral Links table
 export const referralLinks = pgTable("referral_links", {
   id: serial("id").primaryKey(),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   title: text("title").notNull(),
   url: text("url").notNull(),
   description: text("description"),
   image: text("image"), // Small logo or profile image
   linkType: text("link_type").notNull().default("friend"), // friend, sponsor, affiliate
-  referenceUserId: uuid("reference_user_id").references(() => users.id),
+  referenceUserId: integer("reference_user_id").references(() => users.id),
   referenceCompany: text("reference_company"),
   clicks: integer("clicks").default(0),
   createdAt: timestamp("created_at").defaultNow(),
@@ -240,7 +240,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
 // Links table
 export const links = pgTable("links", {
   id: serial("id").primaryKey(),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   platform: text("platform").notNull(),
   title: text("title").notNull(),
   url: text("url").notNull(),
@@ -267,7 +267,7 @@ export const linksRelations = relations(links, ({ one }) => ({
 // Profile views table
 export const profileViews = pgTable("profile_views", {
   id: serial("id").primaryKey(),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   viewedAt: timestamp("viewed_at").defaultNow(),
   referrer: text("referrer"),
   userAgent: text("user_agent"),
@@ -285,8 +285,8 @@ export const profileViewsRelations = relations(profileViews, ({ one }) => ({
 // Follows table
 export const follows = pgTable("follows", {
   id: serial("id").primaryKey(),
-  followerId: uuid("follower_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  followingId: uuid("following_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  followerId: integer("follower_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  followingId: integer("following_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -307,7 +307,7 @@ export const followsRelations = relations(follows, ({ one }) => ({
 // Social media connections table for OAuth tokens
 export const socialConnections = pgTable("social_connections", {
   id: serial("id").primaryKey(),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   platform: text("platform").notNull(), // instagram, facebook, linkedin, twitter, tiktok
   accessToken: text("access_token").notNull(),
   refreshToken: text("refresh_token"),
@@ -321,7 +321,7 @@ export const socialConnections = pgTable("social_connections", {
 // Instagram content preview table - replaces Live Profile Feed
 export const instagramPreviews = pgTable("instagram_previews", {
   id: serial("id").primaryKey(),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   postId: text("post_id").notNull().unique(), // Instagram media ID
   imageUrl: text("image_url").notNull(),
   thumbnailUrl: text("thumbnail_url"),
@@ -336,7 +336,7 @@ export const instagramPreviews = pgTable("instagram_previews", {
 // Social posts table (kept for other platforms)
 export const socialPosts = pgTable("social_posts", {
   id: serial("id").primaryKey(),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   platform: text("platform").notNull(), // facebook, tiktok, youtube, etc.
   postUrl: text("post_url").notNull(),
   thumbnailUrl: text("thumbnail_url"),
@@ -540,7 +540,7 @@ export type ProfileStats = {
 // Collaborative Spotlight Projects
 export const spotlightProjects = pgTable("spotlight_projects", {
   id: serial("id").primaryKey(),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 100 }).notNull(),
   url: varchar("url", { length: 1000 }).notNull(),
   description: text("description"),
@@ -564,7 +564,7 @@ export const spotlightProjectsRelations = relations(spotlightProjects, ({ many, 
 export const spotlightContributors = pgTable("spotlight_contributors", {
   id: serial("id").primaryKey(),
   projectId: integer("project_id").notNull().references(() => spotlightProjects.id, { onDelete: "cascade" }),
-  userId: uuid("user_id").references(() => users.id),
+  userId: integer("user_id").references(() => users.id),
   name: varchar("name", { length: 100 }).notNull(),
   email: varchar("email", { length: 255 }),
   role: varchar("role", { length: 50 }),
@@ -601,7 +601,7 @@ export const spotlightTagsRelations = relations(spotlightTags, ({ one }) => ({
 // Referral requests table for notifications
 export const referralRequests = pgTable("referral_requests", {
   id: serial("id").primaryKey(),
-  targetUserId: uuid("target_user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  targetUserId: integer("target_user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   requesterName: varchar("requester_name", { length: 100 }).notNull(),
   requesterEmail: varchar("requester_email", { length: 255 }).notNull(),
   requesterPhone: varchar("requester_phone", { length: 50 }),
@@ -642,7 +642,7 @@ export const updateReferralRequestSchema = createInsertSchema(referralRequests).
 // Collaboration requests table for notifications - different from the existing collaboration system
 export const collaborationRequestsNotifications = pgTable("collaboration_requests_notifications", {
   id: serial("id").primaryKey(),
-  targetUserId: uuid("target_user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  targetUserId: integer("target_user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   requesterName: varchar("requester_name", { length: 100 }).notNull(),
   requesterEmail: varchar("requester_email", { length: 255 }).notNull(),
   requesterCompany: varchar("requester_company", { length: 255 }),
@@ -686,7 +686,7 @@ export type ContributorInput = {
   email?: string;
   role?: string;
   isRegisteredUser?: boolean;
-  userId?: string;
+  userId?: number;
 };
 
 export type TagInput = {
@@ -711,7 +711,7 @@ export const createSpotlightProjectSchema = createInsertSchema(spotlightProjects
         email: z.string().email().optional(),
         role: z.string().optional(),
         isRegisteredUser: z.boolean().optional().default(false),
-        userId: z.string().optional(),
+        userId: z.number().optional(),
       })
     ).optional(),
     tags: z.array(
@@ -784,12 +784,12 @@ export const userReports = pgTable("user_reports", {
   id: serial("id").primaryKey(),
   reporterName: text("reporter_name"),
   reporterEmail: text("reporter_email"),
-  reportedUserId: uuid("reported_user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  reportedUserId: integer("reported_user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   reportedUsername: text("reported_username"),
   reason: text("reason").notNull(), // harassment, inappropriate_content, spam, fake_account, copyright_violation, other
   description: text("description").notNull(),
   status: text("status").default("pending"), // pending, reviewed, resolved, dismissed
-  reviewedBy: uuid("reviewed_by").references(() => users.id),
+  reviewedBy: integer("reviewed_by").references(() => users.id),
   adminNotes: text("admin_notes"),
   createdAt: timestamp("created_at").defaultNow(),
   reviewedAt: timestamp("reviewed_at"),
@@ -859,8 +859,8 @@ export type UpdateUserReport = z.infer<typeof updateUserReportSchema>;
 // Collaboration Requests table (new clean implementation)
 export const collaborationRequests = pgTable("collaboration_requests", {
   id: serial("id").primaryKey(),
-  senderId: uuid("sender_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  receiverId: uuid("receiver_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  senderId: integer("sender_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  receiverId: integer("receiver_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone"),
