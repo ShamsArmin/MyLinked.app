@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ElementType } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -76,6 +77,17 @@ interface AbTest {
   details?: string;
 }
 
+interface Segment {
+  id: string;
+  name: string;
+  description: string;
+  users: number;
+  percent: string;
+  icon: ElementType;
+  iconBg: string;
+  iconColor: string;
+}
+
 export default function ProfessionalAdminDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -124,6 +136,33 @@ export default function ProfessionalAdminDashboard() {
     performanceRating: "",
   });
 
+  const [segments, setSegments] = useState<Segment[]>([
+    {
+      id: 'premium',
+      name: 'Premium Users',
+      description: 'Users with paid subscriptions',
+      users: 2456,
+      percent: '18% of total',
+      icon: Crown,
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+    },
+    {
+      id: 'engaged',
+      name: 'Highly Engaged',
+      description: 'Users with 5+ sessions/week',
+      users: 5678,
+      percent: '42% of total',
+      icon: Activity,
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
+    },
+  ]);
+  const [segmentDialogOpen, setSegmentDialogOpen] = useState(false);
+  const [newSegment, setNewSegment] = useState({ name: '', description: '' });
+  const [editingSegment, setEditingSegment] = useState<Segment | null>(null);
+  const [editSegmentData, setEditSegmentData] = useState({ name: '', description: '' });
+
   const [abTests, setAbTests] = useState<AbTest[]>([
     {
       id: '1',
@@ -164,6 +203,34 @@ export default function ProfessionalAdminDashboard() {
       localStorage.setItem('adminAbTests', JSON.stringify(updated));
       return updated;
     });
+  };
+
+  const handleAddSegment = () => {
+    const newSeg: Segment = {
+      id: Date.now().toString(),
+      name: newSegment.name || 'Untitled Segment',
+      description: newSegment.description || '',
+      users: 0,
+      percent: '0% of total',
+      icon: Users2,
+      iconBg: 'bg-gray-100',
+      iconColor: 'text-gray-600',
+    };
+    setSegments(prev => [...prev, newSeg]);
+    setNewSegment({ name: '', description: '' });
+    setSegmentDialogOpen(false);
+  };
+
+  const handleUpdateSegment = () => {
+    if (!editingSegment) return;
+    setSegments(prev =>
+      prev.map(seg =>
+        seg.id === editingSegment.id
+          ? { ...seg, name: editSegmentData.name, description: editSegmentData.description }
+          : seg
+      )
+    );
+    setEditingSegment(null);
   };
 
   const handleCreateAbTest = () => {
@@ -1108,60 +1175,94 @@ export default function ProfessionalAdminDashboard() {
                     <CardTitle>User Segmentation</CardTitle>
                     <CardDescription>Create and manage user segments</CardDescription>
                   </div>
-                  <Button>
-                    <Users2 className="h-4 w-4 mr-2" />
-                    New Segment
-                  </Button>
+                  <Dialog open={segmentDialogOpen} onOpenChange={setSegmentDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Users2 className="h-4 w-4 mr-2" />
+                        New Segment
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>New Segment</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Name</Label>
+                          <Input value={newSegment.name} onChange={(e) => setNewSegment({ ...newSegment, name: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Description</Label>
+                          <Textarea value={newSegment.description} onChange={(e) => setNewSegment({ ...newSegment, description: e.target.value })} />
+                        </div>
+                      </div>
+                      <div className="mt-4 flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setSegmentDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleAddSegment}>Save</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <Crown className="h-5 w-5 text-purple-600" />
+                  {segments.map(segment => {
+                    const Icon = segment.icon;
+                    return (
+                      <div key={segment.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 ${segment.iconBg} rounded-lg flex items-center justify-center`}>
+                            <Icon className={`h-5 w-5 ${segment.iconColor}`} />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{segment.name}</h4>
+                            <p className="text-sm text-muted-foreground">{segment.description}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <Badge variant="secondary" className="bg-green-100 text-green-700">Active</Badge>
+                          <div className="text-sm">
+                            <div className="font-medium">{segment.users.toLocaleString()} users</div>
+                            <div className="text-muted-foreground">{segment.percent}</div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingSegment(segment);
+                              setEditSegmentData({ name: segment.name, description: segment.description });
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium">Premium Users</h4>
-                        <p className="text-sm text-muted-foreground">Users with paid subscriptions</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">Active</Badge>
-                      <div className="text-sm">
-                        <div className="font-medium">2,456 users</div>
-                        <div className="text-muted-foreground">18% of total</div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Activity className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Highly Engaged</h4>
-                        <p className="text-sm text-muted-foreground">Users with 5+ sessions/week</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">Active</Badge>
-                      <div className="text-sm">
-                        <div className="font-medium">5,678 users</div>
-                        <div className="text-muted-foreground">42% of total</div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
+            <Dialog open={!!editingSegment} onOpenChange={(open) => !open && setEditingSegment(null)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Segment</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Name</Label>
+                    <Input value={editSegmentData.name} onChange={(e) => setEditSegmentData({ ...editSegmentData, name: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea value={editSegmentData.description} onChange={(e) => setEditSegmentData({ ...editSegmentData, description: e.target.value })} />
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setEditingSegment(null)}>Cancel</Button>
+                  <Button onClick={handleUpdateSegment}>Save</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Conversion Tracking */}
