@@ -189,8 +189,8 @@ export default function EnhancedAdminPanel() {
                          u.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          u.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesFilter = userFilter === "all" || 
-                         (userFilter === "admin" && u.role === 'admin') ||
+    const matchesFilter = userFilter === "all" ||
+                         (userFilter === "admin" && (u.role === 'admin' || u.isAdmin)) ||
                          (userFilter === "active" && u.isActive !== false) ||
                          (userFilter === "inactive" && u.isActive === false);
     

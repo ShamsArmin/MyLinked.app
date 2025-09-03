@@ -30,6 +30,7 @@ adminRouter.get("/users", async (req: Request, res: Response) => {
         username: users.username,
         name: users.name,
         email: users.email,
+        role: users.role,
         bio: users.bio,
         location: users.location,
         isAdmin: users.isAdmin,

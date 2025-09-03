@@ -637,7 +637,7 @@ export default function ProfessionalAdminPanel() {
                       <TableHead className="w-12">
                         <input
                           type="checkbox"
-                          checked={selectedUsers.length === filteredUsers.length}
+                          checked={filteredUsers.length > 0 && selectedUsers.length === filteredUsers.length}
                           onChange={(e) => {
                             if (e.target.checked) {
                               setSelectedUsers(filteredUsers.map(u => u.id));
