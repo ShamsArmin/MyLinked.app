@@ -132,12 +132,15 @@ export function AICampaignManager() {
   const { toast } = useToast();
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [editCampaign, setEditCampaign] = useState<Campaign | null>(null);
+  const [editTemplate, setEditTemplate] = useState<Template | null>(null);
   const [analyticsViewCampaign, setAnalyticsViewCampaign] = useState<Campaign | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
   const [newCampaignDialog, setNewCampaignDialog] = useState(false);
   const [newTemplateDialog, setNewTemplateDialog] = useState(false);
   const [newTestDialog, setNewTestDialog] = useState(false);
   const [campaigns, setCampaigns] = useState(mockCampaigns);
+  const [templates, setTemplates] = useState(mockTemplates);
 
   const toggleCampaignStatus = (campaignId: string) => {
     setCampaigns(prev => prev.map(campaign => {
@@ -194,21 +197,29 @@ export function AICampaignManager() {
   };
 
   const handleUpdateCampaign = () => {
-    toast({
-      title: "Campaign updated",
-      description: selectedCampaign ? `"${selectedCampaign.name}" has been updated.` : undefined,
-      duration: 3000,
-    });
+    if (editCampaign) {
+      setCampaigns(prev => prev.map(c => c.id === editCampaign.id ? editCampaign : c));
+      toast({
+        title: "Campaign updated",
+        description: `"${editCampaign.name}" has been updated.`,
+        duration: 3000,
+      });
+    }
     setSelectedCampaign(null);
+    setEditCampaign(null);
   };
 
   const handleUpdateTemplate = () => {
-    toast({
-      title: "Template updated",
-      description: selectedTemplate ? `"${selectedTemplate.name}" has been updated.` : undefined,
-      duration: 3000,
-    });
+    if (editTemplate) {
+      setTemplates(prev => prev.map(t => t.id === editTemplate.id ? editTemplate : t));
+      toast({
+        title: "Template updated",
+        description: `"${editTemplate.name}" has been updated.`,
+        duration: 3000,
+      });
+    }
     setSelectedTemplate(null);
+    setEditTemplate(null);
   };
 
   const getStatusColor = (status: Campaign['status']) => {
@@ -283,7 +294,7 @@ export function AICampaignManager() {
                       <SelectValue placeholder="Select template" />
                     </SelectTrigger>
                     <SelectContent>
-                      {mockTemplates.map(template => (
+                      {templates.map(template => (
                         <SelectItem key={template.id} value={template.id}>
                           {template.name}
                         </SelectItem>
@@ -481,10 +492,13 @@ export function AICampaignManager() {
                         {campaign.status}
                       </Badge>
                       <div className="flex space-x-2">
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
-                          onClick={() => setSelectedCampaign(campaign)}
+                          onClick={() => {
+                            setSelectedCampaign(campaign);
+                            setEditCampaign({ ...campaign });
+                          }}
                           title="Edit Campaign"
                         >
                           <Edit className="w-4 h-4" />
@@ -524,7 +538,7 @@ export function AICampaignManager() {
         
         <TabsContent value="templates" className="space-y-4">
           <div className="grid gap-4">
-            {mockTemplates.map(template => (
+            {templates.map(template => (
               <Card key={template.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -556,10 +570,13 @@ export function AICampaignManager() {
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
-                          onClick={() => setSelectedTemplate(template)}
+                          onClick={() => {
+                            setSelectedTemplate(template);
+                            setEditTemplate({ ...template });
+                          }}
                           title="Edit Template"
                         >
                           <Edit className="w-4 h-4" />
@@ -923,25 +940,34 @@ export function AICampaignManager() {
       </Tabs>
 
       {/* Edit Campaign Dialog */}
-      <Dialog open={!!selectedCampaign} onOpenChange={(open) => !open && setSelectedCampaign(null)}>
+      <Dialog open={!!selectedCampaign} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedCampaign(null);
+          setEditCampaign(null);
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Campaign: {selectedCampaign?.name}</DialogTitle>
+            <DialogTitle>Edit Campaign: {editCampaign?.name}</DialogTitle>
           </DialogHeader>
-          {selectedCampaign && (
+          {editCampaign && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-campaign-name">Campaign Name</Label>
-                  <Input 
-                    id="edit-campaign-name" 
-                    defaultValue={selectedCampaign.name}
-                    placeholder="e.g., Summer Promotion" 
+                  <Input
+                    id="edit-campaign-name"
+                    value={editCampaign.name}
+                    onChange={(e) => setEditCampaign(prev => prev ? { ...prev, name: e.target.value } : prev)}
+                    placeholder="e.g., Summer Promotion"
                   />
                 </div>
                 <div>
                   <Label htmlFor="edit-campaign-status">Status</Label>
-                  <Select defaultValue={selectedCampaign.status}>
+                  <Select
+                    value={editCampaign.status}
+                    onValueChange={(value) => setEditCampaign(prev => prev ? { ...prev, status: value as Campaign['status'] } : prev)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -957,7 +983,10 @@ export function AICampaignManager() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-campaign-type">Campaign Type</Label>
-                  <Select defaultValue={selectedCampaign.type}>
+                  <Select
+                    value={editCampaign.type}
+                    onValueChange={(value) => setEditCampaign(prev => prev ? { ...prev, type: value as Campaign['type'] } : prev)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -972,17 +1001,21 @@ export function AICampaignManager() {
                 </div>
                 <div>
                   <Label htmlFor="edit-campaign-recipients">Recipients</Label>
-                  <Input 
-                    id="edit-campaign-recipients" 
+                  <Input
+                    id="edit-campaign-recipients"
                     type="number"
-                    defaultValue={selectedCampaign.recipients}
-                    placeholder="Number of recipients" 
+                    value={editCampaign.recipients}
+                    onChange={(e) => setEditCampaign(prev => prev ? { ...prev, recipients: Number(e.target.value) } : prev)}
+                    placeholder="Number of recipients"
                   />
                 </div>
               </div>
               <div>
                 <Label htmlFor="edit-campaign-template">Email Template</Label>
-                <Select defaultValue={selectedCampaign.template}>
+                <Select
+                  value={editCampaign.template}
+                  onValueChange={(value) => setEditCampaign(prev => prev ? { ...prev, template: value } : prev)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -996,7 +1029,13 @@ export function AICampaignManager() {
                 </Select>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setSelectedCampaign(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedCampaign(null);
+                    setEditCampaign(null);
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button className="bg-gradient-to-r from-blue-500 to-purple-500" onClick={handleUpdateCampaign}>
@@ -1010,25 +1049,34 @@ export function AICampaignManager() {
       </Dialog>
 
       {/* Edit Template Dialog */}
-      <Dialog open={!!selectedTemplate} onOpenChange={(open) => !open && setSelectedTemplate(null)}>
+      <Dialog open={!!selectedTemplate} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedTemplate(null);
+          setEditTemplate(null);
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Template: {selectedTemplate?.name}</DialogTitle>
+            <DialogTitle>Edit Template: {editTemplate?.name}</DialogTitle>
           </DialogHeader>
-          {selectedTemplate && (
+          {editTemplate && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-template-name">Template Name</Label>
-                  <Input 
-                    id="edit-template-name" 
-                    defaultValue={selectedTemplate.name}
-                    placeholder="e.g., Welcome Email" 
+                  <Input
+                    id="edit-template-name"
+                    value={editTemplate.name}
+                    onChange={(e) => setEditTemplate(prev => prev ? { ...prev, name: e.target.value } : prev)}
+                    placeholder="e.g., Welcome Email"
                   />
                 </div>
                 <div>
                   <Label htmlFor="edit-template-type">Template Type</Label>
-                  <Select defaultValue={selectedTemplate.type}>
+                  <Select
+                    value={editTemplate.type}
+                    onValueChange={(value) => setEditTemplate(prev => prev ? { ...prev, type: value as Template['type'] } : prev)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1044,10 +1092,11 @@ export function AICampaignManager() {
               </div>
               <div>
                 <Label htmlFor="edit-template-subject">Subject Line</Label>
-                <Input 
-                  id="edit-template-subject" 
-                  defaultValue={selectedTemplate.subject}
-                  placeholder="Enter email subject" 
+                <Input
+                  id="edit-template-subject"
+                  value={editTemplate.subject}
+                  onChange={(e) => setEditTemplate(prev => prev ? { ...prev, subject: e.target.value } : prev)}
+                  placeholder="Enter email subject"
                 />
               </div>
               <div>
@@ -1062,7 +1111,7 @@ export function AICampaignManager() {
               <div>
                 <Label>Template Variables</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedTemplate.variables.map((variable, index) => (
+                  {editTemplate.variables.map((variable, index) => (
                     <Badge key={index} variant="secondary">
                       {`{${variable}}`}
                     </Badge>
@@ -1070,7 +1119,13 @@ export function AICampaignManager() {
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setSelectedTemplate(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedTemplate(null);
+                    setEditTemplate(null);
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button className="bg-gradient-to-r from-purple-500 to-pink-500" onClick={handleUpdateTemplate}>
@@ -1254,9 +1309,12 @@ export function AICampaignManager() {
                   <Copy className="w-4 h-4 mr-2" />
                   Copy Subject
                 </Button>
-                <Button 
+                <Button
                   onClick={() => {
-                    setSelectedTemplate(previewTemplate);
+                    if (previewTemplate) {
+                      setSelectedTemplate(previewTemplate);
+                      setEditTemplate({ ...previewTemplate });
+                    }
                     setPreviewTemplate(null);
                   }}
                 >
