@@ -65,6 +65,17 @@ interface Employee {
   performanceRating: number;
 }
 
+interface AbTest {
+  id: string;
+  name: string;
+  description: string;
+  status: 'running' | 'completed';
+  confidence?: string;
+  visitors?: string;
+  conversion?: string;
+  details?: string;
+}
+
 export default function ProfessionalAdminDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -113,9 +124,47 @@ export default function ProfessionalAdminDashboard() {
     performanceRating: "",
   });
 
+  const [abTests, setAbTests] = useState<AbTest[]>([
+    {
+      id: '1',
+      name: 'Homepage CTA Button',
+      description: 'Blue vs Green button color',
+      status: 'running',
+      confidence: '85% confidence',
+      visitors: '2,340 visitors',
+    },
+    {
+      id: '2',
+      name: 'Signup Form Fields',
+      description: '5 fields vs 3 fields',
+      status: 'completed',
+      conversion: '+24% conversion',
+      details: 'Winner: 3 fields',
+    },
+  ]);
+  const [newAbTestName, setNewAbTestName] = useState('');
   const [abTestDialogOpen, setAbTestDialogOpen] = useState(false);
-  const [viewAbTest, setViewAbTest] = useState<any>(null);
-  const [analyzeAbTest, setAnalyzeAbTest] = useState<any>(null);
+  const [viewAbTest, setViewAbTest] = useState<AbTest | null>(null);
+  const [analyzeAbTest, setAnalyzeAbTest] = useState<AbTest | null>(null);
+
+  const handleCreateAbTest = () => {
+    const newTest: AbTest = {
+      id: Date.now().toString(),
+      name: newAbTestName || 'Untitled Test',
+      description: 'Custom A/B test',
+      status: 'running',
+      confidence: '0% confidence',
+      visitors: '0 visitors',
+    };
+    setAbTests(prev => [...prev, newTest]);
+    toast({
+      title: 'A/B Test Created',
+      description: `"${newTest.name}" has been added to the dashboard.`,
+      duration: 3000,
+    });
+    setNewAbTestName('');
+    setAbTestDialogOpen(false);
+  };
 
   useEffect(() => {
     if (selectedUser) {
@@ -890,9 +939,14 @@ export default function ProfessionalAdminDashboard() {
                       <div className="space-y-4">
                         <div>
                           <Label htmlFor="ab-test-name">Test Name</Label>
-                          <Input id="ab-test-name" placeholder="Homepage CTA Button" />
+                          <Input
+                            id="ab-test-name"
+                            placeholder="Homepage CTA Button"
+                            value={newAbTestName}
+                            onChange={(e) => setNewAbTestName(e.target.value)}
+                          />
                         </div>
-                        <Button onClick={() => setAbTestDialogOpen(false)}>Create Test</Button>
+                        <Button onClick={handleCreateAbTest}>Create Test</Button>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -900,69 +954,56 @@ export default function ProfessionalAdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <TestTube className="h-5 w-5 text-green-600" />
+                  {abTests.map((test) => (
+                    <div key={test.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            test.status === 'running' ? 'bg-green-100' : 'bg-yellow-100'
+                          }`}
+                        >
+                          <TestTube
+                            className={`h-5 w-5 ${
+                              test.status === 'running' ? 'text-green-600' : 'text-yellow-600'
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{test.name}</h4>
+                          <p className="text-sm text-muted-foreground">{test.description}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium">Homepage CTA Button</h4>
-                        <p className="text-sm text-muted-foreground">Blue vs Green button color</p>
+                      <div className="flex items-center gap-4">
+                        {test.status === 'running' ? (
+                          <>
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                              Running
+                            </Badge>
+                            <div className="text-sm">
+                              <div className="font-medium">{test.confidence}</div>
+                              <div className="text-muted-foreground">{test.visitors}</div>
+                            </div>
+                            <Button variant="outline" size="sm" onClick={() => setAnalyzeAbTest(test)}>
+                              <BarChart3 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Badge variant="secondary" className="bg-green-100 text-green-700">
+                              Completed
+                            </Badge>
+                            <div className="text-sm">
+                              <div className="font-medium">{test.conversion}</div>
+                              <div className="text-muted-foreground">{test.details}</div>
+                            </div>
+                            <Button variant="outline" size="sm" onClick={() => setViewAbTest(test)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-700">Running</Badge>
-                      <div className="text-sm">
-                        <div className="font-medium">85% confidence</div>
-                        <div className="text-muted-foreground">2,340 visitors</div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setAnalyzeAbTest({
-                            name: 'Homepage CTA Button',
-                            confidence: '85% confidence',
-                            visitors: '2,340 visitors',
-                          })
-                        }
-                      >
-                        <BarChart3 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <TestTube className="h-5 w-5 text-yellow-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Signup Form Fields</h4>
-                        <p className="text-sm text-muted-foreground">5 fields vs 3 fields</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">Completed</Badge>
-                      <div className="text-sm">
-                        <div className="font-medium">+24% conversion</div>
-                        <div className="text-muted-foreground">Winner: 3 fields</div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setViewAbTest({
-                            name: 'Signup Form Fields',
-                            details: 'Winner: 3 fields',
-                            conversion: '+24% conversion',
-                          })
-                        }
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
