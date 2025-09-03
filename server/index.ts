@@ -141,6 +141,8 @@ passport.use(
           .where(sql`lower(${users.username}) = ${usernameNorm}`)
           .limit(1);
         if (!user) return done(null, false, { message: "Invalid username or password" });
+        if ((user as any).status === "suspended")
+          return done(null, false, { status: 403, message: "Account suspended" });
         const ok = await bcrypt.compare(password, (user as any).password);
         if (!ok) return done(null, false, { message: "Invalid username or password" });
         return done(null, user);
@@ -167,6 +169,8 @@ passport.use(
         console.log("[ADMIN LOGIN] emailNorm=", emailNorm, "result=", !!user, "role=", (user as any)?.role);
         if (!user) return done(null, false, { message: "Invalid email or password" });
         if ((user as any).role !== "admin") return done(null, false, { status: 403, message: "Forbidden" });
+        if ((user as any).status === "suspended")
+          return done(null, false, { status: 403, message: "Account suspended" });
         const ok = await bcrypt.compare(password, (user as any).password);
         if (!ok) return done(null, false, { message: "Invalid email or password" });
         return done(null, user);
@@ -210,6 +214,8 @@ app.post("/api/login", async (req, res, next) => {
     );
 
     if (!user) return res.status(401).json({ message: "Invalid username or password" });
+    if ((user as any).status === "suspended")
+      return res.status(403).json({ message: "Account suspended" });
 
     const ok = await bcrypt.compare(rawPassword, (user as any).password);
     console.log("[LOGIN] bcrypt compare =>", ok);

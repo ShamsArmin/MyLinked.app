@@ -12,8 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Crown, Users, Activity, Settings, Shield, AlertTriangle, 
+import {
+  Crown, Users, Activity, Settings, Shield, AlertTriangle,
   TrendingUp, Database, Globe, Link, Eye, BarChart, 
   PieChart, Calendar, Download, Upload, Server, 
   Wifi, HardDrive, Cpu, Monitor, UserPlus, Edit, Trash2,
@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { EmailManagement } from "@/components/email-management";
 import { AICampaignManager } from "@/components/ai-campaign-manager";
+import { UserActionsMenu } from "@/components/admin/user-actions-menu";
 
 // Role and Permission types
 interface Role {
@@ -73,6 +74,9 @@ export default function ProfessionalAdminDashboard() {
   const [timeRange, setTimeRange] = useState("7d");
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
+  const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
+  const [roleToAssign, setRoleToAssign] = useState<number | null>(null);
+  const [noRolesDialogOpen, setNoRolesDialogOpen] = useState(false);
   const [isEmployeeDialogOpen, setIsEmployeeDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
@@ -159,8 +163,8 @@ export default function ProfessionalAdminDashboard() {
 
   // Role management mutations
   const assignRoleMutation = useMutation({
-    mutationFn: async ({ userId, roleId }: { userId: number; roleId: number }) => {
-      return apiRequest("POST", "/api/admin/assign-role", { userId, roleId });
+    mutationFn: async ({ userId, roleId }: { userId: string; roleId: number }) => {
+      return apiRequest("PATCH", `/api/admin/users/${userId}/role`, { roleId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users-with-roles"] });
@@ -214,6 +218,73 @@ export default function ProfessionalAdminDashboard() {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
+
+  const handleAssignRole = async (user: any) => {
+    try {
+      const roles = await apiRequest("GET", "/api/admin/roles");
+      if (!Array.isArray(roles) || roles.length === 0) {
+        setNoRolesDialogOpen(true);
+        return;
+      }
+      setAvailableRoles(roles);
+      setSelectedUser(user);
+      const current = roles.find((r: any) => r.name === user.role);
+      setRoleToAssign(current ? current.id : null);
+      setIsRoleDialogOpen(true);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleChangeStatus = async (user: any, status: 'active' | 'suspended') => {
+    try {
+      await apiRequest("PATCH", `/api/admin/users/${user.id}/status`, { status });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users-with-roles"] });
+      toast({ title: "Success", description: "Status updated" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleSetLimits = async (user: any, limits: { maxLinks?: number | null; dailyClickQuota?: number | null }) => {
+    try {
+      await apiRequest("PATCH", `/api/admin/users/${user.id}/limits`, limits);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users-with-roles"] });
+      toast({ title: "Success", description: "Limits updated" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleForceLogout = async (user: any) => {
+    try {
+      await apiRequest("POST", `/api/admin/users/${user.id}/force-logout`);
+      toast({ title: "Success", description: "User logged out" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleResetPassword = async (user: any) => {
+    try {
+      await apiRequest("POST", `/api/admin/users/${user.id}/reset-password`);
+      toast({ title: "Success", description: "Password reset email sent" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async (user: any) => {
+    const confirmation = window.prompt(`Type ${user.email} to confirm deletion`);
+    if (confirmation !== user.email) return;
+    try {
+      await apiRequest("DELETE", `/api/admin/users/${user.id}`);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users-with-roles"] });
+      toast({ title: "Deleted", description: "User removed" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -685,34 +756,15 @@ export default function ProfessionalAdminDashboard() {
                                   )}
                                 </DialogContent>
                               </Dialog>
-                              <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
-                                <DialogTrigger asChild>
-                                  <Button variant="outline" size="sm">
-                                    <Shield className="h-4 w-4" />
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Assign Role</DialogTitle>
-                                    <DialogDescription>
-                                      Select a role to assign to {user.name}
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    {roles.map((role: Role) => (
-                                      <div key={role.id} className="flex items-center space-x-2">
-                                        <Button
-                                          variant="outline"
-                                          onClick={() => assignRoleMutation.mutate({ userId: user.id, roleId: role.id })}
-                                          className="w-full justify-start"
-                                        >
-                                          {role.displayName}
-                                        </Button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
+                              <UserActionsMenu
+                                user={user}
+                                onAssignRole={() => handleAssignRole(user)}
+                                onChangeStatus={(status) => handleChangeStatus(user, status)}
+                                onSetLimits={(limits) => handleSetLimits(user, limits)}
+                                onForceLogout={() => handleForceLogout(user)}
+                                onResetPassword={() => handleResetPassword(user)}
+                                onDelete={() => handleDelete(user)}
+                              />
                             </div>
                           </TableCell>
                         </TableRow>
@@ -723,6 +775,54 @@ export default function ProfessionalAdminDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Assign Role</DialogTitle>
+                <DialogDescription>Select a role to assign to {selectedUser?.name}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                {availableRoles.map((role) => (
+                  <Button
+                    key={role.id}
+                    variant={roleToAssign === role.id ? "default" : "outline"}
+                    className="w-full justify-start"
+                    onClick={() => setRoleToAssign(role.id)}
+                  >
+                    {role.displayName}
+                  </Button>
+                ))}
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setIsRoleDialogOpen(false)}>Cancel</Button>
+                  <Button
+                    disabled={roleToAssign === null || roleToAssign === availableRoles.find(r => r.name === selectedUser?.role)?.id}
+                    onClick={() => {
+                      if (roleToAssign !== null && selectedUser) {
+                        assignRoleMutation.mutate({ userId: selectedUser.id, roleId: roleToAssign });
+                      }
+                      setIsRoleDialogOpen(false);
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={noRolesDialogOpen} onOpenChange={setNoRolesDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>No roles yet</DialogTitle>
+                <DialogDescription>Create a role before assigning.</DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setNoRolesDialogOpen(false)}>Cancel</Button>
+                <Button onClick={() => { setNoRolesDialogOpen(false); setLocation("/admin/roles"); }}>Go to Roles</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* AI Campaign Manager */}
           <TabsContent value="campaigns" className="space-y-4">
