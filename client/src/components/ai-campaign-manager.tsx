@@ -190,6 +190,17 @@ export function AICampaignManager() {
   const [newVariantA, setNewVariantA] = useState('');
   const [newVariantB, setNewVariantB] = useState('');
 
+  const [newCampaignName, setNewCampaignName] = useState('');
+  const [newCampaignType, setNewCampaignType] = useState<Campaign['type'] | ''>('');
+  const [newCampaignTemplate, setNewCampaignTemplate] = useState('');
+  const [newCampaignAudience, setNewCampaignAudience] = useState('');
+  const [newCampaignAutoSend, setNewCampaignAutoSend] = useState(false);
+
+  const [templatePurpose, setTemplatePurpose] = useState('');
+  const [templateTone, setTemplateTone] = useState('');
+  const [templateIndustry, setTemplateIndustry] = useState('');
+  const [templateCta, setTemplateCta] = useState('');
+
   const toggleCampaignStatus = (campaignId: string) => {
     setCampaigns(prev => prev.map(campaign => {
       if (campaign.id === campaignId) {
@@ -227,21 +238,53 @@ export function AICampaignManager() {
   };
 
   const handleCreateCampaign = () => {
+    const newCampaign: Campaign = {
+      id: Date.now().toString(),
+      name: newCampaignName || 'Untitled Campaign',
+      status: newCampaignAutoSend ? 'active' : 'draft',
+      type: (newCampaignType as Campaign['type']) || 'promotion',
+      recipients: 0,
+      openRate: 0,
+      clickRate: 0,
+      lastSent: 'Not sent',
+      nextSend: newCampaignAutoSend ? 'Scheduled' : 'Not scheduled',
+      template: newCampaignTemplate || (templates[0]?.id || ''),
+    };
+    setCampaigns(prev => [...prev, newCampaign]);
     toast({
       title: "Campaign created",
       description: "Your campaign has been created successfully.",
       duration: 3000,
     });
     setNewCampaignDialog(false);
+    setNewCampaignName('');
+    setNewCampaignType('');
+    setNewCampaignTemplate('');
+    setNewCampaignAudience('');
+    setNewCampaignAutoSend(false);
   };
 
   const handleGenerateTemplate = () => {
+    const newTemplate: Template = {
+      id: Date.now().toString(),
+      name: templatePurpose || 'AI Template',
+      subject: templateCta || 'AI Generated Template',
+      type: 'welcome',
+      variables: ['name'],
+      lastUsed: 'Just now',
+      performance: 0,
+    };
+    setTemplates(prev => [...prev, newTemplate]);
     toast({
       title: "Template generated",
       description: "AI template generated successfully.",
       duration: 3000,
     });
     setNewTemplateDialog(false);
+    setTemplatePurpose('');
+    setTemplateTone('');
+    setTemplateIndustry('');
+    setTemplateCta('');
   };
 
   const handleUpdateCampaign = () => {
@@ -408,11 +451,16 @@ export function AICampaignManager() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="campaign-name">Campaign Name</Label>
-                    <Input id="campaign-name" placeholder="e.g., Summer Promotion" />
+                    <Input
+                      id="campaign-name"
+                      placeholder="e.g., Summer Promotion"
+                      value={newCampaignName}
+                      onChange={(e) => setNewCampaignName(e.target.value)}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="campaign-type">Campaign Type</Label>
-                    <Select>
+                    <Select value={newCampaignType} onValueChange={(value) => setNewCampaignType(value as Campaign['type'])}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
@@ -428,7 +476,10 @@ export function AICampaignManager() {
                 </div>
                 <div>
                   <Label htmlFor="campaign-template">Email Template</Label>
-                  <Select>
+                  <Select
+                    value={newCampaignTemplate}
+                    onValueChange={(value) => setNewCampaignTemplate(value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select template" />
                     </SelectTrigger>
@@ -443,7 +494,10 @@ export function AICampaignManager() {
                 </div>
                 <div>
                   <Label htmlFor="campaign-audience">Target Audience</Label>
-                  <Select>
+                  <Select
+                    value={newCampaignAudience}
+                    onValueChange={(value) => setNewCampaignAudience(value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select audience" />
                     </SelectTrigger>
@@ -457,7 +511,7 @@ export function AICampaignManager() {
                   </Select>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Switch id="auto-send" />
+                  <Switch id="auto-send" checked={newCampaignAutoSend} onCheckedChange={setNewCampaignAutoSend} />
                   <Label htmlFor="auto-send">Enable automatic sending</Label>
                 </div>
                 <div className="flex justify-end gap-2">
@@ -484,11 +538,16 @@ export function AICampaignManager() {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="template-purpose">Template Purpose</Label>
-                  <Input id="template-purpose" placeholder="e.g., Welcome new users and guide setup" />
+                  <Input
+                    id="template-purpose"
+                    placeholder="e.g., Welcome new users and guide setup"
+                    value={templatePurpose}
+                    onChange={(e) => setTemplatePurpose(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="template-tone">Tone & Style</Label>
-                  <Select>
+                  <Select value={templateTone} onValueChange={(value) => setTemplateTone(value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select tone" />
                     </SelectTrigger>
@@ -502,7 +561,7 @@ export function AICampaignManager() {
                 </div>
                 <div>
                   <Label htmlFor="template-industry">Industry Focus</Label>
-                  <Select>
+                  <Select value={templateIndustry} onValueChange={(value) => setTemplateIndustry(value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select industry" />
                     </SelectTrigger>
@@ -517,7 +576,12 @@ export function AICampaignManager() {
                 </div>
                 <div>
                   <Label htmlFor="template-cta">Call-to-Action</Label>
-                  <Input id="template-cta" placeholder="e.g., Complete your profile, Upgrade to premium" />
+                  <Input
+                    id="template-cta"
+                    placeholder="e.g., Complete your profile, Upgrade to premium"
+                    value={templateCta}
+                    onChange={(e) => setTemplateCta(e.target.value)}
+                  />
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setNewTemplateDialog(false)}>
