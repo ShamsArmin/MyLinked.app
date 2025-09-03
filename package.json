@@ -12,7 +12,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "migrate": "node run-migrations.mjs"
+    "migrate": "node run-migrations.mjs",
+    "admin:reset": "tsx scripts/admin-reset.ts",
+    "admin:factory-reset": "tsx scripts/admin-factory-reset.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

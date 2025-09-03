@@ -16,6 +16,7 @@ import { db, pool } from "./db";
 import path from "path";
 import { fileURLToPath } from "url";
 import referralRequestsRouter from "./routes/referral-requests";
+// import adminResetRoute from "./routes/internal-admin-reset"; // WARNING: enable only for one-time admin recovery
 // Temporarily disabled problematic imports
 // import { initializeEmailTemplates } from "./init-email-templates";
 // import { initAIEmailTemplates } from "./ai-email-templates";
@@ -321,6 +322,7 @@ app.use((req, res, next) => {
   const server = await registerRoutes(app);
 
   app.use(referralRequestsRouter);
+  // app.use(adminResetRoute); // WARNING: remove after use. Requires ADMIN_RECOVERY_TOKEN and x-admin-recovery-token header.
 
   // Add custom domain route handler AFTER API routes are registered
   app.get('*', (req, res, next) => {
