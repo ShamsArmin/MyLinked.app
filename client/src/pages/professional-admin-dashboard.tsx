@@ -382,7 +382,7 @@ export default function ProfessionalAdminDashboard() {
     },
   });
 
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-96">
@@ -680,82 +680,16 @@ export default function ProfessionalAdminDashboard() {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
-                                <DialogTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => setSelectedUser(user)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Edit User</DialogTitle>
-                                    <DialogDescription>
-                                      Update user information for {selectedUser?.name}
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  {selectedUser && (
-                                    <div className="space-y-4">
-                                      <div>
-                                        <Label htmlFor="editName">Name</Label>
-                                        <Input
-                                          id="editName"
-                                          value={editFormData.name}
-                                          onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                                          placeholder="User name"
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="editEmail">Email</Label>
-                                        <Input
-                                          id="editEmail"
-                                          type="email"
-                                          value={editFormData.email}
-                                          onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                                          placeholder="user@example.com"
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="editDepartment">Department</Label>
-                                        <Input
-                                          id="editDepartment"
-                                          value={editFormData.department}
-                                          onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
-                                          placeholder="Department"
-                                        />
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox
-                                          id="editActive"
-                                          checked={editFormData.isActive}
-                                          onCheckedChange={(checked) =>
-                                            setEditFormData({ ...editFormData, isActive: !!checked })
-                                          }
-                                        />
-                                        <Label htmlFor="editActive">Active User</Label>
-                                      </div>
-                                      <div className="flex justify-end gap-2">
-                                        <Button variant="outline" onClick={() => setIsEditUserDialogOpen(false)}>
-                                          Cancel
-                                        </Button>
-                                        <Button
-                                          onClick={() => updateUserMutation.mutate({ id: selectedUser.id, ...editFormData })}
-                                          disabled={updateUserMutation.isPending}
-                                        >
-                                          {updateUserMutation.isPending ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                          ) : (
-                                            "Update User"
-                                          )}
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </DialogContent>
-                              </Dialog>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setIsEditUserDialogOpen(true);
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
                               <UserActionsMenu
                                 user={user}
                                 onAssignRole={() => handleAssignRole(user)}
@@ -775,6 +709,75 @@ export default function ProfessionalAdminDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Edit User Dialog rendered once */}
+          <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit User</DialogTitle>
+                <DialogDescription>
+                  Update user information for {selectedUser?.name}
+                </DialogDescription>
+              </DialogHeader>
+              {selectedUser && (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="editName">Name</Label>
+                    <Input
+                      id="editName"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      placeholder="User name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editEmail">Email</Label>
+                    <Input
+                      id="editEmail"
+                      type="email"
+                      value={editFormData.email}
+                      onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                      placeholder="user@example.com"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editDepartment">Department</Label>
+                    <Input
+                      id="editDepartment"
+                      value={editFormData.department}
+                      onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
+                      placeholder="Department"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="editActive"
+                      checked={editFormData.isActive}
+                      onCheckedChange={(checked) =>
+                        setEditFormData({ ...editFormData, isActive: !!checked })
+                      }
+                    />
+                    <Label htmlFor="editActive">Active User</Label>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setIsEditUserDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => updateUserMutation.mutate({ id: selectedUser.id, ...editFormData })}
+                      disabled={updateUserMutation.isPending}
+                    >
+                      {updateUserMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        "Update User"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
 
           <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
             <DialogContent>
