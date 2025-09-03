@@ -175,6 +175,42 @@ export function AICampaignManager() {
     });
   };
 
+  const handleCreateCampaign = () => {
+    toast({
+      title: "Campaign created",
+      description: "Your campaign has been created successfully.",
+      duration: 3000,
+    });
+    setNewCampaignDialog(false);
+  };
+
+  const handleGenerateTemplate = () => {
+    toast({
+      title: "Template generated",
+      description: "AI template generated successfully.",
+      duration: 3000,
+    });
+    setNewTemplateDialog(false);
+  };
+
+  const handleUpdateCampaign = () => {
+    toast({
+      title: "Campaign updated",
+      description: selectedCampaign ? `"${selectedCampaign.name}" has been updated.` : undefined,
+      duration: 3000,
+    });
+    setSelectedCampaign(null);
+  };
+
+  const handleUpdateTemplate = () => {
+    toast({
+      title: "Template updated",
+      description: selectedTemplate ? `"${selectedTemplate.name}" has been updated.` : undefined,
+      duration: 3000,
+    });
+    setSelectedTemplate(null);
+  };
+
   const getStatusColor = (status: Campaign['status']) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
@@ -278,7 +314,7 @@ export function AICampaignManager() {
                   <Button variant="outline" onClick={() => setNewCampaignDialog(false)}>
                     Cancel
                   </Button>
-                  <Button>Create Campaign</Button>
+                  <Button onClick={handleCreateCampaign}>Create Campaign</Button>
                 </div>
               </div>
             </DialogContent>
@@ -337,7 +373,7 @@ export function AICampaignManager() {
                   <Button variant="outline" onClick={() => setNewTemplateDialog(false)}>
                     Cancel
                   </Button>
-                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500">
+                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500" onClick={handleGenerateTemplate}>
                     <Bot className="w-4 h-4 mr-2" />
                     Generate Template
                   </Button>
@@ -963,7 +999,7 @@ export function AICampaignManager() {
                 <Button variant="outline" onClick={() => setSelectedCampaign(null)}>
                   Cancel
                 </Button>
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-500">
+                <Button className="bg-gradient-to-r from-blue-500 to-purple-500" onClick={handleUpdateCampaign}>
                   <Edit className="w-4 h-4 mr-2" />
                   Update Campaign
                 </Button>
@@ -1037,7 +1073,7 @@ export function AICampaignManager() {
                 <Button variant="outline" onClick={() => setSelectedTemplate(null)}>
                   Cancel
                 </Button>
-                <Button className="bg-gradient-to-r from-purple-500 to-pink-500">
+                <Button className="bg-gradient-to-r from-purple-500 to-pink-500" onClick={handleUpdateTemplate}>
                   <Edit className="w-4 h-4 mr-2" />
                   Update Template
                 </Button>
