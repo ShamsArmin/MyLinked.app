@@ -52,6 +52,31 @@ interface Permission {
   description: string | null;
 }
 
+type PermissionState = Record<string, boolean>;
+
+interface RoleFormData {
+  name: string;
+  displayName: string;
+  description: string;
+  permissions: PermissionState;
+}
+
+const selectedPermissionKeys = (state: PermissionState) =>
+  Object.entries(state)
+    .filter(([, isOn]) => isOn)
+    .map(([key]) => key);
+
+interface CreateRolePayload {
+  name: string;
+  displayName: string;
+  description?: string;
+  permissions: string[];
+}
+
+interface UpdateRolePayload extends Partial<CreateRolePayload> {
+  id: number;
+}
+
 interface Employee {
   id: number;
   user: any;
@@ -119,11 +144,11 @@ export default function ProfessionalAdminDashboard() {
     recipientName: "",
     roleId: "",
   });
-  const [roleFormData, setRoleFormData] = useState({
+  const [roleFormData, setRoleFormData] = useState<RoleFormData>({
     name: "",
     displayName: "",
     description: "",
-    permissions: [] as string[],
+    permissions: {},
   });
   const [editFormData, setEditFormData] = useState({
     name: "",
@@ -363,14 +388,14 @@ export default function ProfessionalAdminDashboard() {
   });
 
   const createRoleMutation = useMutation({
-    mutationFn: async (roleData: Partial<Role>) => {
+    mutationFn: async (roleData: CreateRolePayload) => {
       return apiRequest("POST", "/api/admin/roles", roleData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
       toast({ title: "Success", description: "Role created successfully" });
       setIsRoleDialogOpen(false);
-      setRoleFormData({ name: "", displayName: "", description: "", permissions: [] });
+      setRoleFormData({ name: "", displayName: "", description: "", permissions: {} });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -378,7 +403,7 @@ export default function ProfessionalAdminDashboard() {
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ id, ...roleData }: any) => {
+    mutationFn: async ({ id, ...roleData }: UpdateRolePayload) => {
       return apiRequest("PATCH", `/api/admin/roles/${id}`, roleData);
     },
     onSuccess: () => {
@@ -386,7 +411,7 @@ export default function ProfessionalAdminDashboard() {
       toast({ title: "Success", description: "Role updated successfully" });
       setIsEditRoleDialogOpen(false);
       setSelectedRole(null);
-      setRoleFormData({ name: "", displayName: "", description: "", permissions: [] });
+      setRoleFormData({ name: "", displayName: "", description: "", permissions: {} });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -1540,19 +1565,15 @@ export default function ProfessionalAdminDashboard() {
                               <div key={permission.key} className="flex items-center space-x-2">
                                 <Checkbox
                                   id={`perm-${permission.key}`}
-                                  checked={roleFormData.permissions.includes(permission.key)}
+                                  checked={!!roleFormData.permissions[permission.key]}
                                   onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setRoleFormData({
-                                        ...roleFormData,
-                                        permissions: [...roleFormData.permissions, permission.key],
-                                      });
-                                    } else {
-                                      setRoleFormData({
-                                        ...roleFormData,
-                                        permissions: roleFormData.permissions.filter((p) => p !== permission.key),
-                                      });
-                                    }
+                                    setRoleFormData({
+                                      ...roleFormData,
+                                      permissions: {
+                                        ...roleFormData.permissions,
+                                        [permission.key]: Boolean(checked),
+                                      },
+                                    });
                                   }}
                                 />
                                 <Label htmlFor={`perm-${permission.key}`} className="text-sm">
@@ -1565,7 +1586,7 @@ export default function ProfessionalAdminDashboard() {
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" onClick={() => {
                             setIsRoleDialogOpen(false);
-                            setRoleFormData({ name: "", displayName: "", description: "", permissions: [] });
+                            setRoleFormData({ name: "", displayName: "", description: "", permissions: {} });
                           }}>
                             Cancel
                           </Button>
@@ -1582,11 +1603,12 @@ export default function ProfessionalAdminDashboard() {
                                 return;
                               }
                               if (roleFormData.displayName) {
+                                const selectedPermissions = selectedPermissionKeys(roleFormData.permissions);
                                 createRoleMutation.mutate({
                                   name: slug,
                                   displayName: roleFormData.displayName.trim(),
                                   description: roleFormData.description,
-                                  permissions: roleFormData.permissions,
+                                  permissions: selectedPermissions,
                                 });
                               }
                             }}
@@ -1661,7 +1683,10 @@ export default function ProfessionalAdminDashboard() {
                                     name: role.name,
                                     displayName: role.displayName,
                                     description: role.description,
-                                    permissions: role.permissions || []
+                                    permissions: role.permissions.reduce(
+                                      (acc, key) => ({ ...acc, [key]: true }),
+                                      {} as PermissionState
+                                    ),
                                   });
                                   setIsEditRoleDialogOpen(true);
                                 }}
@@ -2510,19 +2535,15 @@ export default function ProfessionalAdminDashboard() {
                     <div key={permission.key} className="flex items-center space-x-2">
                       <Checkbox
                         id={`edit-perm-${permission.key}`}
-                        checked={roleFormData.permissions.includes(permission.key)}
+                        checked={!!roleFormData.permissions[permission.key]}
                         onCheckedChange={(checked) => {
-                          if (checked) {
-                            setRoleFormData({
-                              ...roleFormData,
-                              permissions: [...roleFormData.permissions, permission.key],
-                            });
-                          } else {
-                            setRoleFormData({
-                              ...roleFormData,
-                              permissions: roleFormData.permissions.filter((p) => p !== permission.key),
-                            });
-                          }
+                          setRoleFormData({
+                            ...roleFormData,
+                            permissions: {
+                              ...roleFormData.permissions,
+                              [permission.key]: Boolean(checked),
+                            },
+                          });
                         }}
                       />
                       <Label htmlFor={`edit-perm-${permission.key}`} className="text-sm">
@@ -2545,7 +2566,12 @@ export default function ProfessionalAdminDashboard() {
                         });
                         return;
                       }
-                      const payload: any = { id: selectedRole.id, ...roleFormData };
+                      const payload: any = {
+                        id: selectedRole.id,
+                        displayName: roleFormData.displayName.trim(),
+                        description: roleFormData.description,
+                        permissions: selectedPermissionKeys(roleFormData.permissions),
+                      };
                       if (slug) payload.name = slug;
                       updateRoleMutation.mutate(payload);
                     }
