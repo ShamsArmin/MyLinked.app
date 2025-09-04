@@ -68,29 +68,45 @@ export default function AdminFunnelsPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {funnels.map(f => (
-            <TableRow key={f.id}>
-              <TableCell>{f.name}</TableCell>
-              <TableCell>{f.windowSeconds / 3600}h</TableCell>
-              <TableCell>{f.steps?.map(s => s.eventKey).join(" → ") || "—"}</TableCell>
-              <TableCell>{f.lastComputedAt ? new Date(f.lastComputedAt).toLocaleString() : "—"}</TableCell>
-              <TableCell>{f.conversionRate != null ? `${(f.conversionRate * 100).toFixed(1)}%` : "—"}</TableCell>
-              <TableCell>{f.ownerName ?? "—"}</TableCell>
-              <TableCell>{f.tags?.join(", ") ?? ""}</TableCell>
-              <TableCell>
-                <FunnelActionsMenu
-                  onView={() => setLocation(`/admin/conversion/funnels/${f.id}`)}
-                  onEdit={() => openEdit(f)}
-                  onDuplicate={() => alert(`Duplicate ${f.name}`)}
-                  onCompare={() => alert(`Compare ${f.name}`)}
-                  onExport={() => alert(`Export ${f.name}`)}
-                  onAnnotate={() => alert(`Annotate ${f.name}`)}
-                  onArchive={() => alert(`Archive ${f.name}`)}
-                  onDelete={() => alert(`Delete ${f.name}`)}
-                />
-              </TableCell>
-            </TableRow>
-          ))}
+          {funnels.map(f => {
+            const raw = (f as any).steps;
+            const parsed = Array.isArray(raw)
+              ? raw
+              : typeof raw === "string"
+                ? (() => {
+                    try {
+                      return JSON.parse(raw);
+                    } catch {
+                      return [];
+                    }
+                  })()
+                : raw?.steps ?? [];
+            return (
+              <TableRow key={f.id}>
+                <TableCell>{f.name}</TableCell>
+                <TableCell>{f.windowSeconds / 3600}h</TableCell>
+                <TableCell>
+                  {parsed.length ? parsed.map((s: any) => s.eventKey).join(" → ") : "—"}
+                </TableCell>
+                <TableCell>{f.lastComputedAt ? new Date(f.lastComputedAt).toLocaleString() : "—"}</TableCell>
+                <TableCell>{f.conversionRate != null ? `${(f.conversionRate * 100).toFixed(1)}%` : "—"}</TableCell>
+                <TableCell>{f.ownerName ?? "—"}</TableCell>
+                <TableCell>{f.tags?.join(", ") ?? ""}</TableCell>
+                <TableCell>
+                  <FunnelActionsMenu
+                    onView={() => setLocation(`/admin/conversion/funnels/${f.id}`)}
+                    onEdit={() => openEdit(f)}
+                    onDuplicate={() => alert(`Duplicate ${f.name}`)}
+                    onCompare={() => alert(`Compare ${f.name}`)}
+                    onExport={() => alert(`Export ${f.name}`)}
+                    onAnnotate={() => alert(`Annotate ${f.name}`)}
+                    onArchive={() => alert(`Archive ${f.name}`)}
+                    onDelete={() => alert(`Delete ${f.name}`)}
+                  />
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
       <FunnelBuilder
