@@ -22,10 +22,7 @@ export default function AdminFunnelsPage() {
   const [, setLocation] = useLocation();
   const { data } = useQuery<{ funnels: Funnel[] }>({
     queryKey: ["funnels"],
-    queryFn: async () => {
-      const res = await apiRequest("GET", "/api/admin/funnels");
-      return res.json();
-    },
+    queryFn: () => apiRequest("GET", "/api/admin/funnels"),
   });
   const funnels = data?.funnels ?? [];
   const [builderOpen, setBuilderOpen] = useState(false);

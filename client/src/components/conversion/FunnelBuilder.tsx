@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
+import { X } from "lucide-react";
 
 export interface Step {
   eventKey: string;
@@ -70,8 +71,12 @@ export function FunnelBuilder({ open, onOpenChange, initial, onSaved }: Props) {
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="p-4 space-y-4">
-        <DrawerHeader>
+        <DrawerHeader className="relative">
           <DrawerTitle>{initial ? "Edit Funnel" : "New Funnel"}</DrawerTitle>
+          <DrawerClose className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </DrawerClose>
         </DrawerHeader>
         <div className="space-y-4">
           <div className="space-y-2">
