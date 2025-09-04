@@ -977,6 +977,14 @@ export const abAssignments = pgTable("ab_assignments", {
   assignedAt: timestamp("assigned_at").defaultNow(),
 });
 
+export type StepsDSL = {
+  steps: Array<{
+    event: string;
+    filters?: Array<{ field: string; op: string; value: any }>;
+    where?: { pathRegex?: string; screen?: string };
+  }>;
+};
+
 export const funnels = pgTable("funnels", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
@@ -988,7 +996,8 @@ export const funnels = pgTable("funnels", {
   dedupe: text("dedupe").default("first_touch"),
   segmentId: uuid("segment_id").references(() => segments.id),
   experimentKey: text("experiment_key"),
-  steps: jsonb("steps_json").notNull(),
+  /** Funnel step definitions */
+  stepsJSON: jsonb("steps_json").$type<StepsDSL>().notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   archivedAt: timestamp("archived_at"),
@@ -1003,23 +1012,7 @@ export const funnelRuns = pgTable("funnel_runs", {
   stats: jsonb("stats_json").notNull(),
 });
 
-export const insertFunnelSchema = createInsertSchema(funnels).pick({
-  name: true,
-  description: true,
-  windowSeconds: true,
-  scope: true,
-  dedupe: true,
-  segmentId: true,
-  experimentKey: true,
-  steps: true,
-  tags: true,
-});
-
-export const updateFunnelSchema = insertFunnelSchema.partial();
-
 export type Funnel = typeof funnels.$inferSelect;
-export type InsertFunnel = z.infer<typeof insertFunnelSchema>;
-export type UpdateFunnel = z.infer<typeof updateFunnelSchema>;
 
 export const roleInvitations = pgTable("role_invitations", {
   id: uuid("id").defaultRandom().primaryKey(),

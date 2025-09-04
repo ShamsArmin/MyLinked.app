@@ -2512,7 +2512,13 @@ GITHUB_CLIENT_SECRET=your_github_client_secret
   app.use("/api/admin", professionalAdminRouter);
   app.use("/api/admin/users", adminUsersRouter);
   app.use("/api/admin/segments", adminSegmentsRouter);
-  app.use("/api/admin/funnels", adminFunnelsRouter);
+  function noStore(_req: any, res: any, next: any) {
+    res.setHeader("Cache-Control", "no-store");
+    res.removeHeader("ETag");
+    next();
+  }
+
+  app.use("/api/admin/funnels", noStore, adminFunnelsRouter);
   app.use("/api/admin/invitations", adminInvitationsRouter);
 
   // Add Monitoring routes

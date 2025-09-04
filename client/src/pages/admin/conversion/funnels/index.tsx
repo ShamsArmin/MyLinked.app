@@ -11,7 +11,7 @@ interface Funnel {
   id: string;
   name: string;
   windowSeconds: number;
-  steps: { eventKey: string }[];
+  steps: { event: string }[];
   lastComputedAt?: string | null;
   conversionRate?: number | null;
   ownerName?: string | null;
@@ -36,8 +36,11 @@ export default function AdminFunnelsPage() {
   async function openEdit(f: Funnel) {
     // Fetch full funnel details so the builder has the latest steps
     const full = await apiRequest("GET", `/api/admin/funnels/${f.id}`);
-    const raw = full.steps ?? full.steps_json ?? full.stepsJson ?? [];
-    const steps = typeof raw === "string" ? JSON.parse(raw) : raw;
+    const steps = Array.isArray(full.steps)
+      ? full.steps
+      : typeof full.steps === "string"
+        ? JSON.parse(full.steps)
+        : [];
     setEditing({
       id: full.id,
       name: full.name,
@@ -86,7 +89,7 @@ export default function AdminFunnelsPage() {
                 <TableCell>{f.name}</TableCell>
                 <TableCell>{f.windowSeconds / 3600}h</TableCell>
                 <TableCell>
-                  {parsed.length ? parsed.map((s: any) => s.eventKey).join(" → ") : "—"}
+                  {parsed.length ? parsed.map((s: any) => s.event).join(" → ") : "—"}
                 </TableCell>
                 <TableCell>{f.lastComputedAt ? new Date(f.lastComputedAt).toLocaleString() : "—"}</TableCell>
                 <TableCell>{f.conversionRate != null ? `${(f.conversionRate * 100).toFixed(1)}%` : "—"}</TableCell>

@@ -8,7 +8,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { X } from "lucide-react";
 
 export interface Step {
-  eventKey: string;
+  event: string;
 }
 
 export interface FunnelForm {
@@ -23,48 +23,49 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initial?: FunnelForm | null;
-  onSaved?: () => void;
+  onSaved?: (funnel?: any) => void;
 }
 
 export function FunnelBuilder({ open, onOpenChange, initial, onSaved }: Props) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [windowSeconds, setWindowSeconds] = useState(86400);
-  const [steps, setSteps] = useState<Step[]>([{ eventKey: "" }, { eventKey: "" }]);
+  const [steps, setSteps] = useState<Step[]>([{ event: "" }, { event: "" }]);
 
   useEffect(() => {
     if (initial) {
       setName(initial.name);
       setDescription(initial.description || "");
       setWindowSeconds(initial.windowSeconds);
-      setSteps(initial.steps.length > 0 ? initial.steps : [{ eventKey: "" }, { eventKey: "" }]);
+      setSteps(initial.steps.length > 0 ? initial.steps : [{ event: "" }, { event: "" }]);
     } else {
       setName("");
       setDescription("");
       setWindowSeconds(86400);
-      setSteps([{ eventKey: "" }, { eventKey: "" }]);
+      setSteps([{ event: "" }, { event: "" }]);
     }
   }, [initial, open]);
 
   function updateStep(idx: number, value: string) {
-    setSteps(prev => prev.map((s, i) => (i === idx ? { eventKey: value } : s)));
+    setSteps(prev => prev.map((s, i) => (i === idx ? { event: value } : s)));
   }
 
   function addStep() {
-    setSteps(prev => [...prev, { eventKey: "" }]);
+    setSteps(prev => [...prev, { event: "" }]);
   }
 
-  const valid = name.trim().length > 0 && steps.length >= 2 && steps.every(s => s.eventKey.trim());
+  const valid = name.trim().length > 0 && steps.length >= 2 && steps.every(s => s.event.trim());
 
   async function save() {
     if (!valid) return;
     const body = { name, description, windowSeconds, steps };
+    let saved;
     if (initial?.id) {
-      await apiRequest("PATCH", `/api/admin/funnels/${initial.id}`, body);
+      saved = await apiRequest("PATCH", `/api/admin/funnels/${initial.id}`, body);
     } else {
-      await apiRequest("POST", "/api/admin/funnels", body);
+      saved = await apiRequest("POST", "/api/admin/funnels", body);
     }
-    onSaved?.();
+    onSaved?.(saved);
     onOpenChange(false);
   }
 
@@ -108,7 +109,7 @@ export function FunnelBuilder({ open, onOpenChange, initial, onSaved }: Props) {
                 <Input
                   key={i}
                   placeholder={`Step ${i + 1} event key`}
-                  value={s.eventKey}
+                  value={s.event}
                   onChange={e => updateStep(i, e.target.value)}
                 />
               ))}

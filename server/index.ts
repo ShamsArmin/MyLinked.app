@@ -26,7 +26,7 @@ const app = express();
 app.set("trust proxy", 1);
 
 // Body parsers MUST be before any routes/passport
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 const PgStore = connectPgSimple(session);

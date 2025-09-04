@@ -379,7 +379,7 @@ professionalAdminRouter.post("/invite-user", isAuthenticated, requireAdmin, asyn
 
     // Store invitation in database
     await db.execute(sql`
-      INSERT INTO role_invitations (email, role_id, invited_by, token, expires_at)
+      INSERT INTO role_invitations (email, role_id, invited_by_user_id, token, expires_at)
       VALUES (${email}, ${roleId}, ${req.user!.id}, ${token}, ${expiresAt})
     `);
 
@@ -479,7 +479,7 @@ professionalAdminRouter.get("/invitations", isAuthenticated, requireAdmin, async
         u.name as invited_by_name
       FROM role_invitations ri
       JOIN roles r ON ri.role_id = r.id
-      JOIN users u ON ri.invited_by = u.id
+      JOIN users u ON ri.invited_by_user_id = u.id
       ORDER BY ri.created_at DESC
     `);
 
@@ -826,7 +826,7 @@ professionalAdminRouter.get("/invitation/:token", async (req: Request, res: Resp
         u.name as inviter_name
       FROM role_invitations ri
       JOIN roles r ON ri.role_id = r.id
-      JOIN users u ON ri.invited_by = u.id
+      JOIN users u ON ri.invited_by_user_id = u.id
       WHERE ri.token = ${token}
     `);
 

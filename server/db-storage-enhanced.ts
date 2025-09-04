@@ -347,10 +347,10 @@ export class EnhancedDatabaseStorage implements IStorage {
 
     // Handle special foreign key references FIRST
     try {
-      await db.execute(sql`DELETE FROM role_invitations WHERE invited_by = ${id}`);
-      console.log('Deleted records from role_invitations (invited_by) using SQL');
+      await db.execute(sql`DELETE FROM role_invitations WHERE invited_by_user_id = ${id}`);
+      console.log('Deleted records from role_invitations (invited_by_user_id) using SQL');
     } catch (e) {
-      console.warn('Non-critical deletion failed for role_invitations (invited_by):', e);
+      console.warn('Non-critical deletion failed for role_invitations (invited_by_user_id):', e);
     }
 
     for (const t of tables) {
