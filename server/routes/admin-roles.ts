@@ -165,6 +165,13 @@ router.get("/roles", async (_req, res) => {
 router.post("/roles", async (req, res) => {
   const raw = req.body || {};
   if (typeof raw.name === "string") raw.name = toSlug(raw.name);
+  // Accept permission objects and convert them to key arrays
+  if (raw.permissions && !Array.isArray(raw.permissions)) {
+    raw.permissions = Object.entries(raw.permissions)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
+  }
+  if (!raw.permissions) raw.permissions = [];
   const parsed = CreateRoleZ.safeParse(raw);
   if (!parsed.success) {
     const msg = parsed.error.issues.map((i) => i.message).join(", ");
@@ -212,6 +219,11 @@ router.patch("/roles/:id", async (req, res) => {
   const id = Number(req.params.id);
   const raw = req.body || {};
   if (typeof raw.name === "string") raw.name = toSlug(raw.name);
+  if (raw.permissions && !Array.isArray(raw.permissions)) {
+    raw.permissions = Object.entries(raw.permissions)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
+  }
   const parsed = UpdateRoleZ.safeParse(raw);
   if (!parsed.success) {
     const msg = parsed.error.issues.map((i) => i.message).join(", ");
