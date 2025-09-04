@@ -352,7 +352,25 @@ class SecurityMiddleware {
 
 export const securityMiddleware = SecurityMiddleware.getInstance();
 
-export function requireAdmin(req: any, res: any, next: any) {
+export function requireAdmin(arg1: any, arg2?: any, arg3?: any): any {
+  if (typeof arg1 === "string") {
+    const permission = arg1;
+    return (req: any, res: any, next: any) => {
+      const user = (req as any).user;
+      const role = user?.role;
+      if (!user || (!user.isAdmin && role !== "admin" && role !== "super_admin")) {
+        return res.status(403).json({ message: "Administrator privileges required" });
+      }
+      if (permission && !(user?.permissions || []).includes(permission)) {
+        return res.status(403).json({ message: `Missing permission: ${permission}` });
+      }
+      next();
+    };
+  }
+
+  const req = arg1;
+  const res = arg2;
+  const next = arg3;
   const user = (req as any).user;
   const role = user?.role;
   if (!user || (!user.isAdmin && role !== "admin" && role !== "super_admin")) {
