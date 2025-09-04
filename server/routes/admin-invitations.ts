@@ -12,7 +12,7 @@ r.get("/", async (_req, res) => {
     const rows = await db.select().from(roleInvitations).orderBy(roleInvitations.createdAt);
     return res.status(200).json(rows);
   } catch (err: any) {
-    if (err.code === "42P01") return res.status(200).json([]);
+    if (err.code === "42P01" || err.code === "42703") return res.status(200).json([]);
     console.error("Error fetching invitations:", err);
     return res.status(500).json({ message: "Failed to fetch invitations" });
   }

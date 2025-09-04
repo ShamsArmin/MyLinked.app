@@ -36,7 +36,8 @@ export default function AdminFunnelsPage() {
   async function openEdit(f: Funnel) {
     // Fetch full funnel details so the builder has the latest steps
     const full = await apiRequest("GET", `/api/admin/funnels/${f.id}`);
-    const steps = full.steps ?? full.steps_json ?? full.stepsJson ?? [];
+    const raw = full.steps ?? full.steps_json ?? full.stepsJson ?? [];
+    const steps = typeof raw === "string" ? JSON.parse(raw) : raw;
     setEditing({
       id: full.id,
       name: full.name,
@@ -71,7 +72,7 @@ export default function AdminFunnelsPage() {
             <TableRow key={f.id}>
               <TableCell>{f.name}</TableCell>
               <TableCell>{f.windowSeconds / 3600}h</TableCell>
-              <TableCell>{f.steps?.length ?? 0}</TableCell>
+              <TableCell>{f.steps?.map(s => s.eventKey).join(" → ") || "—"}</TableCell>
               <TableCell>{f.lastComputedAt ? new Date(f.lastComputedAt).toLocaleString() : "—"}</TableCell>
               <TableCell>{f.conversionRate != null ? `${(f.conversionRate * 100).toFixed(1)}%` : "—"}</TableCell>
               <TableCell>{f.ownerName ?? "—"}</TableCell>
