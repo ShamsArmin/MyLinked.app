@@ -34,6 +34,7 @@ import VisitorProfileNew from "./pages/visitor-profile-new";
 import TestVisitor from "./pages/test-visitor";
 import EnhancedAdminPanel from "./pages/enhanced-admin-panel";
 import ProfessionalAdminDashboard from "./pages/professional-admin-dashboard";
+import FunnelResultsPage from "./pages/admin/conversion/funnels/[id]";
 import AdminLogin from "./pages/admin-login";
 import AcceptInvitePage from "./pages/accept-invite";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -148,6 +149,7 @@ function Router() {
         <Route path="/reset-password" component={ResetPasswordPage} />
         
         <Route path="/admin/login" component={AdminLogin} />
+        <AdminProtectedRoute path="/admin/conversion/funnels/:id" component={FunnelResultsPage} />
         <AdminProtectedRoute path="/admin" component={ProfessionalAdminDashboard} />
         <ProtectedRoute path="/admin-legacy" component={EnhancedAdminPanel} />
         <Route path="/accept-invite" component={AcceptInvitePage} />

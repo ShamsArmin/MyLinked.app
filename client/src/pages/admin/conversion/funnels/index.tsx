@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/router";
+import { useLocation } from "wouter";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,7 +19,7 @@ interface Funnel {
 }
 
 export default function AdminFunnelsPage() {
-  const router = useRouter();
+  const [, setLocation] = useLocation();
   const { data } = useQuery<{ funnels: Funnel[] }>({
     queryKey: ["funnels"],
     queryFn: async () => {
@@ -72,7 +72,7 @@ export default function AdminFunnelsPage() {
               <TableCell>{f.tags?.join(", ") ?? ""}</TableCell>
               <TableCell>
                 <FunnelActionsMenu
-                  onView={() => router.push(`/admin/conversion/funnels/${f.id}`)}
+                  onView={() => setLocation(`/admin/conversion/funnels/${f.id}`)}
                   onEdit={() => openEdit(f)}
                   onDuplicate={() => alert(`Duplicate ${f.name}`)}
                   onCompare={() => alert(`Compare ${f.name}`)}

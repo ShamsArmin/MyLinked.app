@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -8,8 +8,8 @@ interface Funnel {
 }
 
 export default function FunnelResultsPage() {
-  const router = useRouter();
-  const { id } = router.query;
+  const [match, params] = useRoute("/admin/conversion/funnels/:id");
+  const id = params?.id;
   const { data } = useQuery<{ funnel: Funnel } | undefined>({
     queryKey: ["funnel", id],
     enabled: !!id,
@@ -19,7 +19,7 @@ export default function FunnelResultsPage() {
     },
   });
 
-  if (!id) return null;
+  if (!match || !id) return null;
 
   const name = data?.funnel?.name ?? "Funnel";
   return (
