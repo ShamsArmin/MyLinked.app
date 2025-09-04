@@ -33,6 +33,7 @@ import { EmailManagement } from "@/components/email-management";
 import { AICampaignManager } from "@/components/ai-campaign-manager";
 import { UserActionsMenu } from "@/components/admin/user-actions-menu";
 import { SegmentActionsMenu } from "@/components/admin/segment-actions-menu";
+import AdminFunnelsPage from "./admin/conversion/funnels";
 
 // Role and Permission types
 interface Role {
@@ -178,8 +179,6 @@ export default function ProfessionalAdminDashboard() {
   const [abTestDialogOpen, setAbTestDialogOpen] = useState(false);
   const [viewAbTest, setViewAbTest] = useState<AbTest | null>(null);
   const [analyzeAbTest, setAnalyzeAbTest] = useState<AbTest | null>(null);
-  const [funnelDialogOpen, setFunnelDialogOpen] = useState(false);
-  const [newFunnelName, setNewFunnelName] = useState("");
 
   useEffect(() => {
     const savedAbTests = localStorage.getItem('adminAbTests');
@@ -247,20 +246,6 @@ export default function ProfessionalAdminDashboard() {
     }
   };
 
-  const handleCreateFunnel = async () => {
-    try {
-      await apiRequest("POST", "/api/admin/funnels", {
-        name: newFunnelName,
-        windowSeconds: 86400,
-        steps: [],
-      });
-      setFunnelDialogOpen(false);
-      setNewFunnelName("");
-      toast({ title: "Funnel created" });
-    } catch {
-      toast({ title: "Failed to create funnel", variant: "destructive" });
-    }
-  };
 
   const handleBulkAction = (segment: Segment, action: string) => {
     toast({ title: `Bulk action: ${action}`, description: 'Not implemented' });
@@ -1385,96 +1370,7 @@ export default function ProfessionalAdminDashboard() {
               </Card>
             </div>
 
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Conversion Funnels</CardTitle>
-                    <CardDescription>Track user journey and conversion points</CardDescription>
-                  </div>
-                  <Dialog open={funnelDialogOpen} onOpenChange={setFunnelDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <Target className="h-4 w-4 mr-2" />
-                        New Funnel
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>New Funnel</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label>Name</Label>
-                          <Input value={newFunnelName} onChange={(e) => setNewFunnelName(e.target.value)} />
-                        </div>
-                      </div>
-                      <div className="mt-4 flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setFunnelDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handleCreateFunnel} disabled={!newFunnelName}>Save</Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Target className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Signup Funnel</h4>
-                        <p className="text-sm text-muted-foreground">Landing → Signup → Onboarding</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-sm">
-                        <div className="font-medium">24.5% conversion</div>
-                        <div className="text-muted-foreground">12,450 visitors</div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          toast({ title: 'View signup funnel', description: 'Analysis not implemented' })
-                        }
-                      >
-                        <BarChart3 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <DollarSign className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Purchase Funnel</h4>
-                        <p className="text-sm text-muted-foreground">Product → Cart → Checkout → Payment</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-sm">
-                        <div className="font-medium">12.8% conversion</div>
-                        <div className="text-muted-foreground">5,890 visitors</div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          toast({ title: 'View purchase funnel', description: 'Analysis not implemented' })
-                        }
-                      >
-                        <BarChart3 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <AdminFunnelsPage />
           </TabsContent>
 
           {/* Business Analytics */}
