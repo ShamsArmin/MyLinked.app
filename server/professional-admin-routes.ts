@@ -74,18 +74,23 @@ professionalAdminRouter.post("/logout", (req: Request, res: Response) => {
   });
 });
 
-// Middleware to check admin privileges
-function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const user = req.user as any;
-  const role = user?.role;
-  if (!user || (!user.isAdmin && role !== 'admin' && role !== 'super_admin')) {
-    return res.status(403).json({ message: "Administrator privileges required" });
-  }
-  next();
+// Middleware to check admin privileges with optional permission
+function requireAdmin(permission?: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const role = user?.role;
+    if (!user || (!user.isAdmin && role !== 'admin' && role !== 'super_admin')) {
+      return res.status(403).json({ message: 'Administrator privileges required' });
+    }
+    if (permission && !(user?.permissions || []).includes(permission)) {
+      return res.status(403).json({ message: `Missing permission: ${permission}` });
+    }
+    next();
+  };
 }
 
 // Enhanced Users with Roles endpoint
-professionalAdminRouter.get("/users-with-roles", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.get("/users-with-roles", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const usersWithRoles = await db
       .select({
@@ -115,7 +120,7 @@ professionalAdminRouter.get("/users-with-roles", isAuthenticated, requireAdmin, 
 });
 
 // Update user details
-professionalAdminRouter.put("/users/:id", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.put("/users/:id", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name, email, department, isActive } = req.body;
@@ -156,74 +161,22 @@ professionalAdminRouter.put("/users/:id", isAuthenticated, requireAdmin, async (
 });
 
 // Roles management endpoints
-professionalAdminRouter.get("/roles", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
-  try {
-    let allRoles = await db.select().from(roles).orderBy(roles.name);
-
-    // If no roles exist yet, seed the table with default system roles so the
-    // admin UI has options to display in the "Assign Role" dialog.
-    if (allRoles.length === 0) {
-      const defaultRoles = [
-        {
-          name: "super_admin",
-          displayName: "Super Administrator",
-          description: "Full system access with all permissions",
-          permissions: [
-            "user_read",
-            "user_write",
-            "user_delete",
-            "role_manage",
-            "system_admin",
-            "analytics_view",
-            "employee_manage",
-          ],
-          isSystem: true,
-        },
-        {
-          name: "admin",
-          displayName: "Administrator",
-          description: "Administrative access with user management",
-          permissions: ["user_read", "user_write", "analytics_view", "employee_manage"],
-          isSystem: true,
-        },
-        {
-          name: "developer",
-          displayName: "Developer",
-          description: "Development team member",
-          permissions: ["user_read", "analytics_view"],
-          isSystem: true,
-        },
-        {
-          name: "employee",
-          displayName: "Employee",
-          description: "Standard employee access",
-          permissions: ["user_read"],
-          isSystem: true,
-        },
-        {
-          name: "moderator",
-          displayName: "Moderator",
-          description: "Content moderation privileges",
-          permissions: ["user_read", "user_write"],
-          isSystem: true,
-        },
-      ];
-
-      for (const role of defaultRoles) {
-        await db.insert(roles).values(role).onConflictDoNothing();
-      }
-
-      allRoles = await db.select().from(roles).orderBy(roles.name);
+professionalAdminRouter.get(
+  "/roles",
+  isAuthenticated,
+  requireAdmin(),
+  async (_req: Request, res: Response) => {
+    try {
+      const allRoles = await db.select().from(roles).orderBy(roles.name);
+      res.json(allRoles);
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      res.status(500).json({ message: "Failed to fetch roles" });
     }
-
-    res.json(allRoles);
-  } catch (error) {
-    console.error("Error fetching roles:", error);
-    res.status(500).json({ message: "Failed to fetch roles" });
   }
-});
+);
 
-professionalAdminRouter.post("/roles", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.post("/roles", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const { name, displayName, description, permissions: rolePermissions } = req.body;
     
@@ -246,7 +199,7 @@ professionalAdminRouter.post("/roles", isAuthenticated, requireAdmin, async (req
 });
 
 // Update role
-professionalAdminRouter.put("/roles/:id", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.put("/roles/:id", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name, displayName, description, permissions: rolePermissions } = req.body;
@@ -281,53 +234,80 @@ professionalAdminRouter.put("/roles/:id", isAuthenticated, requireAdmin, async (
 });
 
 // Delete role
-professionalAdminRouter.delete("/roles/:id", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    
-    // Check if role exists and is not a system role
-    const [existingRole] = await db.select().from(roles).where(eq(roles.id, parseInt(id)));
-    if (!existingRole) {
-      return res.status(404).json({ message: "Role not found" });
+professionalAdminRouter.delete(
+  "/roles/:id",
+  isAuthenticated,
+  requireAdmin(),
+  async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const force = req.query.force === "true" || req.query.force === "1";
+      const reassignTo = req.query.reassignTo
+        ? parseInt(req.query.reassignTo as string)
+        : undefined;
+
+      const [existingRole] = await db.select().from(roles).where(eq(roles.id, id));
+      if (!existingRole) {
+        return res.status(404).json({ message: "Role not found" });
+      }
+
+      if (existingRole.isSystem) {
+        return res.status(400).json({ message: "Cannot delete system roles" });
+      }
+
+      const [roleUsage] = await db
+        .select({ count: count() })
+        .from(userRoles)
+        .where(eq(userRoles.roleId, id));
+
+      if (roleUsage.count > 0) {
+        if (!force || !reassignTo) {
+          return res.status(400).json({
+            message: `Role has ${roleUsage.count} member(s)`,
+          });
+        }
+
+        const [targetRole] = await db
+          .select()
+          .from(roles)
+          .where(eq(roles.id, reassignTo));
+        if (!targetRole) {
+          return res.status(400).json({ message: "Reassign role not found" });
+        }
+
+        await db
+          .update(userRoles)
+          .set({ roleId: reassignTo })
+          .where(eq(userRoles.roleId, id));
+      }
+
+      await db.delete(roles).where(eq(roles.id, id));
+
+      res.json({ message: "Role deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting role:", error);
+      res.status(500).json({ message: "Failed to delete role" });
     }
-    
-    if (existingRole.isSystem) {
-      return res.status(400).json({ message: "Cannot delete system roles" });
-    }
-
-    // Check if role is assigned to any users
-    const [roleUsage] = await db
-      .select({ count: count() })
-      .from(userRoles)
-      .where(eq(userRoles.roleId, parseInt(id)));
-
-    if (roleUsage.count > 0) {
-      return res.status(400).json({ 
-        message: `Cannot delete role. It is assigned to ${roleUsage.count} user(s)` 
-      });
-    }
-
-    await db.delete(roles).where(eq(roles.id, parseInt(id)));
-
-    res.json({ message: "Role deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting role:", error);
-    res.status(500).json({ message: "Failed to delete role" });
   }
-});
+);
 
 // Permissions management
 professionalAdminRouter.get(
   "/permissions",
   isAuthenticated,
-  requireAdmin,
+  requireAdmin("role_manage"),
   async (_req: Request, res: Response) => {
     try {
-      const allPermissions = await db
+      const rows = await db
         .select()
         .from(permissions)
         .orderBy(permissions.category, permissions.name);
-      res.json(allPermissions);
+      const list = rows.map((p) => ({
+        key: p.name,
+        group: p.category,
+        description: p.description,
+      }));
+      res.json(list);
     } catch (error) {
       console.error("Error fetching permissions:", error);
       res.status(200).json([]);
@@ -338,7 +318,7 @@ professionalAdminRouter.get(
 professionalAdminRouter.get(
   "/professional/analytics",
   isAuthenticated,
-  requireAdmin,
+  requireAdmin(),
   async (req: Request, res: Response) => {
     const { from = null, to = null } = req.query;
     res.json({
@@ -352,7 +332,7 @@ professionalAdminRouter.get(
 );
 
 // Send role invitation via email
-professionalAdminRouter.post("/invite-user", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.post("/invite-user", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const { email, roleId, recipientName } = req.body;
     
@@ -411,7 +391,7 @@ professionalAdminRouter.post("/invite-user", isAuthenticated, requireAdmin, asyn
 });
 
 // Assign role to existing user
-professionalAdminRouter.post("/assign-role", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.post("/assign-role", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const { userId, roleId, sendNotification = true } = req.body;
     
@@ -466,7 +446,7 @@ professionalAdminRouter.post("/assign-role", isAuthenticated, requireAdmin, asyn
 });
 
 // Get pending invitations
-professionalAdminRouter.get("/invitations", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.get("/invitations", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const invitations = await db.execute(sql`
       SELECT 
@@ -491,7 +471,7 @@ professionalAdminRouter.get("/invitations", isAuthenticated, requireAdmin, async
 });
 
 // Cancel invitation
-professionalAdminRouter.delete("/invitations/:id", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.delete("/invitations/:id", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     
@@ -509,7 +489,7 @@ professionalAdminRouter.delete("/invitations/:id", isAuthenticated, requireAdmin
 });
 
 // Employee management endpoints
-professionalAdminRouter.get("/employees", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.get("/employees", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const employees = await db
       .select({
@@ -546,7 +526,7 @@ professionalAdminRouter.get("/employees", isAuthenticated, requireAdmin, async (
   }
 });
 
-professionalAdminRouter.post("/employees", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.post("/employees", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const {
       userId,
@@ -587,7 +567,7 @@ professionalAdminRouter.post("/employees", isAuthenticated, requireAdmin, async 
 });
 
 // Professional analytics endpoint
-professionalAdminRouter.get("/professional/analytics/:timeRange", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.get("/professional/analytics/:timeRange", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const { timeRange } = req.params;
     const days = timeRange === "1d" ? 1 : timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90;
@@ -652,7 +632,7 @@ professionalAdminRouter.get("/professional/analytics/:timeRange", isAuthenticate
 });
 
 // System metrics endpoint
-professionalAdminRouter.get("/system/metrics", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.get("/system/metrics", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     // Get system health metrics
     const totalUsers = await db.select({ count: count() }).from(users);
@@ -686,7 +666,7 @@ professionalAdminRouter.get("/system/metrics", isAuthenticated, requireAdmin, as
 });
 
 // Initialize default roles and permissions
-professionalAdminRouter.post("/initialize-system", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.post("/initialize-system", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     // Create default permissions
     const defaultPermissions = [
@@ -754,7 +734,7 @@ professionalAdminRouter.post("/initialize-system", isAuthenticated, requireAdmin
 });
 
 // Bulk user actions
-professionalAdminRouter.post("/users/bulk-action", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.post("/users/bulk-action", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const { userIds, action, value } = req.body;
 
@@ -783,7 +763,7 @@ professionalAdminRouter.post("/users/bulk-action", isAuthenticated, requireAdmin
 });
 
 // Export user data
-professionalAdminRouter.get("/users/:userId/export", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+professionalAdminRouter.get("/users/:userId/export", isAuthenticated, requireAdmin(), async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     

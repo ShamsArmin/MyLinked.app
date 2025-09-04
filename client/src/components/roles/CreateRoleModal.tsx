@@ -25,10 +25,12 @@ export default function CreateRoleModal() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    api.get<PermissionDef[]>("/api/admin/permissions")
-      .then(res => setCatalog(res.data ?? []))
+    if (!open) return;
+    api
+      .get<PermissionDef[]>("/api/admin/permissions")
+      .then((res) => setCatalog(res.data ?? []))
       .catch(() => setCatalog([]));
-  }, []);
+  }, [open]);
 
   const toggle = (key: string) =>
     setSelected(prev => {
@@ -82,17 +84,31 @@ export default function CreateRoleModal() {
           </div>
           <div>
             <Label>Permissions</Label>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              {catalog.map(p => (
-                <label key={p.key} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    data-key={p.key}
-                    checked={selected.has(p.key)}
-                    onChange={e => toggle(e.currentTarget.dataset.key!)}
-                  />
-                  <span>{p.key}</span>
-                </label>
+            <div className="mt-2 space-y-4">
+              {Object.entries(
+                catalog.reduce<Record<string, PermissionDef[]>>((acc, p) => {
+                  const g = p.group || "other";
+                  acc[g] = acc[g] || [];
+                  acc[g].push(p);
+                  return acc;
+                }, {})
+              ).map(([group, perms]) => (
+                <div key={group}>
+                  <div className="font-medium mb-1">{group}</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {perms.map((p) => (
+                      <label key={p.key} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          data-key={p.key}
+                          checked={selected.has(p.key)}
+                          onChange={(e) => toggle(e.currentTarget.dataset.key!)}
+                        />
+                        <span>{p.key}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
