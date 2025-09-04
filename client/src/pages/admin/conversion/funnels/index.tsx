@@ -36,11 +36,14 @@ export default function AdminFunnelsPage() {
   async function openEdit(f: Funnel) {
     // Fetch full funnel details so the builder has the latest steps
     const full = await apiRequest("GET", `/api/admin/funnels/${f.id}`);
-    const steps = Array.isArray(full.steps)
-      ? full.steps
-      : typeof full.steps === "string"
-        ? JSON.parse(full.steps)
-        : [];
+    const raw = (full as any).steps;
+    const steps = Array.isArray(raw)
+      ? raw
+      : typeof raw === "string"
+        ? JSON.parse(raw)
+        : Array.isArray(raw?.steps)
+          ? raw.steps
+          : [];
     setEditing({
       id: full.id,
       name: full.name,
@@ -73,7 +76,7 @@ export default function AdminFunnelsPage() {
         <TableBody>
           {funnels.map(f => {
             const raw = (f as any).steps;
-            const parsed = Array.isArray(raw)
+            const stepsArr = Array.isArray(raw)
               ? raw
               : typeof raw === "string"
                 ? (() => {
@@ -83,13 +86,15 @@ export default function AdminFunnelsPage() {
                       return [];
                     }
                   })()
-                : raw?.steps ?? [];
+                : Array.isArray(raw?.steps)
+                  ? raw.steps
+                  : [];
             return (
               <TableRow key={f.id}>
                 <TableCell>{f.name}</TableCell>
                 <TableCell>{f.windowSeconds / 3600}h</TableCell>
                 <TableCell>
-                  {parsed.length ? parsed.map((s: any) => s.event).join(" → ") : "—"}
+                  {stepsArr.length ? stepsArr.map((s: any) => s.event || s).join(" → ") : "—"}
                 </TableCell>
                 <TableCell>{f.lastComputedAt ? new Date(f.lastComputedAt).toLocaleString() : "—"}</TableCell>
                 <TableCell>{f.conversionRate != null ? `${(f.conversionRate * 100).toFixed(1)}%` : "—"}</TableCell>
