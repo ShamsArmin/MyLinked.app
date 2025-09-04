@@ -739,7 +739,7 @@ export default function ProfessionalAdminDashboard() {
 
         {/* Main Administration Tabs */}
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="flex flex-wrap w-full h-auto">
+          <TabsList className="flex flex-wrap w-full h-auto gap-2 mb-4 relative">
             <TabsTrigger value="users">
               <Users className="h-4 w-4 mr-2" />
               Users
