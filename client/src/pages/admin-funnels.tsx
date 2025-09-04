@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { FunnelActionsMenu } from "@/components/admin/funnel-actions-menu";
 
 interface Funnel {
   id: string;
@@ -65,6 +66,7 @@ export default function AdminFunnelsPage() {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Window (s)</TableHead>
+            <TableHead className="w-0">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -72,6 +74,18 @@ export default function AdminFunnelsPage() {
             <TableRow key={f.id}>
               <TableCell>{f.name}</TableCell>
               <TableCell>{f.windowSeconds}</TableCell>
+              <TableCell>
+                <FunnelActionsMenu
+                  onView={() => alert(`View results for ${f.name}`)}
+                  onEdit={() => alert(`Edit ${f.name}`)}
+                  onDuplicate={() => alert(`Duplicate ${f.name}`)}
+                  onCompare={() => alert(`Compare ${f.name}`)}
+                  onExport={() => alert(`Export ${f.name}`)}
+                  onAnnotate={() => alert(`Annotate ${f.name}`)}
+                  onArchive={() => alert(`Archive ${f.name}`)}
+                  onDelete={() => alert(`Delete ${f.name}`)}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
