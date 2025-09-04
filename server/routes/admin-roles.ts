@@ -11,41 +11,7 @@ import {
 } from "../../shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { isAuthenticated } from "../auth";
-
-const PERMISSIONS: Array<{ key: string; group: string; description: string }> = [
-  { key: "user_read", group: "users", description: "View users" },
-  { key: "user_write", group: "users", description: "Edit users" },
-  { key: "user_delete", group: "users", description: "Delete users" },
-  { key: "segment_manage", group: "segments", description: "Create/edit segments" },
-  { key: "ab_manage", group: "experiments", description: "Manage A/B tests" },
-  { key: "analytics_view", group: "analytics", description: "View analytics" },
-  { key: "funnel_manage", group: "analytics", description: "Create/edit funnels" },
-  { key: "invitation_manage", group: "admin", description: "Manage invitations" },
-  { key: "role_manage", group: "admin", description: "Create/edit roles" },
-  { key: "settings_manage", group: "settings", description: "Manage app settings" },
-  { key: "platform_manage", group: "platforms", description: "Manage integrations" },
-  { key: "email_broadcast", group: "email", description: "Send email campaigns" },
-  { key: "billing_view", group: "billing", description: "View billing" },
-  { key: "billing_manage", group: "billing", description: "Manage billing" },
-];
-
-function requireAdmin(permission: string) {
-  return (req: any, res: any, next: any) => {
-    const user = req.user as any;
-    const role = user?.role;
-    const perms: string[] = user?.permissions || [];
-    if (
-      !user ||
-      (!user.isAdmin &&
-        role !== "admin" &&
-        role !== "super_admin" &&
-        !perms.includes(permission))
-    ) {
-      return res.status(403).json({ message: "Administrator privileges required" });
-    }
-    next();
-  };
-}
+import { requireAdmin } from "../require-admin";
 
 async function logAction(actorId: string, action: string, payload?: any) {
   await db.insert(auditLogs).values({ actorId, action, payload });
@@ -83,87 +49,13 @@ router.use((_req, res, next) => {
   res.set("Cache-Control", "no-store");
   next();
 });
-
-router.get("/permissions", async (_req, res) => {
-  let all = await db.select().from(permissions);
-  if (all.length === 0) {
-    await db.insert(permissions).values(PERMISSIONS).onConflictDoNothing();
-    all = await db.select().from(permissions);
-  }
-  res.json(all);
-});
-
-const SYSTEM_ROLES: Array<{
-  name: string;
-  displayName: string;
-  description: string;
-  permissions: string[];
-}> = [
-  {
-    name: "super_admin",
-    displayName: "Super Administrator",
-    description: "Full system access with all permissions",
-    permissions: PERMISSIONS.map((p) => p.key),
-  },
-  {
-    name: "admin",
-    displayName: "Administrator",
-    description: "Administrative access with user management",
-    permissions: [
-      "user_read",
-      "user_write",
-      "analytics_view",
-      "role_manage",
-    ],
-  },
-  {
-    name: "moderator",
-    displayName: "Moderator",
-    description: "Limited moderation access",
-    permissions: ["user_read"],
-  },
-  {
-    name: "employee",
-    displayName: "Employee",
-    description: "Standard employee access",
-    permissions: ["user_read"],
-  },
-];
-
-export async function ensureSeedRoles() {
-  await db.insert(permissions).values(PERMISSIONS).onConflictDoNothing();
-  const existing = await db.select().from(roles).limit(1);
-  if (existing.length === 0) {
-    await db.transaction(async (tx) => {
-      for (const role of SYSTEM_ROLES) {
-        const [r] = await tx
-          .insert(roles)
-          .values({
-            name: role.name,
-            displayName: role.displayName,
-            description: role.description,
-            isSystem: true,
-          })
-          .returning();
-        if (role.permissions.length) {
-          await tx.insert(rolePermissions).values(
-            role.permissions.map((p) => ({ roleId: r.id, permissionKey: p }))
-          );
-        }
-      }
-    });
-  }
-}
-
 router.get("/roles", async (_req, res) => {
-  await ensureSeedRoles();
   const rs = await db.select().from(roles);
   const full = await Promise.all(rs.map((r) => loadRoleWithPermissions(r.id)));
   res.json(full);
 });
 
 router.post("/roles", async (req, res) => {
-  await ensureSeedRoles();
   const raw = req.body || {};
   if (typeof raw.name === "string") raw.name = toSlug(raw.name);
   // Accept permission objects and convert them to key arrays

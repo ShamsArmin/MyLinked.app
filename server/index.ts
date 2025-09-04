@@ -8,7 +8,8 @@ import bcrypt from "bcrypt";
 import { sql, eq } from "drizzle-orm";
 import { users } from "../shared/schema";
 import { registerRoutes } from "./routes";
-import { ensureSeedRoles } from "./routes/admin-roles";
+import { seedPermissions } from "../seeds/01_permissions";
+import { seedSystemRoles } from "../seeds/02_roles";
 import { setupVite, serveStatic, log } from "./vite";
 import { monitor } from "./monitoring";
 import { securityMiddleware } from "./security-middleware";
@@ -380,7 +381,8 @@ app.use((req, res, next) => {
     console.error('Database smoke test failed:', err);
   }
 
-  await ensureSeedRoles();
+  await seedPermissions();
+  await seedSystemRoles();
   const server = await registerRoutes(app);
 
   app.use(referralRequestsRouter);
