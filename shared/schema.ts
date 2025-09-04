@@ -1020,3 +1020,15 @@ export const updateFunnelSchema = insertFunnelSchema.partial();
 export type Funnel = typeof funnels.$inferSelect;
 export type InsertFunnel = z.infer<typeof insertFunnelSchema>;
 export type UpdateFunnel = z.infer<typeof updateFunnelSchema>;
+
+export const roleInvitations = pgTable("role_invitations", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: text("email").notNull(),
+  roleId: integer("role_id").notNull(),
+  invitedByUserId: uuid("invited_by_user_id").notNull(),
+  token: text("token").notNull(),
+  status: text("status").default("pending"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+});

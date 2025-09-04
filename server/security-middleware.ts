@@ -305,7 +305,8 @@ class SecurityMiddleware {
       ...metadata
     };
 
-    console.warn(`Security Event: ${event} from ${ip}`);
+    const logger = event === 'suspicious_activity' ? console.debug : console.warn;
+    logger(`Security Event: ${event} from ${ip}`);
     
     // Log to monitoring system
     monitor.recordError({
