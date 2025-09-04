@@ -33,8 +33,17 @@ export default function AdminFunnelsPage() {
     setBuilderOpen(true);
   }
 
-  function openEdit(f: Funnel) {
-    setEditing({ id: f.id, name: f.name, description: "", windowSeconds: f.windowSeconds, steps: f.steps });
+  async function openEdit(f: Funnel) {
+    // Fetch full funnel details so the builder has the latest steps
+    const full = await apiRequest("GET", `/api/admin/funnels/${f.id}`);
+    const steps = full.steps ?? full.steps_json ?? full.stepsJson ?? [];
+    setEditing({
+      id: full.id,
+      name: full.name,
+      description: full.description || "",
+      windowSeconds: full.windowSeconds,
+      steps,
+    });
     setBuilderOpen(true);
   }
 
