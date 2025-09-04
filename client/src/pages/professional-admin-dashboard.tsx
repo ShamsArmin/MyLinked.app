@@ -17,7 +17,7 @@ import {
   Crown, Users, Activity, Settings, Shield, AlertTriangle,
   TrendingUp, Database, Globe, Link, Eye, BarChart, 
   PieChart, Calendar, Download, Upload, Server, 
-  Wifi, HardDrive, Cpu, Monitor, UserPlus, Edit, Trash2,
+  Wifi, HardDrive, Cpu, Monitor, UserPlus, Edit,
   Building, Briefcase, DollarSign, Award, Clock,
   Filter, Search, Plus, X, ChevronDown, Mail, Loader2,
   Target, Zap, TrendingDown, MousePointer, Share2, 
@@ -88,6 +88,13 @@ interface Segment {
   ownerName?: string | null;
   tags?: string[] | null;
 }
+
+const toSlug = (str: string) =>
+  str
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9_]+/g, "_")
+    .replace(/^_+|_+$/g, "");
 
 export default function ProfessionalAdminDashboard() {
   const { user } = useAuth();
@@ -1564,19 +1571,20 @@ export default function ProfessionalAdminDashboard() {
                           </Button>
                           <Button
                             onClick={() => {
-                              const slugOk = /^[a-z0-9_]+$/.test(roleFormData.name);
-                              if (!slugOk) {
+                              const slug = toSlug(roleFormData.name);
+                              if (!slug || slug.length < 3) {
                                 toast({
                                   title: "Invalid role name",
-                                  description: "Use lowercase letters, numbers, or underscores",
+                                  description:
+                                    "Use letters, numbers, or underscores",
                                   variant: "destructive",
                                 });
                                 return;
                               }
-                              if (roleFormData.name && roleFormData.displayName) {
+                              if (roleFormData.displayName) {
                                 createRoleMutation.mutate({
-                                  name: roleFormData.name,
-                                  displayName: roleFormData.displayName,
+                                  name: slug,
+                                  displayName: roleFormData.displayName.trim(),
                                   description: roleFormData.description,
                                   permissions: roleFormData.permissions,
                                 });
@@ -2528,18 +2536,18 @@ export default function ProfessionalAdminDashboard() {
                 <Button
                   onClick={() => {
                     if (selectedRole) {
-                      if (roleFormData.name && !/^[a-z0-9_]+$/.test(roleFormData.name)) {
+                      const slug = roleFormData.name ? toSlug(roleFormData.name) : undefined;
+                      if (roleFormData.name && (!slug || slug.length < 3)) {
                         toast({
                           title: "Invalid role name",
-                          description: "Use lowercase letters, numbers, or underscores",
+                          description: "Use letters, numbers, or underscores",
                           variant: "destructive",
                         });
                         return;
                       }
-                      updateRoleMutation.mutate({
-                        id: selectedRole.id,
-                        ...roleFormData,
-                      });
+                      const payload: any = { id: selectedRole.id, ...roleFormData };
+                      if (slug) payload.name = slug;
+                      updateRoleMutation.mutate(payload);
                     }
                   }}
                   disabled={updateRoleMutation.isPending}
@@ -2550,8 +2558,20 @@ export default function ProfessionalAdminDashboard() {
                   ) : null}
                   Update Role
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (selectedRole && confirm(`Are you sure you want to delete the role "${selectedRole.displayName}"?`)) {
+                      deleteRoleMutation.mutate(selectedRole.id);
+                      setIsEditRoleDialogOpen(false);
+                    }
+                  }}
+                  className="flex-1"
+                >
+                  Delete
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={() => setIsEditRoleDialogOpen(false)}
                   className="flex-1"
                 >

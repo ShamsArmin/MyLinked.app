@@ -51,8 +51,21 @@ async function logAction(actorId: string, action: string, payload?: any) {
   await db.insert(auditLogs).values({ actorId, action, payload });
 }
 
+function toSlug(input: string) {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9_]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
 const CreateRoleZ = z.object({
-  name: z.string().regex(/^[a-z0-9_]+$/).min(3),
+  name: z
+    .string()
+    .min(3)
+    .regex(/^[a-z0-9_]+$/, {
+      message: "Name must use lowercase letters, numbers, or underscores",
+    }),
   displayName: z.string().min(3),
   description: z.string().optional(),
   permissions: z.array(z.string()).min(0),
@@ -150,9 +163,12 @@ router.get("/roles", async (_req, res) => {
 });
 
 router.post("/roles", async (req, res) => {
-  const parsed = CreateRoleZ.safeParse(req.body);
+  const raw = req.body || {};
+  if (typeof raw.name === "string") raw.name = toSlug(raw.name);
+  const parsed = CreateRoleZ.safeParse(raw);
   if (!parsed.success) {
-    return res.status(422).json({ message: "Invalid payload" });
+    const msg = parsed.error.issues.map((i) => i.message).join(", ");
+    return res.status(422).json({ message: msg, issues: parsed.error.issues });
   }
   const body = parsed.data;
   try {
@@ -194,9 +210,12 @@ router.post("/roles", async (req, res) => {
 
 router.patch("/roles/:id", async (req, res) => {
   const id = Number(req.params.id);
-  const parsed = UpdateRoleZ.safeParse(req.body);
+  const raw = req.body || {};
+  if (typeof raw.name === "string") raw.name = toSlug(raw.name);
+  const parsed = UpdateRoleZ.safeParse(raw);
   if (!parsed.success) {
-    return res.status(422).json({ message: "Invalid payload" });
+    const msg = parsed.error.issues.map((i) => i.message).join(", ");
+    return res.status(422).json({ message: msg, issues: parsed.error.issues });
   }
   const body = parsed.data;
   try {
