@@ -138,17 +138,23 @@ export default function ProfessionalAdminDashboard() {
   });
 
   const [segmentDialogOpen, setSegmentDialogOpen] = useState(false);
-  const [newSegment, setNewSegment] = useState({ name: '', description: '' });
+  const [newSegment, setNewSegment] = useState({ name: "", description: "" });
   const [editingSegment, setEditingSegment] = useState<Segment | null>(null);
-  const [editSegmentData, setEditSegmentData] = useState({ name: '', description: '' });
+  const [editSegmentData, setEditSegmentData] = useState({ name: "", description: "" });
+  const [segmentSearch, setSegmentSearch] = useState("");
+  const [segmentTypeFilter, setSegmentTypeFilter] = useState<"all" | "dynamic" | "static">("all");
   const { data: segments = [] } = useQuery<Segment[]>({
-    queryKey: ['segments'],
+    queryKey: ["/api/admin/segments"],
     queryFn: async () => {
-      const res = await apiRequest('GET', '/api/admin/segments');
-      const json = await res.json();
-      return json.segments as Segment[];
+      const json = await apiRequest("GET", "/api/admin/segments");
+      return (json?.segments ?? []) as Segment[];
     },
   });
+  const filteredSegments = segments.filter(
+    (segment) =>
+      segment.name.toLowerCase().includes(segmentSearch.toLowerCase()) &&
+      (segmentTypeFilter === "all" || segment.type === segmentTypeFilter)
+  );
 
   const [abTests, setAbTests] = useState<AbTest[]>([
     {
@@ -197,7 +203,7 @@ export default function ProfessionalAdminDashboard() {
       await apiRequest('POST', '/api/admin/segments', newSegment);
       setNewSegment({ name: '', description: '' });
       setSegmentDialogOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['segments'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/segments'] });
       toast({ title: 'Segment created' });
     } catch {
       toast({ title: 'Failed to create segment', variant: 'destructive' });
@@ -209,7 +215,7 @@ export default function ProfessionalAdminDashboard() {
     try {
       await apiRequest('PATCH', `/api/admin/segments/${editingSegment.id}`, editSegmentData);
       setEditingSegment(null);
-      queryClient.invalidateQueries({ queryKey: ['segments'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/segments'] });
       toast({ title: 'Segment updated' });
     } catch {
       toast({ title: 'Failed to update segment', variant: 'destructive' });
@@ -223,7 +229,7 @@ export default function ProfessionalAdminDashboard() {
   const handleRefreshSegment = async (segment: Segment) => {
     try {
       await apiRequest('POST', `/api/admin/segments/${segment.id}/refresh`);
-      queryClient.invalidateQueries({ queryKey: ['segments'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/segments'] });
       toast({ title: 'Segment refreshed' });
     } catch {
       toast({ title: 'Failed to refresh segment', variant: 'destructive' });
@@ -260,7 +266,7 @@ export default function ProfessionalAdminDashboard() {
     if (!confirmed) return;
     try {
       await apiRequest('DELETE', `/api/admin/segments/${segment.id}`);
-      queryClient.invalidateQueries({ queryKey: ['segments'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/segments'] });
       toast({ title: 'Segment deleted' });
     } catch {
       toast({ title: 'Failed to delete segment', variant: 'destructive' });
@@ -1204,15 +1210,33 @@ export default function ProfessionalAdminDashboard() {
 
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <CardTitle>User Segmentation</CardTitle>
                     <CardDescription>Create and manage user segments</CardDescription>
                   </div>
-                  <Button onClick={() => setSegmentDialogOpen(true)}>
-                    <Users2 className="h-4 w-4 mr-2" />
-                    New Segment
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Search segments..."
+                      value={segmentSearch}
+                      onChange={(e) => setSegmentSearch(e.target.value)}
+                      className="w-48"
+                    />
+                    <Select value={segmentTypeFilter} onValueChange={(v) => setSegmentTypeFilter(v as any)}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="dynamic">Dynamic</SelectItem>
+                        <SelectItem value="static">Static</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={() => setSegmentDialogOpen(true)}>
+                      <Users2 className="h-4 w-4 mr-2" />
+                      New Segment
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -1229,7 +1253,7 @@ export default function ProfessionalAdminDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {segments.map(segment => (
+                    {filteredSegments.map(segment => (
                       <TableRow key={segment.id}>
                         <TableCell className="font-medium">{segment.name}</TableCell>
                         <TableCell className="capitalize">{segment.type}</TableCell>
