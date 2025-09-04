@@ -146,10 +146,12 @@ interface AuditLog {
 
 interface RolePermission {
   id: number;
-  role: string;
+  name: string;
+  displayName: string;
+  description: string | null;
   permissions: string[];
-  description: string;
-  userCount: number;
+  members: number;
+  isSystem: boolean;
 }
 
 export default function ProfessionalAdminPanel() {
@@ -964,8 +966,8 @@ export default function ProfessionalAdminPanel() {
                     <Card key={role.id} className="border-2 hover:border-blue-200 transition-colors">
                       <CardHeader>
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg capitalize">{role.role}</CardTitle>
-                          <Badge variant="outline">{role.userCount} users</Badge>
+                          <CardTitle className="text-lg capitalize">{role.displayName}</CardTitle>
+                          <Badge variant="outline">{role.members} users</Badge>
                         </div>
                         <CardDescription>{role.description}</CardDescription>
                       </CardHeader>

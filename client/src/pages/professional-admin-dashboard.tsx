@@ -40,9 +40,10 @@ interface Role {
   id: number;
   name: string;
   displayName: string;
-  description: string;
+  description: string | null;
   permissions: string[];
   isSystem: boolean;
+  members: number;
 }
 
 interface Permission {
@@ -1594,9 +1595,12 @@ export default function ProfessionalAdminDashboard() {
                             <CardTitle className="text-lg">{role.displayName}</CardTitle>
                             <CardDescription>{role.description}</CardDescription>
                           </div>
-                          {role.isSystem && (
-                            <Badge variant="secondary">System</Badge>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">{role.members} users</Badge>
+                            {role.isSystem && (
+                              <Badge variant="secondary">System</Badge>
+                            )}
+                          </div>
                         </div>
                       </CardHeader>
                       <CardContent>
