@@ -130,7 +130,7 @@ const SYSTEM_ROLES: Array<{
   },
 ];
 
-async function ensureSeedRoles() {
+export async function ensureSeedRoles() {
   await db.insert(permissions).values(PERMISSIONS).onConflictDoNothing();
   const existing = await db.select().from(roles).limit(1);
   if (existing.length === 0) {
@@ -163,6 +163,7 @@ router.get("/roles", async (_req, res) => {
 });
 
 router.post("/roles", async (req, res) => {
+  await ensureSeedRoles();
   const raw = req.body || {};
   if (typeof raw.name === "string") raw.name = toSlug(raw.name);
   // Accept permission objects and convert them to key arrays
@@ -178,6 +179,11 @@ router.post("/roles", async (req, res) => {
     return res.status(422).json({ message: msg, issues: parsed.error.issues });
   }
   const body = parsed.data;
+  const validKeys = new Set((await db.select().from(permissions)).map(p => p.key));
+  const invalid = body.permissions.filter(p => !validKeys.has(p));
+  if (invalid.length) {
+    return res.status(422).json({ message: `Unknown permission key: ${invalid.join(",")}`, code: "INVALID_PERMISSION" });
+  }
   try {
     const result = await db.transaction(async (tx) => {
       const [r] = await tx
@@ -204,11 +210,6 @@ router.post("/roles", async (req, res) => {
       return res
         .status(409)
         .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
-    }
-    if (err.code === "23503") {
-      return res
-        .status(422)
-        .json({ message: "Unknown permission key", code: "INVALID_PERMISSION" });
     }
     console.error("Create role failed:", err);
     return res.status(500).json({ message: "Failed to create role" });
@@ -255,6 +256,11 @@ router.patch("/roles/:id", async (req, res) => {
           .where(eq(roles.id, id));
       }
       if (body.permissions) {
+        const validKeys = new Set((await db.select().from(permissions)).map(p => p.key));
+        const invalid = body.permissions.filter(p => !validKeys.has(p));
+        if (invalid.length) {
+          throw { code: "INVALID_PERMISSION", keys: invalid };
+        }
         await tx.delete(rolePermissions).where(eq(rolePermissions.roleId, id));
         if (body.permissions.length) {
           await tx.insert(rolePermissions).values(
@@ -271,10 +277,10 @@ router.patch("/roles/:id", async (req, res) => {
       return res
         .status(409)
         .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
-    if (err.code === "23503")
+    if (err.code === "INVALID_PERMISSION")
       return res
         .status(422)
-        .json({ message: "Unknown permission key", code: "INVALID_PERMISSION" });
+        .json({ message: `Unknown permission key: ${err.keys.join(",")}`, code: "INVALID_PERMISSION" });
     console.error("Update role failed:", err);
     return res.status(500).json({ message: "Failed to update role" });
   }
