@@ -724,7 +724,7 @@ export default function ProfessionalAdminDashboard() {
 
         {/* Main Administration Tabs */}
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="flex flex-wrap w-full h-auto gap-2 mb-4 relative">
+          <TabsList className="flex flex-wrap w-full h-auto gap-2 mb-4">
             <TabsTrigger value="users">
               <Users className="h-4 w-4 mr-2" />
               Users
@@ -1170,7 +1170,7 @@ export default function ProfessionalAdminDashboard() {
           </TabsContent>
 
           {/* User Segmentation */}
-          <TabsContent value="segmentation" className="space-y-4">
+          <TabsContent value="segmentation" className="space-y-4 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardHeader className="pb-3">
@@ -1330,7 +1330,7 @@ export default function ProfessionalAdminDashboard() {
           </TabsContent>
 
           {/* Conversion Tracking */}
-          <TabsContent value="conversion" className="space-y-4">
+          <TabsContent value="conversion" className="space-y-4 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardHeader className="pb-3">
