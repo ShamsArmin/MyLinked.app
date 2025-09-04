@@ -46,25 +46,18 @@ interface Role {
   members: number;
 }
 
-interface Permission {
+interface PermissionDef {
   key: string;
   group: string;
   description: string | null;
+  label?: string;
 }
-
-type PermissionState = Record<string, boolean>;
 
 interface RoleFormData {
   name: string;
   displayName: string;
   description: string;
-  permissions: PermissionState;
 }
-
-const selectedPermissionKeys = (state: PermissionState) =>
-  Object.entries(state)
-    .filter(([, isOn]) => isOn)
-    .map(([key]) => key);
 
 interface CreateRolePayload {
   name: string;
@@ -148,8 +141,9 @@ export default function ProfessionalAdminDashboard() {
     name: "",
     displayName: "",
     description: "",
-    permissions: {},
   });
+  const [permissionCatalog, setPermissionCatalog] = useState<PermissionDef[]>([]);
+  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
   const [editFormData, setEditFormData] = useState({
     name: "",
     email: "",
@@ -347,11 +341,6 @@ export default function ProfessionalAdminDashboard() {
     enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
-  const { data: permissionsData, isLoading: permissionsLoading } = useQuery({
-    queryKey: ["/api/admin/permissions"],
-    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
-  });
-
   const { data: employeesData, isLoading: employeesLoading } = useQuery({
     queryKey: ["/api/admin/employees"],
     enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
@@ -372,6 +361,19 @@ export default function ProfessionalAdminDashboard() {
     enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
     refetchInterval: 30000,
   });
+
+  useEffect(() => {
+    if (isRoleDialogOpen || isEditRoleDialogOpen) {
+      (async () => {
+        try {
+          const list = await apiRequest("GET", "/api/admin/permissions");
+          setPermissionCatalog(Array.isArray(list) ? list : []);
+        } catch {
+          toast({ title: "Error", description: "Failed to load permissions", variant: "destructive" });
+        }
+      })();
+    }
+  }, [isRoleDialogOpen, isEditRoleDialogOpen, toast]);
 
   // Role management mutations
   const assignRoleMutation = useMutation({
@@ -395,7 +397,8 @@ export default function ProfessionalAdminDashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
       toast({ title: "Success", description: "Role created successfully" });
       setIsRoleDialogOpen(false);
-      setRoleFormData({ name: "", displayName: "", description: "", permissions: {} });
+      setRoleFormData({ name: "", displayName: "", description: "" });
+      setSelectedPermissions(new Set());
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -411,7 +414,8 @@ export default function ProfessionalAdminDashboard() {
       toast({ title: "Success", description: "Role updated successfully" });
       setIsEditRoleDialogOpen(false);
       setSelectedRole(null);
-      setRoleFormData({ name: "", displayName: "", description: "", permissions: {} });
+      setRoleFormData({ name: "", displayName: "", description: "" });
+      setSelectedPermissions(new Set());
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -610,7 +614,7 @@ export default function ProfessionalAdminDashboard() {
 
   const users = Array.isArray(usersData) ? usersData : [];
   const roles = Array.isArray(rolesData) ? rolesData : [];
-  const permissions = Array.isArray(permissionsData) ? permissionsData : [];
+  const permissions = permissionCatalog;
   const employees = Array.isArray(employeesData) ? employeesData : [];
   const invitations = Array.isArray(invitationsData) ? invitationsData : [];
   const analytics = analyticsData || {};
@@ -1561,18 +1565,17 @@ export default function ProfessionalAdminDashboard() {
                         <div>
                           <Label>Permissions</Label>
                           <div className="grid grid-cols-2 gap-2 mt-2">
-                            {permissions.map((permission: Permission) => (
+                            {permissionCatalog.map((permission: PermissionDef) => (
                               <div key={permission.key} className="flex items-center space-x-2">
                                 <Checkbox
                                   id={`perm-${permission.key}`}
-                                  checked={!!roleFormData.permissions[permission.key]}
+                                  checked={selectedPermissions.has(permission.key)}
                                   onCheckedChange={(checked) => {
-                                    setRoleFormData({
-                                      ...roleFormData,
-                                      permissions: {
-                                        ...roleFormData.permissions,
-                                        [permission.key]: Boolean(checked),
-                                      },
+                                    setSelectedPermissions((prev) => {
+                                      const next = new Set(prev);
+                                      if (checked) next.add(permission.key);
+                                      else next.delete(permission.key);
+                                      return next;
                                     });
                                   }}
                                 />
@@ -1584,10 +1587,14 @@ export default function ProfessionalAdminDashboard() {
                           </div>
                         </div>
                         <div className="flex justify-end gap-2">
-                          <Button variant="outline" onClick={() => {
-                            setIsRoleDialogOpen(false);
-                            setRoleFormData({ name: "", displayName: "", description: "", permissions: {} });
-                          }}>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setIsRoleDialogOpen(false);
+                              setRoleFormData({ name: "", displayName: "", description: "" });
+                              setSelectedPermissions(new Set());
+                            }}
+                          >
                             Cancel
                           </Button>
                           <Button
@@ -1603,12 +1610,22 @@ export default function ProfessionalAdminDashboard() {
                                 return;
                               }
                               if (roleFormData.displayName) {
-                                const selectedPermissions = selectedPermissionKeys(roleFormData.permissions);
+                                const known = new Set(permissionCatalog.map((p) => p.key));
+                                for (const key of selectedPermissions) {
+                                  if (!known.has(key)) {
+                                    toast({
+                                      title: "Error",
+                                      description: `Unknown permission key: ${key}`,
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+                                }
                                 createRoleMutation.mutate({
                                   name: slug,
                                   displayName: roleFormData.displayName.trim(),
                                   description: roleFormData.description,
-                                  permissions: selectedPermissions,
+                                  permissions: Array.from(selectedPermissions),
                                 });
                               }
                             }}
@@ -1682,12 +1699,9 @@ export default function ProfessionalAdminDashboard() {
                                   setRoleFormData({
                                     name: role.name,
                                     displayName: role.displayName,
-                                    description: role.description,
-                                    permissions: role.permissions.reduce(
-                                      (acc, key) => ({ ...acc, [key]: true }),
-                                      {} as PermissionState
-                                    ),
+                                    description: role.description ?? "",
                                   });
+                                  setSelectedPermissions(new Set(role.permissions));
                                   setIsEditRoleDialogOpen(true);
                                 }}
                                 className="flex-1"
@@ -2531,18 +2545,17 @@ export default function ProfessionalAdminDashboard() {
               <div>
                 <Label>Permissions</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2 max-h-40 overflow-y-auto">
-                  {permissions.map((permission: Permission) => (
+                  {permissionCatalog.map((permission: PermissionDef) => (
                     <div key={permission.key} className="flex items-center space-x-2">
                       <Checkbox
                         id={`edit-perm-${permission.key}`}
-                        checked={!!roleFormData.permissions[permission.key]}
+                        checked={selectedPermissions.has(permission.key)}
                         onCheckedChange={(checked) => {
-                          setRoleFormData({
-                            ...roleFormData,
-                            permissions: {
-                              ...roleFormData.permissions,
-                              [permission.key]: Boolean(checked),
-                            },
+                          setSelectedPermissions((prev) => {
+                            const next = new Set(prev);
+                            if (checked) next.add(permission.key);
+                            else next.delete(permission.key);
+                            return next;
                           });
                         }}
                       />
@@ -2566,11 +2579,22 @@ export default function ProfessionalAdminDashboard() {
                         });
                         return;
                       }
+                      const known = new Set(permissionCatalog.map((p) => p.key));
+                      for (const key of selectedPermissions) {
+                        if (!known.has(key)) {
+                          toast({
+                            title: "Error",
+                            description: `Unknown permission key: ${key}`,
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                      }
                       const payload: any = {
                         id: selectedRole.id,
                         displayName: roleFormData.displayName.trim(),
                         description: roleFormData.description,
-                        permissions: selectedPermissionKeys(roleFormData.permissions),
+                        permissions: Array.from(selectedPermissions),
                       };
                       if (slug) payload.name = slug;
                       updateRoleMutation.mutate(payload);
@@ -2598,7 +2622,12 @@ export default function ProfessionalAdminDashboard() {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => setIsEditRoleDialogOpen(false)}
+                  onClick={() => {
+                    setIsEditRoleDialogOpen(false);
+                    setSelectedRole(null);
+                    setRoleFormData({ name: "", displayName: "", description: "" });
+                    setSelectedPermissions(new Set());
+                  }}
                   className="flex-1"
                 >
                   Cancel
