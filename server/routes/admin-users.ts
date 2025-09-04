@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { db } from "../db";
 import { isAuthenticated } from "../auth";
-import { sessions, users, roles, auditLogs } from "../../shared/schema";
+import { sessions, users, roles, userRoles, auditLogs } from "../../shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { storage } from "../storage";
 import { sendPasswordResetEmail } from "../email-service";
@@ -12,7 +12,14 @@ const router = Router();
 function requireAdmin(req: any, res: any, next: any) {
   const user = req.user as any;
   const role = user?.role;
-  if (!user || (!user.isAdmin && role !== "admin" && role !== "super_admin")) {
+  const perms: string[] = user?.permissions || [];
+  if (
+    !user ||
+    (!user.isAdmin &&
+      role !== "admin" &&
+      role !== "super_admin" &&
+      !perms.includes("role_manage"))
+  ) {
     return res.status(403).json({ message: "Administrator privileges required" });
   }
   next();
@@ -25,15 +32,26 @@ async function logAction(actorId: string, targetUserId: string, action: string, 
 router.use(isAuthenticated, requireAdmin);
 
 const roleSchema = z.object({ roleId: z.number() });
-router.patch("/:id/role", async (req, res) => {
+router.post("/:id/role", async (req, res) => {
   try {
     const userId = req.params.id;
     const { roleId } = roleSchema.parse(req.body);
     const [role] = await db.select().from(roles).where(eq(roles.id, roleId));
     if (!role) return res.status(404).json({ message: "Role not found" });
-    await db.update(users).set({ role: role.name }).where(eq(users.id, userId));
-    await logAction((req.user as any).id, userId, "assign_role", { roleId });
-    res.json({ role: role.name });
+
+    await db.transaction(async (tx) => {
+      await tx
+        .insert(userRoles)
+        .values({ userId, roleId })
+        .onConflictDoUpdate({
+          target: userRoles.userId,
+          set: { roleId },
+        });
+      await tx.update(users).set({ role: role.name }).where(eq(users.id, userId));
+    });
+
+    await logAction((req.user as any).id, userId, "role_assign", { roleId });
+    res.json({ roleId });
   } catch (err: any) {
     res.status(500).json({ message: err.message || "Failed to assign role" });
   }
