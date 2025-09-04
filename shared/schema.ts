@@ -957,3 +957,66 @@ export const updateSegmentSchema = insertSegmentSchema.partial();
 export type Segment = typeof segments.$inferSelect;
 export type InsertSegment = z.infer<typeof insertSegmentSchema>;
 export type UpdateSegment = z.infer<typeof updateSegmentSchema>;
+
+export const events = pgTable("events", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id"),
+  anonId: text("anon_id"),
+  sessionId: text("session_id"),
+  eventKey: text("event_key").notNull(),
+  occurredAt: timestamp("occurred_at").notNull(),
+  props: jsonb("props"),
+});
+
+export const abAssignments = pgTable("ab_assignments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id"),
+  anonId: text("anon_id"),
+  experimentKey: text("experiment_key").notNull(),
+  variantLabel: text("variant_label").notNull(),
+  assignedAt: timestamp("assigned_at").defaultNow(),
+});
+
+export const funnels = pgTable("funnels", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  ownerUserId: uuid("owner_user_id").references(() => users.id),
+  tags: text("tags").array().default(sql`'{}'::text[]`),
+  windowSeconds: integer("window_seconds").notNull(),
+  scope: text("scope").default("user"),
+  dedupe: text("dedupe").default("first_touch"),
+  segmentId: uuid("segment_id").references(() => segments.id),
+  experimentKey: text("experiment_key"),
+  steps: jsonb("steps_json").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  archivedAt: timestamp("archived_at"),
+});
+
+export const funnelRuns = pgTable("funnel_runs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  funnelId: uuid("funnel_id").references(() => funnels.id, { onDelete: "cascade" }),
+  rangeStart: timestamp("range_start").notNull(),
+  rangeEnd: timestamp("range_end").notNull(),
+  computedAt: timestamp("computed_at").defaultNow(),
+  stats: jsonb("stats_json").notNull(),
+});
+
+export const insertFunnelSchema = createInsertSchema(funnels).pick({
+  name: true,
+  description: true,
+  windowSeconds: true,
+  scope: true,
+  dedupe: true,
+  segmentId: true,
+  experimentKey: true,
+  steps: true,
+  tags: true,
+});
+
+export const updateFunnelSchema = insertFunnelSchema.partial();
+
+export type Funnel = typeof funnels.$inferSelect;
+export type InsertFunnel = z.infer<typeof insertFunnelSchema>;
+export type UpdateFunnel = z.infer<typeof updateFunnelSchema>;
