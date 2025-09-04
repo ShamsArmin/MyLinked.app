@@ -1,4 +1,4 @@
-import { db, isDbAvailable, setDbEnabled } from './db';
+import { db, isDbAvailable, setDbEnabled, pool } from './db';
 import { 
   users, links, profileViews, follows, socialPosts, socialConnections,
   spotlightProjects, spotlightContributors, spotlightTags,
@@ -49,9 +49,13 @@ export class EnhancedDatabaseStorage implements IStorage {
   sessionStore: any;
 
   constructor() {
-    // Use built-in memory store to avoid database connection issues
-    this.sessionStore = new session.MemoryStore();
-    console.log('Using memory session store to avoid database connection issues');
+    if (process.env.NODE_ENV === 'production') {
+      const PgStore = connectPg(session);
+      this.sessionStore = new PgStore({ pool, tableName: 'sessions', createTableIfMissing: true });
+      console.log('Using Postgres session store');
+    } else {
+      this.sessionStore = new session.MemoryStore();
+    }
   }
 
   async hashPassword(password: string): Promise<string> {
@@ -343,10 +347,10 @@ export class EnhancedDatabaseStorage implements IStorage {
 
     // Handle special foreign key references FIRST
     try {
-      await db.execute(sql`DELETE FROM role_invitations WHERE invited_by = ${id}`);
-      console.log('Deleted records from role_invitations (invited_by) using SQL');
+      await db.execute(sql`DELETE FROM role_invitations WHERE invited_by_user_id = ${id}`);
+      console.log('Deleted records from role_invitations (invited_by_user_id) using SQL');
     } catch (e) {
-      console.warn('Non-critical deletion failed for role_invitations (invited_by):', e);
+      console.warn('Non-critical deletion failed for role_invitations (invited_by_user_id):', e);
     }
 
     for (const t of tables) {

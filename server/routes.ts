@@ -48,6 +48,9 @@ import { aiSupportRouter } from "./ai-support-routes";
 import { adminRouter } from "./admin-routes";
 import { professionalAdminRouter } from "./professional-admin-routes";
 import adminUsersRouter from "./routes/admin-users";
+import adminSegmentsRouter from "./routes/admin-segments";
+import adminFunnelsRouter from "./routes/admin-funnels";
+import adminInvitationsRouter from "./routes/admin-invitations";
 import { monitoringRouter } from "./monitoring-routes";
 import { securityRouter } from "./security-routes";
 import bcrypt from "bcrypt";
@@ -2508,6 +2511,15 @@ GITHUB_CLIENT_SECRET=your_github_client_secret
   app.use("/api/admin-legacy", adminRouter);
   app.use("/api/admin", professionalAdminRouter);
   app.use("/api/admin/users", adminUsersRouter);
+  app.use("/api/admin/segments", adminSegmentsRouter);
+  function noStore(_req: any, res: any, next: any) {
+    res.setHeader("Cache-Control", "no-store");
+    res.removeHeader("ETag");
+    next();
+  }
+
+  app.use("/api/admin/funnels", noStore, adminFunnelsRouter);
+  app.use("/api/admin/invitations", adminInvitationsRouter);
 
   // Add Monitoring routes
   app.use("/api/monitoring", monitoringRouter);

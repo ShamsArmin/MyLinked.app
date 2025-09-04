@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,6 +32,8 @@ import { useLocation } from "wouter";
 import { EmailManagement } from "@/components/email-management";
 import { AICampaignManager } from "@/components/ai-campaign-manager";
 import { UserActionsMenu } from "@/components/admin/user-actions-menu";
+import { SegmentActionsMenu } from "@/components/admin/segment-actions-menu";
+import AdminFunnelsPage from "./admin/conversion/funnels";
 
 // Role and Permission types
 interface Role {
@@ -74,6 +77,17 @@ interface AbTest {
   visitors?: string;
   conversion?: string;
   details?: string;
+}
+
+interface Segment {
+  id: string;
+  name: string;
+  description: string | null;
+  type: 'dynamic' | 'static';
+  memberCount?: number | null;
+  lastRefreshedAt?: string | null;
+  ownerName?: string | null;
+  tags?: string[] | null;
 }
 
 export default function ProfessionalAdminDashboard() {
@@ -124,6 +138,25 @@ export default function ProfessionalAdminDashboard() {
     performanceRating: "",
   });
 
+  const [segmentDialogOpen, setSegmentDialogOpen] = useState(false);
+  const [newSegment, setNewSegment] = useState({ name: "", description: "" });
+  const [editingSegment, setEditingSegment] = useState<Segment | null>(null);
+  const [editSegmentData, setEditSegmentData] = useState({ name: "", description: "" });
+  const [segmentSearch, setSegmentSearch] = useState("");
+  const [segmentTypeFilter, setSegmentTypeFilter] = useState<"all" | "dynamic" | "static">("all");
+  const { data: segments = [] } = useQuery<Segment[]>({
+    queryKey: ["/api/admin/segments"],
+    queryFn: async () => {
+      const json = await apiRequest("GET", "/api/admin/segments");
+      return (json?.segments ?? []) as Segment[];
+    },
+  });
+  const filteredSegments = segments.filter(
+    (segment) =>
+      segment.name.toLowerCase().includes(segmentSearch.toLowerCase()) &&
+      (segmentTypeFilter === "all" || segment.type === segmentTypeFilter)
+  );
+
   const [abTests, setAbTests] = useState<AbTest[]>([
     {
       id: '1',
@@ -164,6 +197,82 @@ export default function ProfessionalAdminDashboard() {
       localStorage.setItem('adminAbTests', JSON.stringify(updated));
       return updated;
     });
+  };
+
+  const handleAddSegment = async () => {
+    try {
+      await apiRequest('POST', '/api/admin/segments', newSegment);
+      setNewSegment({ name: '', description: '' });
+      setSegmentDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/segments'] });
+      toast({ title: 'Segment created' });
+    } catch {
+      toast({ title: 'Failed to create segment', variant: 'destructive' });
+    }
+  };
+
+  const handleUpdateSegment = async () => {
+    if (!editingSegment) return;
+    try {
+      await apiRequest('PATCH', `/api/admin/segments/${editingSegment.id}`, editSegmentData);
+      setEditingSegment(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/segments'] });
+      toast({ title: 'Segment updated' });
+    } catch {
+      toast({ title: 'Failed to update segment', variant: 'destructive' });
+    }
+  };
+
+  const handlePreviewMembers = (segment: Segment) => {
+    toast({ title: `Previewing ${segment.name}`, description: 'Preview not implemented' });
+  };
+
+  const handleRefreshSegment = async (segment: Segment) => {
+    try {
+      await apiRequest('POST', `/api/admin/segments/${segment.id}/refresh`);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/segments'] });
+      toast({ title: 'Segment refreshed' });
+    } catch {
+      toast({ title: 'Failed to refresh segment', variant: 'destructive' });
+    }
+  };
+
+  const handleSnapshotSegment = async (segment: Segment) => {
+    try {
+      await apiRequest('POST', `/api/admin/segments/${segment.id}/snapshot`);
+      toast({ title: 'Snapshot created' });
+    } catch {
+      toast({ title: 'Failed to create snapshot', variant: 'destructive' });
+    }
+  };
+
+
+  const handleBulkAction = (segment: Segment, action: string) => {
+    toast({ title: `Bulk action: ${action}`, description: 'Not implemented' });
+  };
+
+  const handleAttachAbTest = (segment: Segment) => {
+    toast({ title: 'Attach to A/B test', description: 'Not implemented' });
+  };
+
+  const handleDuplicateSegment = (segment: Segment) => {
+    toast({ title: 'Duplicate segment', description: 'Not implemented' });
+  };
+
+  const handleArchiveSegment = (segment: Segment) => {
+    toast({ title: 'Archive segment', description: 'Not implemented' });
+  };
+
+  const handleDeleteSegment = async (segment: Segment) => {
+    const confirmed = window.confirm(`Delete segment "${segment.name}"?`);
+    if (!confirmed) return;
+    try {
+      await apiRequest('DELETE', `/api/admin/segments/${segment.id}`);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/segments'] });
+      toast({ title: 'Segment deleted' });
+    } catch {
+      toast({ title: 'Failed to delete segment', variant: 'destructive' });
+    }
   };
 
   const handleCreateAbTest = () => {
@@ -615,7 +724,7 @@ export default function ProfessionalAdminDashboard() {
 
         {/* Main Administration Tabs */}
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12">
+          <TabsList className="flex flex-wrap w-full h-auto gap-2 mb-4">
             <TabsTrigger value="users">
               <Users className="h-4 w-4 mr-2" />
               Users
@@ -1061,7 +1170,7 @@ export default function ProfessionalAdminDashboard() {
           </TabsContent>
 
           {/* User Segmentation */}
-          <TabsContent value="segmentation" className="space-y-4">
+          <TabsContent value="segmentation" className="space-y-4 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardHeader className="pb-3">
@@ -1103,69 +1212,125 @@ export default function ProfessionalAdminDashboard() {
 
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <CardTitle>User Segmentation</CardTitle>
                     <CardDescription>Create and manage user segments</CardDescription>
                   </div>
-                  <Button>
-                    <Users2 className="h-4 w-4 mr-2" />
-                    New Segment
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Search segments..."
+                      value={segmentSearch}
+                      onChange={(e) => setSegmentSearch(e.target.value)}
+                      className="w-48"
+                    />
+                    <Select value={segmentTypeFilter} onValueChange={(v) => setSegmentTypeFilter(v as any)}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="dynamic">Dynamic</SelectItem>
+                        <SelectItem value="static">Static</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={() => setSegmentDialogOpen(true)}>
+                      <Users2 className="h-4 w-4 mr-2" />
+                      New Segment
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <Crown className="h-5 w-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Premium Users</h4>
-                        <p className="text-sm text-muted-foreground">Users with paid subscriptions</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">Active</Badge>
-                      <div className="text-sm">
-                        <div className="font-medium">2,456 users</div>
-                        <div className="text-muted-foreground">18% of total</div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Activity className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Highly Engaged</h4>
-                        <p className="text-sm text-muted-foreground">Users with 5+ sessions/week</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">Active</Badge>
-                      <div className="text-sm">
-                        <div className="font-medium">5,678 users</div>
-                        <div className="text-muted-foreground">42% of total</div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Members</TableHead>
+                      <TableHead>Last refresh</TableHead>
+                      <TableHead>Owner</TableHead>
+                      <TableHead>Tags</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSegments.map(segment => (
+                      <TableRow key={segment.id}>
+                        <TableCell className="font-medium">{segment.name}</TableCell>
+                        <TableCell className="capitalize">{segment.type}</TableCell>
+                        <TableCell>{segment.memberCount ?? 0}</TableCell>
+                        <TableCell>{segment.lastRefreshedAt ? new Date(segment.lastRefreshedAt).toLocaleDateString() : '-'}</TableCell>
+                        <TableCell>{segment.ownerName || '-'}</TableCell>
+                        <TableCell>{segment.tags && segment.tags.length ? segment.tags.join(', ') : '-'}</TableCell>
+                        <TableCell className="text-right">
+                          <SegmentActionsMenu
+                            onEdit={() => {
+                              setEditingSegment(segment);
+                              setEditSegmentData({ name: segment.name, description: segment.description || '' });
+                            }}
+                            onPreview={() => handlePreviewMembers(segment)}
+                            onRefresh={() => handleRefreshSegment(segment)}
+                            onSnapshot={() => handleSnapshotSegment(segment)}
+                            onBulkAction={(action) => handleBulkAction(segment, action)}
+                            onAttachAbTest={() => handleAttachAbTest(segment)}
+                            onDuplicate={() => handleDuplicateSegment(segment)}
+                            onArchive={() => handleArchiveSegment(segment)}
+                            onDelete={() => handleDeleteSegment(segment)}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
+            <Dialog open={segmentDialogOpen} onOpenChange={setSegmentDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>New Segment</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Name</Label>
+                    <Input value={newSegment.name} onChange={(e) => setNewSegment({ ...newSegment, name: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea value={newSegment.description} onChange={(e) => setNewSegment({ ...newSegment, description: e.target.value })} />
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setSegmentDialogOpen(false)}>Cancel</Button>
+                  <Button onClick={handleAddSegment}>Save</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Dialog open={!!editingSegment} onOpenChange={(open) => !open && setEditingSegment(null)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Segment</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Name</Label>
+                    <Input value={editSegmentData.name} onChange={(e) => setEditSegmentData({ ...editSegmentData, name: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea value={editSegmentData.description} onChange={(e) => setEditSegmentData({ ...editSegmentData, description: e.target.value })} />
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setEditingSegment(null)}>Cancel</Button>
+                  <Button onClick={handleUpdateSegment}>Save</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Conversion Tracking */}
-          <TabsContent value="conversion" className="space-y-4">
+          <TabsContent value="conversion" className="space-y-4 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardHeader className="pb-3">
@@ -1205,65 +1370,7 @@ export default function ProfessionalAdminDashboard() {
               </Card>
             </div>
 
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Conversion Funnels</CardTitle>
-                    <CardDescription>Track user journey and conversion points</CardDescription>
-                  </div>
-                  <Button>
-                    <Target className="h-4 w-4 mr-2" />
-                    New Funnel
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Target className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Signup Funnel</h4>
-                        <p className="text-sm text-muted-foreground">Landing → Signup → Onboarding</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-sm">
-                        <div className="font-medium">24.5% conversion</div>
-                        <div className="text-muted-foreground">12,450 visitors</div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <BarChart3 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <DollarSign className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Purchase Funnel</h4>
-                        <p className="text-sm text-muted-foreground">Product → Cart → Checkout → Payment</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-sm">
-                        <div className="font-medium">12.8% conversion</div>
-                        <div className="text-muted-foreground">5,890 visitors</div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <BarChart3 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <AdminFunnelsPage />
           </TabsContent>
 
           {/* Business Analytics */}

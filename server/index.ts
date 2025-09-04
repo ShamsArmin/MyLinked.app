@@ -26,7 +26,7 @@ const app = express();
 app.set("trust proxy", 1);
 
 // Body parsers MUST be before any routes/passport
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 const PgStore = connectPgSimple(session);
@@ -78,7 +78,7 @@ app.use(
     store: isProd
       ? new PgStore({
           pool,
-          tableName: "session",
+          tableName: "sessions",
           createTableIfMissing: true,
         })
       : undefined,
@@ -361,6 +361,22 @@ app.use((req, res, next) => {
     }
   } else {
     console.log("db bootstrap: skipped");
+  }
+
+  // Smoke tests
+  try {
+    await pool.query('SELECT 1');
+    try {
+      await pool.query('SELECT 1 FROM role_invitations LIMIT 1');
+    } catch (err: any) {
+      if (err.code === '42P01') {
+        console.warn('role_invitations table missing; continuing');
+      } else {
+        throw err;
+      }
+    }
+  } catch (err) {
+    console.error('Database smoke test failed:', err);
   }
 
   const server = await registerRoutes(app);

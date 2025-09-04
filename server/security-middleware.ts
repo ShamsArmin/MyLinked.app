@@ -305,7 +305,8 @@ class SecurityMiddleware {
       ...metadata
     };
 
-    console.warn(`Security Event: ${event} from ${ip}`);
+    const logger = event === 'suspicious_activity' ? console.debug : console.warn;
+    logger(`Security Event: ${event} from ${ip}`);
     
     // Log to monitoring system
     monitor.recordError({
@@ -350,3 +351,13 @@ class SecurityMiddleware {
 }
 
 export const securityMiddleware = SecurityMiddleware.getInstance();
+
+export function requireAdmin(req: any, res: any, next: any) {
+  const user = (req as any).user;
+  const role = user?.role;
+  if (!user || (!user.isAdmin && role !== "admin" && role !== "super_admin")) {
+    return res.status(403).json({ message: "Administrator privileges required" });
+  }
+  next();
+}
+
