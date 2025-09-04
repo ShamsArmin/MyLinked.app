@@ -47,11 +47,9 @@ interface Role {
 }
 
 interface Permission {
-  id: number;
-  name: string;
-  displayName: string;
-  description: string;
-  category: string;
+  key: string;
+  group: string;
+  description: string | null;
 }
 
 interface Employee {
@@ -374,7 +372,7 @@ export default function ProfessionalAdminDashboard() {
 
   const updateRoleMutation = useMutation({
     mutationFn: async ({ id, ...roleData }: any) => {
-      return apiRequest("PUT", `/api/admin/roles/${id}`, roleData);
+      return apiRequest("PATCH", `/api/admin/roles/${id}`, roleData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
@@ -1532,26 +1530,26 @@ export default function ProfessionalAdminDashboard() {
                           <Label>Permissions</Label>
                           <div className="grid grid-cols-2 gap-2 mt-2">
                             {permissions.map((permission: Permission) => (
-                              <div key={permission.id} className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id={`perm-${permission.id}`}
-                                  checked={roleFormData.permissions.includes(permission.name)}
+                              <div key={permission.key} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`perm-${permission.key}`}
+                                  checked={roleFormData.permissions.includes(permission.key)}
                                   onCheckedChange={(checked) => {
                                     if (checked) {
                                       setRoleFormData({
                                         ...roleFormData,
-                                        permissions: [...roleFormData.permissions, permission.name]
+                                        permissions: [...roleFormData.permissions, permission.key],
                                       });
                                     } else {
                                       setRoleFormData({
                                         ...roleFormData,
-                                        permissions: roleFormData.permissions.filter(p => p !== permission.name)
+                                        permissions: roleFormData.permissions.filter((p) => p !== permission.key),
                                       });
                                     }
                                   }}
                                 />
-                                <Label htmlFor={`perm-${permission.id}`} className="text-sm">
-                                  {permission.displayName}
+                                <Label htmlFor={`perm-${permission.key}`} className="text-sm">
+                                  {permission.description || permission.key}
                                 </Label>
                               </div>
                             ))}
@@ -1564,8 +1562,17 @@ export default function ProfessionalAdminDashboard() {
                           }}>
                             Cancel
                           </Button>
-                          <Button 
+                          <Button
                             onClick={() => {
+                              const slugOk = /^[a-z0-9_]+$/.test(roleFormData.name);
+                              if (!slugOk) {
+                                toast({
+                                  title: "Invalid role name",
+                                  description: "Use lowercase letters, numbers, or underscores",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
                               if (roleFormData.name && roleFormData.displayName) {
                                 createRoleMutation.mutate({
                                   name: roleFormData.name,
@@ -2492,38 +2499,46 @@ export default function ProfessionalAdminDashboard() {
                 <Label>Permissions</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2 max-h-40 overflow-y-auto">
                   {permissions.map((permission: Permission) => (
-                    <div key={permission.id} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`edit-perm-${permission.id}`}
-                        checked={roleFormData.permissions.includes(permission.name)}
+                    <div key={permission.key} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`edit-perm-${permission.key}`}
+                        checked={roleFormData.permissions.includes(permission.key)}
                         onCheckedChange={(checked) => {
                           if (checked) {
                             setRoleFormData({
                               ...roleFormData,
-                              permissions: [...roleFormData.permissions, permission.name]
+                              permissions: [...roleFormData.permissions, permission.key],
                             });
                           } else {
                             setRoleFormData({
                               ...roleFormData,
-                              permissions: roleFormData.permissions.filter(p => p !== permission.name)
+                              permissions: roleFormData.permissions.filter((p) => p !== permission.key),
                             });
                           }
                         }}
                       />
-                      <Label htmlFor={`edit-perm-${permission.id}`} className="text-sm">
-                        {permission.displayName}
+                      <Label htmlFor={`edit-perm-${permission.key}`} className="text-sm">
+                        {permission.description || permission.key}
                       </Label>
                     </div>
                   ))}
                 </div>
               </div>
               <div className="flex gap-2 pt-4">
-                <Button 
+                <Button
                   onClick={() => {
                     if (selectedRole) {
+                      if (roleFormData.name && !/^[a-z0-9_]+$/.test(roleFormData.name)) {
+                        toast({
+                          title: "Invalid role name",
+                          description: "Use lowercase letters, numbers, or underscores",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
                       updateRoleMutation.mutate({
                         id: selectedRole.id,
-                        ...roleFormData
+                        ...roleFormData,
                       });
                     }
                   }}

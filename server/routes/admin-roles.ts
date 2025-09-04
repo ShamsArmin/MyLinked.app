@@ -80,14 +80,81 @@ router.get("/permissions", async (_req, res) => {
   res.json(all);
 });
 
+const SYSTEM_ROLES: Array<{
+  name: string;
+  displayName: string;
+  description: string;
+  permissions: string[];
+}> = [
+  {
+    name: "super_admin",
+    displayName: "Super Administrator",
+    description: "Full system access with all permissions",
+    permissions: PERMISSIONS.map((p) => p.key),
+  },
+  {
+    name: "admin",
+    displayName: "Administrator",
+    description: "Administrative access with user management",
+    permissions: [
+      "user_read",
+      "user_write",
+      "analytics_view",
+      "role_manage",
+    ],
+  },
+  {
+    name: "moderator",
+    displayName: "Moderator",
+    description: "Limited moderation access",
+    permissions: ["user_read"],
+  },
+  {
+    name: "employee",
+    displayName: "Employee",
+    description: "Standard employee access",
+    permissions: ["user_read"],
+  },
+];
+
+async function ensureSeedRoles() {
+  await db.insert(permissions).values(PERMISSIONS).onConflictDoNothing();
+  const existing = await db.select().from(roles).limit(1);
+  if (existing.length === 0) {
+    await db.transaction(async (tx) => {
+      for (const role of SYSTEM_ROLES) {
+        const [r] = await tx
+          .insert(roles)
+          .values({
+            name: role.name,
+            displayName: role.displayName,
+            description: role.description,
+            isSystem: true,
+          })
+          .returning();
+        if (role.permissions.length) {
+          await tx.insert(rolePermissions).values(
+            role.permissions.map((p) => ({ roleId: r.id, permissionKey: p }))
+          );
+        }
+      }
+    });
+  }
+}
+
 router.get("/roles", async (_req, res) => {
+  await ensureSeedRoles();
   const rs = await db.select().from(roles);
   const full = await Promise.all(rs.map((r) => loadRoleWithPermissions(r.id)));
   res.json(full);
 });
 
 router.post("/roles", async (req, res) => {
-  const body = CreateRoleZ.parse(req.body);
+  const parsed = CreateRoleZ.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(422).json({ message: "Invalid payload" });
+  }
+  const body = parsed.data;
   try {
     const result = await db.transaction(async (tx) => {
       const [r] = await tx
@@ -127,10 +194,17 @@ router.post("/roles", async (req, res) => {
 
 router.patch("/roles/:id", async (req, res) => {
   const id = Number(req.params.id);
-  const body = UpdateRoleZ.parse(req.body);
+  const parsed = UpdateRoleZ.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(422).json({ message: "Invalid payload" });
+  }
+  const body = parsed.data;
   try {
     const exists = await db.select().from(roles).where(eq(roles.id, id));
     if (!exists.length) return res.status(404).json({ message: "Role not found" });
+    if (exists[0].isSystem && body.name) {
+      return res.status(403).json({ message: "Cannot rename a system role" });
+    }
     const updated = await db.transaction(async (tx) => {
       if (
         body.name ||
