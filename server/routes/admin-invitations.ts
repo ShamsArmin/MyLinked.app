@@ -1,10 +1,11 @@
 import { Router } from "express";
+import { isAuthenticated } from "../auth";
 import { requireAdmin } from "../security-middleware";
 import { db } from "../db";
 import { roleInvitations } from "../../shared/schema";
 
 const r = Router();
-r.use(requireAdmin);
+r.use(isAuthenticated, requireAdmin);
 
 r.get("/", async (_req, res) => {
   try {
