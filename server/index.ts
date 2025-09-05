@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import { sql, eq } from "drizzle-orm";
 import { users } from "../shared/schema";
 import { registerRoutes } from "./routes";
+import { ensureRbac } from "./bootstrap/rbac";
 import { setupVite, serveStatic, log } from "./vite";
 import { monitor } from "./monitoring";
 import { securityMiddleware } from "./security-middleware";
@@ -97,6 +98,14 @@ app.use(
 // Passport
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/admin/")) {
+    res.set("Cache-Control", "no-store");
+    res.removeHeader("ETag");
+  }
+  next();
+});
 
 passport.serializeUser((user: any, done) => done(null, user.id));
 passport.deserializeUser(async (id: string, done) => {
@@ -379,6 +388,7 @@ app.use((req, res, next) => {
     console.error('Database smoke test failed:', err);
   }
 
+  await ensureRbac();
   const server = await registerRoutes(app);
 
   app.use(referralRequestsRouter);

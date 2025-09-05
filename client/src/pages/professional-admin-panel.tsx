@@ -66,6 +66,10 @@ import { Redirect, Link } from "wouter";
 import { Loader2 } from "lucide-react";
 import { DirectSupportManager } from "@/components/direct-support-manager";
 import { EmailManagement } from "@/components/email-management";
+import { CreateRoleDialog } from "@/components/admin/create-role-dialog";
+import { RoleSummary } from "@/types/roles";
+import { apiRequest } from "@/lib/queryClient";
+import { mutate as swrMutate } from "swr";
 
 // Enhanced interfaces for comprehensive admin panel
 interface User {
@@ -144,18 +148,12 @@ interface AuditLog {
   userAgent: string;
 }
 
-interface RolePermission {
-  id: number;
-  role: string;
-  permissions: string[];
-  description: string;
-  userCount: number;
-}
 
 export default function ProfessionalAdminPanel() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showCreateRole, setShowCreateRole] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
@@ -203,6 +201,7 @@ export default function ProfessionalAdminPanel() {
 
   const { data: rolesData, isLoading: rolesLoading } = useQuery({
     queryKey: ["/api/admin/roles"],
+    queryFn: () => apiRequest("GET", "/api/admin/roles"),
     enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 
@@ -291,7 +290,22 @@ export default function ProfessionalAdminPanel() {
   };
   const features: FeatureToggle[] = (featuresData as any) || [];
   const logs: AuditLog[] = (auditLogs as any)?.logs || [];
-  const roles: RolePermission[] = (rolesData as any) || [];
+  const roles: RoleSummary[] = (rolesData as any) || [];
+
+  const handleDeleteRole = async (role: RoleSummary) => {
+    if (role.isSystem) {
+      toast({ title: "Cannot delete a system role", variant: "destructive" });
+      return;
+    }
+    if (!window.confirm(`Delete role "${role.displayName}"?`)) return;
+    try {
+      await apiRequest("DELETE", `/api/admin/roles/${role.id}`);
+      toast({ title: "Role deleted" });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
+    } catch (e: any) {
+      toast({ title: "Failed to delete role", description: e.message, variant: "destructive" });
+    }
+  };
 
   // Filter and search users
   const filteredUsers = users.filter(u => {
@@ -952,7 +966,12 @@ export default function ProfessionalAdminPanel() {
                     </CardTitle>
                     <CardDescription>Configure user roles and permissions</CardDescription>
                   </div>
-                  <Button>
+                  <Button
+                    onClick={async () => {
+                      await swrMutate("/api/admin/permissions"); // warm cache so modal shows perms immediately
+                      setShowCreateRole(true);
+                    }}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Role
                   </Button>
@@ -960,40 +979,55 @@ export default function ProfessionalAdminPanel() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {roles.map((role) => (
-                    <Card key={role.id} className="border-2 hover:border-blue-200 transition-colors">
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg capitalize">{role.role}</CardTitle>
-                          <Badge variant="outline">{role.userCount} users</Badge>
-                        </div>
-                        <CardDescription>{role.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <h5 className="font-medium text-sm">Permissions:</h5>
-                          <div className="space-y-1">
-                            {role.permissions.map((permission) => (
-                              <div key={permission} className="flex items-center space-x-2">
-                                <CheckCircle className="h-3 w-3 text-green-500" />
-                                <span className="text-sm">{permission}</span>
-                              </div>
-                            ))}
+                  {roles.map((role) => {
+                    const perms = role.permissions ?? (role as any).permissionKeys ?? [];
+                    return (
+                      <Card key={role.id} className="border-2 hover:border-blue-200 transition-colors">
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg capitalize">{role.displayName || role.name}</CardTitle>
+                            <Badge variant="outline">{role.members} users</Badge>
                           </div>
-                        </div>
-                        <div className="mt-4 flex space-x-2">
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Users className="h-4 w-4 mr-1" />
-                            Users
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          {role.description && <CardDescription>{role.description}</CardDescription>}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <h5 className="font-medium text-sm">Permissions:</h5>
+                            <div className="space-y-1">
+                              {perms.map((permission) => (
+                                <div key={permission} className="flex items-center space-x-2">
+                                  <CheckCircle className="h-3 w-3 text-green-500" />
+                                  <span className="text-sm">{permission}</span>
+                                </div>
+                              ))}
+                              {perms.length === 0 && (
+                                <span className="text-sm text-muted-foreground">—</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-4 flex space-x-2">
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Users className="h-4 w-4 mr-1" />
+                              Users
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteRole(role)}
+                              disabled={role.isSystem}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -1122,8 +1156,8 @@ export default function ProfessionalAdminPanel() {
           <TabsContent value="email" className="space-y-6">
             <EmailManagement />
           </TabsContent>
-
-        </Tabs>
+</Tabs>
+      <CreateRoleDialog open={showCreateRole} onClose={() => setShowCreateRole(false)} onCreated={() => queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] })} />
       </div>
 
       {/* Edit User Dialog */}

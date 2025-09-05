@@ -13,11 +13,13 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import RoleCard from "@/components/admin/role-card";
+import type { RoleSummary as Role, PermissionDef, CreateRolePayload } from "@/types/roles";
 import {
   Crown, Users, Activity, Settings, Shield, AlertTriangle,
   TrendingUp, Database, Globe, Link, Eye, BarChart, 
   PieChart, Calendar, Download, Upload, Server, 
-  Wifi, HardDrive, Cpu, Monitor, UserPlus, Edit, Trash2,
+  Wifi, HardDrive, Cpu, Monitor, UserPlus, Edit,
   Building, Briefcase, DollarSign, Award, Clock,
   Filter, Search, Plus, X, ChevronDown, Mail, Loader2,
   Target, Zap, TrendingDown, MousePointer, Share2, 
@@ -36,22 +38,14 @@ import { SegmentActionsMenu } from "@/components/admin/segment-actions-menu";
 import AdminFunnelsPage from "./admin/conversion/funnels";
 
 // Role and Permission types
-interface Role {
-  id: number;
+
+interface RoleFormData {
   name: string;
   displayName: string;
   description: string;
-  permissions: string[];
-  isSystem: boolean;
 }
 
-interface Permission {
-  id: number;
-  name: string;
-  displayName: string;
-  description: string;
-  category: string;
-}
+type UpdateRolePayload = Partial<CreateRolePayload> & { id: number };
 
 interface Employee {
   id: number;
@@ -90,6 +84,13 @@ interface Segment {
   tags?: string[] | null;
 }
 
+const toSlug = (str: string) =>
+  str
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9_]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
 export default function ProfessionalAdminDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -107,18 +108,18 @@ export default function ProfessionalAdminDashboard() {
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
   const [isEditRoleDialogOpen, setIsEditRoleDialogOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<any>(null);
-  const [expandedRoles, setExpandedRoles] = useState<Set<number>>(new Set());
   const [inviteFormData, setInviteFormData] = useState({
     email: "",
     recipientName: "",
     roleId: "",
   });
-  const [roleFormData, setRoleFormData] = useState({
+  const [roleFormData, setRoleFormData] = useState<RoleFormData>({
     name: "",
     displayName: "",
     description: "",
-    permissions: [] as string[],
   });
+  const [permissionCatalog, setPermissionCatalog] = useState<PermissionDef[]>([]);
+  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
   const [editFormData, setEditFormData] = useState({
     name: "",
     email: "",
@@ -316,11 +317,6 @@ export default function ProfessionalAdminDashboard() {
     enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
   });
 
-  const { data: permissionsData, isLoading: permissionsLoading } = useQuery({
-    queryKey: ["/api/admin/permissions"],
-    enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
-  });
-
   const { data: employeesData, isLoading: employeesLoading } = useQuery({
     queryKey: ["/api/admin/employees"],
     enabled: user && (user.role === 'admin' || user.role === 'super_admin'),
@@ -342,6 +338,19 @@ export default function ProfessionalAdminDashboard() {
     refetchInterval: 30000,
   });
 
+  useEffect(() => {
+    if (isRoleDialogOpen || isEditRoleDialogOpen) {
+      (async () => {
+        try {
+          const list = await apiRequest("GET", "/api/admin/permissions");
+          setPermissionCatalog(Array.isArray(list) ? list : []);
+        } catch {
+          toast({ title: "Error", description: "Failed to load permissions", variant: "destructive" });
+        }
+      })();
+    }
+  }, [isRoleDialogOpen, isEditRoleDialogOpen, toast]);
+
   // Role management mutations
   const assignRoleMutation = useMutation({
     mutationFn: async ({ userId, roleId }: { userId: string; roleId: number }) => {
@@ -357,14 +366,15 @@ export default function ProfessionalAdminDashboard() {
   });
 
   const createRoleMutation = useMutation({
-    mutationFn: async (roleData: Partial<Role>) => {
+    mutationFn: async (roleData: CreateRolePayload) => {
       return apiRequest("POST", "/api/admin/roles", roleData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
       toast({ title: "Success", description: "Role created successfully" });
       setIsRoleDialogOpen(false);
-      setRoleFormData({ name: "", displayName: "", description: "", permissions: [] });
+      setRoleFormData({ name: "", displayName: "", description: "" });
+      setSelectedPermissions(new Set());
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -372,15 +382,16 @@ export default function ProfessionalAdminDashboard() {
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ id, ...roleData }: any) => {
-      return apiRequest("PUT", `/api/admin/roles/${id}`, roleData);
+    mutationFn: async ({ id, ...roleData }: UpdateRolePayload) => {
+      return apiRequest("PATCH", `/api/admin/roles/${id}`, roleData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
       toast({ title: "Success", description: "Role updated successfully" });
       setIsEditRoleDialogOpen(false);
       setSelectedRole(null);
-      setRoleFormData({ name: "", displayName: "", description: "", permissions: [] });
+      setRoleFormData({ name: "", displayName: "", description: "" });
+      setSelectedPermissions(new Set());
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -579,7 +590,7 @@ export default function ProfessionalAdminDashboard() {
 
   const users = Array.isArray(usersData) ? usersData : [];
   const roles = Array.isArray(rolesData) ? rolesData : [];
-  const permissions = Array.isArray(permissionsData) ? permissionsData : [];
+  const permissions = permissionCatalog;
   const employees = Array.isArray(employeesData) ? employeesData : [];
   const invitations = Array.isArray(invitationsData) ? invitationsData : [];
   const analytics = analyticsData || {};
@@ -1530,47 +1541,67 @@ export default function ProfessionalAdminDashboard() {
                         <div>
                           <Label>Permissions</Label>
                           <div className="grid grid-cols-2 gap-2 mt-2">
-                            {permissions.map((permission: Permission) => (
-                              <div key={permission.id} className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id={`perm-${permission.id}`}
-                                  checked={roleFormData.permissions.includes(permission.name)}
+                            {permissionCatalog.map((permission: PermissionDef) => (
+                              <div key={permission.key} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`perm-${permission.key}`}
+                                  checked={selectedPermissions.has(permission.key)}
                                   onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setRoleFormData({
-                                        ...roleFormData,
-                                        permissions: [...roleFormData.permissions, permission.name]
-                                      });
-                                    } else {
-                                      setRoleFormData({
-                                        ...roleFormData,
-                                        permissions: roleFormData.permissions.filter(p => p !== permission.name)
-                                      });
-                                    }
+                                    setSelectedPermissions((prev) => {
+                                      const next = new Set(prev);
+                                      if (checked) next.add(permission.key);
+                                      else next.delete(permission.key);
+                                      return next;
+                                    });
                                   }}
                                 />
-                                <Label htmlFor={`perm-${permission.id}`} className="text-sm">
-                                  {permission.displayName}
+                                <Label htmlFor={`perm-${permission.key}`} className="text-sm">
+                                  {permission.description || permission.key}
                                 </Label>
                               </div>
                             ))}
                           </div>
                         </div>
                         <div className="flex justify-end gap-2">
-                          <Button variant="outline" onClick={() => {
-                            setIsRoleDialogOpen(false);
-                            setRoleFormData({ name: "", displayName: "", description: "", permissions: [] });
-                          }}>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setIsRoleDialogOpen(false);
+                              setRoleFormData({ name: "", displayName: "", description: "" });
+                              setSelectedPermissions(new Set());
+                            }}
+                          >
                             Cancel
                           </Button>
-                          <Button 
+                          <Button
                             onClick={() => {
-                              if (roleFormData.name && roleFormData.displayName) {
+                              const slug = toSlug(roleFormData.name);
+                              if (!slug || slug.length < 3) {
+                                toast({
+                                  title: "Invalid role name",
+                                  description:
+                                    "Use letters, numbers, or underscores",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              if (roleFormData.displayName) {
+                                const known = new Set(permissionCatalog.map((p) => p.key));
+                                for (const key of selectedPermissions) {
+                                  if (!known.has(key)) {
+                                    toast({
+                                      title: "Error",
+                                      description: `Unknown permission key: ${key}`,
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+                                }
                                 createRoleMutation.mutate({
-                                  name: roleFormData.name,
-                                  displayName: roleFormData.displayName,
+                                  name: slug,
+                                  displayName: roleFormData.displayName.trim(),
                                   description: roleFormData.description,
-                                  permissions: roleFormData.permissions,
+                                  permissions: Array.from(selectedPermissions),
                                 });
                               }
                             }}
@@ -1587,88 +1618,35 @@ export default function ProfessionalAdminDashboard() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {roles.map((role: Role) => (
-                    <Card key={role.id}>
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-lg">{role.displayName}</CardTitle>
-                            <CardDescription>{role.description}</CardDescription>
-                          </div>
-                          {role.isSystem && (
-                            <Badge variant="secondary">System</Badge>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-sm font-medium">Permissions:</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {(expandedRoles.has(role.id) ? role.permissions : role.permissions.slice(0, 3)).map((perm, index) => (
-                                <Badge key={index} variant="outline" className="text-xs">
-                                  {perm}
-                                </Badge>
-                              ))}
-                              {role.permissions.length > 3 && (
-                                <Badge 
-                                  variant="outline" 
-                                  className="text-xs cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                                  onClick={() => {
-                                    const newExpanded = new Set(expandedRoles);
-                                    if (expandedRoles.has(role.id)) {
-                                      newExpanded.delete(role.id);
-                                    } else {
-                                      newExpanded.add(role.id);
-                                    }
-                                    setExpandedRoles(newExpanded);
-                                  }}
-                                >
-                                  {expandedRoles.has(role.id) 
-                                    ? "Show less" 
-                                    : `+${role.permissions.length - 3} more`
-                                  }
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          {!role.isSystem && (
-                            <div className="flex gap-2 pt-2 border-t">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedRole(role);
-                                  setRoleFormData({
-                                    name: role.name,
-                                    displayName: role.displayName,
-                                    description: role.description,
-                                    permissions: role.permissions || []
-                                  });
-                                  setIsEditRoleDialogOpen(true);
-                                }}
-                                className="flex-1"
-                              >
-                                <Edit className="h-3 w-3 mr-1" />
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  if (confirm(`Are you sure you want to delete the role "${role.displayName}"?`)) {
-                                    deleteRoleMutation.mutate(role.id);
-                                  }
-                                }}
-                                className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <X className="h-3 w-3 mr-1" />
-                                Delete
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <RoleCard
+                      key={role.id}
+                      role={role}
+                      onEdit={() => {
+                        setSelectedRole(role);
+                        setRoleFormData({
+                          name: role.name,
+                          displayName: role.displayName,
+                          description: role.description ?? "",
+                        });
+                        // Support legacy `permissionKeys` while backend rolls out
+                        // the `permissions` property uniformly.
+                        setSelectedPermissions(
+                          new Set(
+                            role.permissions ??
+                              (role as any).permissionKeys ?? []
+                          )
+                        );
+                        setIsEditRoleDialogOpen(true);
+                      }}
+                      onDelete={() => {
+                        if (
+                          !role.isSystem &&
+                          confirm(`Are you sure you want to delete the role "${role.displayName}"?`)
+                        ) {
+                          deleteRoleMutation.mutate(role.id);
+                        }
+                      }}
+                    />
                   ))}
                 </div>
               </CardContent>
@@ -2487,40 +2465,59 @@ export default function ProfessionalAdminDashboard() {
               <div>
                 <Label>Permissions</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2 max-h-40 overflow-y-auto">
-                  {permissions.map((permission: Permission) => (
-                    <div key={permission.id} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`edit-perm-${permission.id}`}
-                        checked={roleFormData.permissions.includes(permission.name)}
+                  {permissionCatalog.map((permission: PermissionDef) => (
+                    <div key={permission.key} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`edit-perm-${permission.key}`}
+                        checked={selectedPermissions.has(permission.key)}
                         onCheckedChange={(checked) => {
-                          if (checked) {
-                            setRoleFormData({
-                              ...roleFormData,
-                              permissions: [...roleFormData.permissions, permission.name]
-                            });
-                          } else {
-                            setRoleFormData({
-                              ...roleFormData,
-                              permissions: roleFormData.permissions.filter(p => p !== permission.name)
-                            });
-                          }
+                          setSelectedPermissions((prev) => {
+                            const next = new Set(prev);
+                            if (checked) next.add(permission.key);
+                            else next.delete(permission.key);
+                            return next;
+                          });
                         }}
                       />
-                      <Label htmlFor={`edit-perm-${permission.id}`} className="text-sm">
-                        {permission.displayName}
+                      <Label htmlFor={`edit-perm-${permission.key}`} className="text-sm">
+                        {permission.description || permission.key}
                       </Label>
                     </div>
                   ))}
                 </div>
               </div>
               <div className="flex gap-2 pt-4">
-                <Button 
+                <Button
                   onClick={() => {
                     if (selectedRole) {
-                      updateRoleMutation.mutate({
+                      const slug = roleFormData.name ? toSlug(roleFormData.name) : undefined;
+                      if (roleFormData.name && (!slug || slug.length < 3)) {
+                        toast({
+                          title: "Invalid role name",
+                          description: "Use letters, numbers, or underscores",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      const known = new Set(permissionCatalog.map((p) => p.key));
+                      for (const key of selectedPermissions) {
+                        if (!known.has(key)) {
+                          toast({
+                            title: "Error",
+                            description: `Unknown permission key: ${key}`,
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                      }
+                      const payload: any = {
                         id: selectedRole.id,
-                        ...roleFormData
-                      });
+                        displayName: roleFormData.displayName.trim(),
+                        description: roleFormData.description,
+                        permissions: Array.from(selectedPermissions),
+                      };
+                      if (slug) payload.name = slug;
+                      updateRoleMutation.mutate(payload);
                     }
                   }}
                   disabled={updateRoleMutation.isPending}
@@ -2531,9 +2528,26 @@ export default function ProfessionalAdminDashboard() {
                   ) : null}
                   Update Role
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsEditRoleDialogOpen(false)}
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (selectedRole && confirm(`Are you sure you want to delete the role "${selectedRole.displayName}"?`)) {
+                      deleteRoleMutation.mutate(selectedRole.id);
+                      setIsEditRoleDialogOpen(false);
+                    }
+                  }}
+                  className="flex-1"
+                >
+                  Delete
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditRoleDialogOpen(false);
+                    setSelectedRole(null);
+                    setRoleFormData({ name: "", displayName: "", description: "" });
+                    setSelectedPermissions(new Set());
+                  }}
                   className="flex-1"
                 >
                   Cancel

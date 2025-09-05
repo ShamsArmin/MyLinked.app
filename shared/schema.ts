@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, json, boolean, varchar, jsonb, decimal, uuid, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, json, boolean, varchar, jsonb, decimal, uuid, primaryKey, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations, sql } from "drizzle-orm";
@@ -134,31 +134,50 @@ export const auditLogs = pgTable("audit_logs", {
 // Roles and permissions system
 export const roles = pgTable("roles", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 50 }).notNull().unique(),
-  displayName: varchar("display_name", { length: 100 }).notNull(),
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
   description: text("description"),
-  permissions: text("permissions").array().notNull(),
-  isSystem: boolean("is_system").default(false), // System roles cannot be deleted
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  isSystem: boolean("is_system").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 export const permissions = pgTable("permissions", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 50 }).notNull().unique(),
-  displayName: varchar("display_name", { length: 100 }).notNull(),
+  key: text("key").primaryKey(),
+  group: text("group").notNull(),
   description: text("description"),
-  category: varchar("category", { length: 50 }).notNull(), // user_management, system_admin, content_moderation, etc.
-  createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const userRoles = pgTable("user_roles", {
-  id: serial("id").primaryKey(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  roleId: integer("role_id").references(() => roles.id, { onDelete: "cascade" }).notNull(),
-  assignedBy: uuid("assigned_by").references(() => users.id),
-  assignedAt: timestamp("assigned_at").defaultNow(),
-});
+export const rolePermissions = pgTable(
+  "role_permissions",
+  {
+    roleId: integer("role_id")
+      .notNull()
+      .references(() => roles.id, { onDelete: "cascade" }),
+    permissionKey: text("permission_key")
+      .notNull()
+      .references(() => permissions.key, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.roleId, t.permissionKey] }),
+  })
+);
+
+export const userRoles = pgTable(
+  "user_roles",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    roleId: integer("role_id")
+      .notNull()
+      .references(() => roles.id, { onDelete: "restrict" }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.userId] }),
+    idxRole: index("user_roles_role_idx").on(t.roleId),
+  })
+);
 
 export const employeeProfiles = pgTable("employee_profiles", {
   id: serial("id").primaryKey(),
