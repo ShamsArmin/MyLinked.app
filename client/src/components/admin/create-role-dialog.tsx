@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import useSWR, { mutate as mutateGlobal } from "swr";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,23 +25,22 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { data: perms, error: permsError, isLoading } = useSWR<PermissionDef[]>(
+    open ? "/api/admin/permissions" : null,
+    (url) => apiRequest("GET", url),
+    {
+      shouldRetryOnError: true,
+      errorRetryCount: 3,
+      errorRetryInterval: 1500,
+    }
+  );
+
   useEffect(() => {
-    if (!open) return;
-    let mounted = true;
-    (async () => {
-      try {
-        const perms: PermissionDef[] = await apiRequest("GET", "/api/admin/permissions");
-        if (!mounted) return;
-        const withLabels = perms.map((p) => ({ ...p, label: p.description || p.key }));
-        setCatalog(withLabels);
-      } catch {
-        setError("Failed to load permissions");
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [open]);
+    if (perms) {
+      const withLabels = perms.map((p) => ({ ...p, label: p.description || p.key }));
+      setCatalog(withLabels);
+    }
+  }, [perms]);
 
   const toggle = (key: string) => {
     setPermMap((m) => ({ ...m, [key]: !m[key] }));
@@ -73,6 +73,7 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
     try {
       setLoading(true);
       await apiRequest("POST", "/api/admin/roles", payload);
+      mutateGlobal("/api/admin/roles");
       onCreated?.();
       onClose();
       setForm({ name: "", displayName: "", description: "" });
@@ -119,18 +120,24 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
           </div>
           <div className="space-y-2">
             <Label>Permissions</Label>
-            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border p-2 rounded">
-              {catalog.map((p) => (
-                <label key={p.key} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={!!permMap[p.key]}
-                    onChange={() => toggle(p.key)}
-                  />
-                  <span>{p.label || p.key}</span>
-                </label>
-              ))}
-            </div>
+            {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+            {permsError && (
+              <p className="text-sm text-muted-foreground">No permissions available yet</p>
+            )}
+            {!isLoading && !permsError && (
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border p-2 rounded">
+                {catalog.map((p) => (
+                  <label key={p.key} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={!!permMap[p.key]}
+                      onChange={() => toggle(p.key)}
+                    />
+                    <span>{p.label || p.key}</span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex justify-end gap-2 pt-2">
