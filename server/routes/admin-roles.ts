@@ -9,7 +9,7 @@ import {
   auditLogs,
   users,
 } from "../../shared/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, inArray } from "drizzle-orm";
 import { isAuthenticated } from "../auth";
 import { requireAdmin } from "../require-admin";
 
@@ -34,12 +34,42 @@ const CreateRoleZ = z.object({
     }),
   displayName: z.string().min(3),
   description: z.string().optional(),
-  permissions: z.array(z.string()).min(0),
+  permissions: z.array(z.union([z.string(), z.number()])).default([]),
 });
 
 const UpdateRoleZ = CreateRoleZ.partial().extend({
-  permissions: z.array(z.string()).optional(),
+  permissions: z.array(z.union([z.string(), z.number()])).optional(),
 });
+
+async function normalizePermissionKeys(keys: (string | number)[]) {
+  if (!keys?.length) return [] as string[];
+  const all = await db
+    .select()
+    .from(permissions)
+    .orderBy(permissions.group, permissions.key);
+  const byIndex = (i: number) => all[i]?.key;
+  const normalized = keys.map((k) => {
+    if (typeof k === "string") return k;
+    if (typeof k === "number") return byIndex(k) ?? "__INVALID__";
+    return "__INVALID__";
+  });
+  const uniq = Array.from(new Set(normalized));
+  const found = await db
+    .select({ key: permissions.key })
+    .from(permissions)
+    .where(inArray(permissions.key, uniq));
+  const foundSet = new Set(found.map((r) => r.key));
+  const unknown = uniq.filter((k) => !foundSet.has(k));
+  if (unknown.length) {
+    const err: any = new Error(
+      `Unknown permission key(s): ${unknown.join(", ")}`
+    );
+    err.status = 422;
+    err.code = "INVALID_PERMISSION";
+    throw err;
+  }
+  return normalized;
+}
 
 const router = Router();
 
@@ -71,12 +101,8 @@ router.post("/roles", async (req, res) => {
     return res.status(422).json({ message: msg, issues: parsed.error.issues });
   }
   const body = parsed.data;
-  const validKeys = new Set((await db.select().from(permissions)).map(p => p.key));
-  const invalid = body.permissions.filter(p => !validKeys.has(p));
-  if (invalid.length) {
-    return res.status(422).json({ message: `Unknown permission key: ${invalid.join(",")}`, code: "INVALID_PERMISSION" });
-  }
   try {
+    const permKeys = await normalizePermissionKeys(body.permissions);
     const result = await db.transaction(async (tx) => {
       const [r] = await tx
         .insert(roles)
@@ -87,9 +113,9 @@ router.post("/roles", async (req, res) => {
           isSystem: false,
         })
         .returning();
-      if (body.permissions.length) {
+      if (permKeys.length) {
         await tx.insert(rolePermissions).values(
-          body.permissions.map((p) => ({ roleId: r.id, permissionKey: p }))
+          permKeys.map((p) => ({ roleId: r.id, permissionKey: p }))
         );
       }
       return r;
@@ -98,12 +124,14 @@ router.post("/roles", async (req, res) => {
     const full = await loadRoleWithPermissions(result.id);
     return res.status(201).json(full);
   } catch (err: any) {
+    console.error("[CreateRole] payload=", req.body, err);
+    if (err.status === 422)
+      return res.status(422).json({ message: err.message, code: err.code });
     if (err.code === "23505") {
       return res
         .status(409)
         .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
     }
-    console.error("Create role failed:", err);
     return res.status(500).json({ message: "Failed to create role" });
   }
 });
@@ -129,6 +157,9 @@ router.patch("/roles/:id", async (req, res) => {
     if (exists[0].isSystem && body.name) {
       return res.status(403).json({ message: "Cannot rename a system role" });
     }
+    const permKeys = body.permissions
+      ? await normalizePermissionKeys(body.permissions)
+      : undefined;
     const updated = await db.transaction(async (tx) => {
       if (
         body.name ||
@@ -147,16 +178,11 @@ router.patch("/roles/:id", async (req, res) => {
           })
           .where(eq(roles.id, id));
       }
-      if (body.permissions) {
-        const validKeys = new Set((await db.select().from(permissions)).map(p => p.key));
-        const invalid = body.permissions.filter(p => !validKeys.has(p));
-        if (invalid.length) {
-          throw { code: "INVALID_PERMISSION", keys: invalid };
-        }
+      if (permKeys !== undefined) {
         await tx.delete(rolePermissions).where(eq(rolePermissions.roleId, id));
-        if (body.permissions.length) {
+        if (permKeys.length) {
           await tx.insert(rolePermissions).values(
-            body.permissions.map((p) => ({ roleId: id, permissionKey: p }))
+            permKeys.map((p) => ({ roleId: id, permissionKey: p }))
           );
         }
       }
@@ -165,14 +191,12 @@ router.patch("/roles/:id", async (req, res) => {
     await logAction((req.user as any).id, "role_update", { roleId: id });
     return res.json(updated);
   } catch (err: any) {
+    if (err.status === 422)
+      return res.status(422).json({ message: err.message, code: err.code });
     if (err.code === "23505")
       return res
         .status(409)
         .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
-    if (err.code === "INVALID_PERMISSION")
-      return res
-        .status(422)
-        .json({ message: `Unknown permission key: ${err.keys.join(",")}`, code: "INVALID_PERMISSION" });
     console.error("Update role failed:", err);
     return res.status(500).json({ message: "Failed to update role" });
   }

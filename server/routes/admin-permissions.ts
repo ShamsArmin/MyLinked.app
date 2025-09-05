@@ -8,7 +8,10 @@ const router = Router();
 router.use(isAuthenticated, requireAdmin("role_manage"));
 
 router.get("/", async (_req, res) => {
-  const list = await db.select().from(permissions).orderBy(permissions.group);
+  const list = await db
+    .select()
+    .from(permissions)
+    .orderBy(permissions.group, permissions.key);
   return res.json(list);
 });
 

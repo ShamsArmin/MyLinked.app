@@ -53,6 +53,11 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
 
   const handleSubmit = async () => {
     setError(null);
+    if (Array.from(selected).some((k) => typeof k !== "string")) {
+      console.warn("Invalid permission payload:", Array.from(selected));
+      setError("Internal selection error. Please reopen the dialog and try again.");
+      return;
+    }
     const known = new Set(catalog.map((p) => p.key));
     for (const k of selected) {
       if (!known.has(k)) {
