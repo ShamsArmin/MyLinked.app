@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { db } from "../db";
 import { permissions as permTbl } from "../../shared/schema";
-import { isAuthenticated } from "../auth";
-import { ensureRbacSeed } from "../bootstrap/rbacBootstrap";
+import { isAuthenticated as requireAuth } from "../auth";
+import { ensureRbac } from "../bootstrap/rbac";
 
 const router = Router();
 
-router.use(isAuthenticated);
+router.use(requireAuth);
 router.use((_req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
   next();
@@ -14,7 +14,7 @@ router.use((_req, res, next) => {
 
 router.get("/", async (_req, res) => {
   try {
-    await ensureRbacSeed();
+    await ensureRbac();
     const list = await db.select().from(permTbl).orderBy(permTbl.group, permTbl.key);
     return res.json(list);
   } catch (e: any) {

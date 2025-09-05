@@ -53,6 +53,7 @@ import adminFunnelsRouter from "./routes/admin-funnels";
 import adminInvitationsRouter from "./routes/admin-invitations";
 import adminRolesRouter from "./routes/admin-roles";
 import adminPermissionsRouter from "./routes/admin-permissions";
+import adminRbacRouter from "./routes/admin-rbac";
 import { monitoringRouter } from "./monitoring-routes";
 import { securityRouter } from "./security-routes";
 import bcrypt from "bcrypt";
@@ -2512,6 +2513,7 @@ GITHUB_CLIENT_SECRET=your_github_client_secret
   // Add Admin routes
   app.use("/api/admin-legacy", adminRouter);
   app.use("/api/admin/permissions", adminPermissionsRouter);
+  app.use(adminRbacRouter);
   app.use("/api/admin", adminRolesRouter);
   app.use("/api/admin", professionalAdminRouter);
   app.use("/api/admin/users", adminUsersRouter);
