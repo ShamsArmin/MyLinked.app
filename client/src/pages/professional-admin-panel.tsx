@@ -200,6 +200,7 @@ export default function ProfessionalAdminPanel() {
 
   const { data: rolesData, isLoading: rolesLoading } = useQuery({
     queryKey: ["/api/admin/roles"],
+    queryFn: () => apiRequest("GET", "/api/admin/roles"),
     enabled: user && (user.role === 'admin' || user.role === 'super_admin')
   });
 

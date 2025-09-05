@@ -28,6 +28,34 @@ const RoleUpsertZ = z.object({
   permissions: z.array(z.string()).default([]),
 });
 
+// Normalize any incoming permission payloads to an array of strings
+function coercePermissionInput(raw: unknown): string[] {
+  if (Array.isArray(raw)) return raw.map((v) => String(v));
+  if (raw && typeof raw === "object") {
+    return Object.entries(raw as Record<string, unknown>)
+      .filter(([, v]) => v === true)
+      .map(([k]) => k);
+  }
+  return raw ? [String(raw)] : [];
+}
+
+async function validatePermissionKeys(keys: string[]) {
+  if (!keys.length) return [];
+  const rows = await db
+    .select({ key: permsTbl.key })
+    .from(permsTbl)
+    .where(inArray(permsTbl.key, keys));
+  const ok = new Set(rows.map((r) => r.key));
+  const unknown = Array.from(new Set(keys)).filter((k) => !ok.has(k));
+  if (unknown.length) {
+    const err: any = new Error(`Unknown permission key(s): ${unknown.join(", ")}`);
+    err.status = 422;
+    err.code = "INVALID_PERMISSION";
+    throw err;
+  }
+  return keys;
+}
+
 async function loadRoleDTO(id: number) {
   const [r0] = await db.select().from(roles).where(eq(roles.id, id));
   if (!r0) return null;
@@ -65,28 +93,22 @@ router.get("/roles/:id", async (req, res) => {
 });
 
 router.post("/roles", async (req, res) => {
+  console.info("[roles:create] raw body:", JSON.stringify(req.body));
   let body: z.infer<typeof RoleUpsertZ>;
   try {
-    body = RoleUpsertZ.parse(req.body);
-  } catch {
+    const permissions = await validatePermissionKeys(
+      coercePermissionInput((req.body || {}).permissions)
+    );
+    body = RoleUpsertZ.parse({ ...req.body, permissions });
+  } catch (e: any) {
+    if (e.status === 422) {
+      return res
+        .status(422)
+        .json({ message: e.message, code: e.code ?? "INVALID_PERMISSION" });
+    }
     return res.status(422).json({ message: "Invalid payload" });
   }
   try {
-    if (body.permissions.length) {
-      const known = await db
-        .select({ key: permsTbl.key })
-        .from(permsTbl)
-        .where(inArray(permsTbl.key, body.permissions));
-      const knownSet = new Set(known.map((k) => k.key));
-      const unknown = body.permissions.filter((k) => !knownSet.has(k));
-      if (unknown.length) {
-        return res.status(422).json({
-          message: `Unknown permission key(s): ${unknown.join(", ")}`,
-          code: "INVALID_PERMISSION",
-        });
-      }
-    }
-
     const id = await db.transaction(async (tx) => {
       const [r0] = await tx
         .insert(roles)
@@ -111,18 +133,19 @@ router.post("/roles", async (req, res) => {
     });
 
     const dto = await loadRoleDTO(id);
+    console.info("[roles:create] ok role_id=", id, "perms=", dto?.permissions);
     return res.status(201).json(dto);
   } catch (e: any) {
-    console.error("[roles:create] payload=", req.body, "error=", e);
+    console.error("[roles:create] failed:", e);
     if (e.code === "23505") {
       return res
         .status(409)
         .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
     }
-    if (e.code === "23503") {
+    if (e.status === 422) {
       return res
         .status(422)
-        .json({ message: "Unknown permission key", code: "INVALID_PERMISSION" });
+        .json({ message: e.message, code: e.code ?? "INVALID_PERMISSION" });
     }
     return res.status(500).json({ message: "Failed to create role" });
   }
@@ -132,8 +155,19 @@ router.patch("/roles/:id", async (req, res) => {
   const id = Number(req.params.id);
   let body: Partial<z.infer<typeof RoleUpsertZ>>;
   try {
-    body = RoleUpsertZ.partial().parse(req.body);
-  } catch {
+    const permissions =
+      req.body.permissions === undefined
+        ? undefined
+        : await validatePermissionKeys(
+            coercePermissionInput(req.body.permissions)
+          );
+    body = RoleUpsertZ.partial().parse({ ...req.body, permissions });
+  } catch (e: any) {
+    if (e.status === 422) {
+      return res
+        .status(422)
+        .json({ message: e.message, code: e.code ?? "INVALID_PERMISSION" });
+    }
     return res.status(422).json({ message: "Invalid payload" });
   }
   try {
@@ -152,18 +186,6 @@ router.patch("/roles/:id", async (req, res) => {
           .where(eq(roles.id, id));
       }
       if (body.permissions) {
-        if (body.permissions.length) {
-          const known = await tx
-            .select({ key: permsTbl.key })
-            .from(permsTbl)
-            .where(inArray(permsTbl.key, body.permissions));
-          const knownSet = new Set(known.map((k) => k.key));
-          const unknown = body.permissions.filter((k) => !knownSet.has(k));
-          if (unknown.length) {
-            const msg = `Unknown permission key(s): ${unknown.join(", ")}`;
-            throw Object.assign(new Error(msg), { status: 422 });
-          }
-        }
         await tx.delete(rolePermissions).where(eq(rolePermissions.roleId, id));
         if (body.permissions.length) {
           await tx.insert(rolePermissions).values(
@@ -178,15 +200,18 @@ router.patch("/roles/:id", async (req, res) => {
       }
     });
     const dto = await loadRoleDTO(id);
+    console.info("[roles:update] ok role_id=", id, "perms=", dto?.permissions);
     return res.json(dto);
   } catch (e: any) {
-    console.error("[roles:update] payload=", req.body, "error=", e);
-    if (e.status === 422)
-      return res.status(422).json({ message: e.message });
+    console.error("[roles:update] failed:", e);
     if (e.code === "23505")
       return res
         .status(409)
         .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
+    if (e.status === 422)
+      return res
+        .status(422)
+        .json({ message: e.message, code: e.code ?? "INVALID_PERMISSION" });
     return res.status(500).json({ message: "Failed to update role" });
   }
 });
