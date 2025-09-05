@@ -21,6 +21,15 @@ router.use((_req, res, next) => {
   next();
 });
 
+function pgErrorPayload(e: any) {
+  return {
+    message: e?.message || "Database error",
+    code: e?.code,
+    detail: e?.detail,
+    constraint: e?.constraint,
+  };
+}
+
 const RoleUpsertZ = z.object({
   name: z.string().regex(/^[a-z0-9_]+$/).min(3),
   displayName: z.string().min(2),
@@ -140,6 +149,17 @@ router.get("/roles/:id", async (req, res) => {
   res.json(dto);
 });
 
+router.get("/roles/debug/health", async (_req, res) => {
+  try {
+    const r = await db.select().from(roles);
+    const p = await db.select({ key: permsTbl.key }).from(permsTbl);
+    return res.json({ roles: r.length, permissions: p.length });
+  } catch (e: any) {
+    console.error("[roles:debug] failed:", e);
+    return res.status(500).json(pgErrorPayload(e));
+  }
+});
+
 router.post("/roles", async (req, res) => {
   console.info("[roles:create] raw body:", JSON.stringify(req.body));
   let body: z.infer<typeof RoleUpsertZ>;
@@ -163,32 +183,79 @@ router.post("/roles", async (req, res) => {
   }
 
   try {
-    const safeName = await uniqueName(body.name); // <<— ALWAYS safe
+    const safeName = await uniqueName(body.name);
 
     const id = await db.transaction(async (tx) => {
-      const [r0] = await tx
+      // Use returning({ id: roles.id }) for a predictable shape
+      const inserted = await tx
         .insert(roles)
         .values({
-          name: safeName, // <<— use safe name here
+          name: safeName,
           displayName: body.displayName,
           description: body.description ?? null,
           isSystem: false,
         })
-        .returning();
+        .returning({ id: roles.id });
+
+      if (!inserted?.length || !inserted[0]?.id) {
+        const err: any = new Error("Insert failed: no id returned");
+        err.code = "NO_RETURNING_ID";
+        throw err;
+      }
+
+      const roleId = inserted[0].id;
 
       if (body.permissions.length) {
         await tx.insert(rolePermissions).values(
-          body.permissions.map((k) => ({ roleId: r0.id, permissionKey: k }))
+          body.permissions.map((k) => ({ roleId, permissionKey: k }))
         );
       }
-      return r0.id;
+
+      // sanity check how many perms written
+      const [{ c }] = (await tx.execute(
+        "select count(*)::int as c from role_permissions where role_id = $1",
+        [roleId]
+      )).rows as any[];
+      console.log(`[roles:create] role_id=${roleId} perms_written=${c}`);
+
+      return roleId;
     });
 
     const dto = await loadRoleDTO(id);
     console.info("[roles:create] ok role_id=", id, "perms=", dto?.permissions);
     return res.status(201).json(dto);
   } catch (e: any) {
+    // Log everything we can
     console.error("[roles:create] failed:", e);
+    if (e?.stack) console.error(e.stack);
+
+    // Promote common PG errors to helpful HTTP statuses
+    if (e?.code === "23505") {
+      // unique_violation
+      return res
+        .status(409)
+        .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
+    }
+    if (e?.code === "23503") {
+      // foreign_key_violation (e.g., bad permission key)
+      return res.status(422).json({
+        ...pgErrorPayload(e),
+        code: "FK_VIOLATION",
+      });
+    }
+    if (e?.code === "22P02") {
+      // invalid_text_representation
+      return res.status(422).json({
+        ...pgErrorPayload(e),
+        code: "INVALID_INPUT",
+      });
+    }
+    if (e?.code) {
+      // Any other PG error
+      return res.status(500).json(pgErrorPayload(e));
+    }
+
+    // Fallback
     return res.status(500).json({ message: "Failed to create role" });
   }
 });
