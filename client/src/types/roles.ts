@@ -19,6 +19,12 @@ export interface RoleSummary {
   displayName: string;
   description: string | null;
   isSystem: boolean;
-  permissions: PermissionKey[];
+  /**
+   * Permission keys granted to this role.  Some older API responses used
+   * `permissionKeys` instead of `permissions`, so keep both shapes optional
+   * to remain backward compatible while the backend deploy rolls out.
+   */
+  permissions?: PermissionKey[];
+  permissionKeys?: PermissionKey[];
   members: number;
 }

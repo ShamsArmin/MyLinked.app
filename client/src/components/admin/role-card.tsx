@@ -29,7 +29,13 @@ export default function RoleCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const perms = Array.isArray(role.permissions) ? role.permissions : [];
+  // Support both `permissions` and legacy `permissionKeys` arrays so the UI
+  // remains stable while the backend deploy propagates.
+  const perms = Array.isArray(role.permissions)
+    ? role.permissions
+    : Array.isArray((role as any).permissionKeys)
+    ? ((role as any).permissionKeys as string[])
+    : [];
   const shown = perms.slice(0, 4);
   const more = perms.length - shown.length;
 

@@ -1628,7 +1628,14 @@ export default function ProfessionalAdminDashboard() {
                           displayName: role.displayName,
                           description: role.description ?? "",
                         });
-                        setSelectedPermissions(new Set(role.permissions));
+                        // Support legacy `permissionKeys` while backend rolls out
+                        // the `permissions` property uniformly.
+                        setSelectedPermissions(
+                          new Set(
+                            role.permissions ??
+                              (role as any).permissionKeys ?? []
+                          )
+                        );
                         setIsEditRoleDialogOpen(true);
                       }}
                       onDelete={() => {
