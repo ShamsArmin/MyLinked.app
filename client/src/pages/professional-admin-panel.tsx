@@ -69,6 +69,7 @@ import { EmailManagement } from "@/components/email-management";
 import { CreateRoleDialog } from "@/components/admin/create-role-dialog";
 import { RoleSummary } from "@/types/roles";
 import { apiRequest } from "@/lib/queryClient";
+import { mutate as swrMutate } from "swr";
 
 // Enhanced interfaces for comprehensive admin panel
 interface User {
@@ -965,7 +966,12 @@ export default function ProfessionalAdminPanel() {
                     </CardTitle>
                     <CardDescription>Configure user roles and permissions</CardDescription>
                   </div>
-                  <Button onClick={() => setShowCreateRole(true)}>
+                  <Button
+                    onClick={async () => {
+                      await swrMutate("/api/admin/permissions"); // warm cache so modal shows perms immediately
+                      setShowCreateRole(true);
+                    }}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Role
                   </Button>
@@ -979,10 +985,10 @@ export default function ProfessionalAdminPanel() {
                       <Card key={role.id} className="border-2 hover:border-blue-200 transition-colors">
                         <CardHeader>
                           <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg capitalize">{role.displayName}</CardTitle>
+                            <CardTitle className="text-lg capitalize">{role.displayName || role.name}</CardTitle>
                             <Badge variant="outline">{role.members} users</Badge>
                           </div>
-                          <CardDescription>{role.description}</CardDescription>
+                          {role.description && <CardDescription>{role.description}</CardDescription>}
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-2">
