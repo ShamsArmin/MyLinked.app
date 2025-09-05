@@ -19,7 +19,7 @@ function toSlug(input: string) {
 
 export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
   const [catalog, setCatalog] = useState<PermissionDef[]>([]);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [permMap, setPermMap] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState({ name: "", displayName: "", description: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,23 +43,22 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
   }, [open]);
 
   const toggle = (key: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+    setPermMap((m) => ({ ...m, [key]: !m[key] }));
   };
+
+  const selectedKeys = Object.entries(permMap)
+    .filter(([, v]) => v)
+    .map(([k]) => k);
 
   const handleSubmit = async () => {
     setError(null);
-    if (Array.from(selected).some((k) => typeof k !== "string")) {
-      console.warn("Invalid permission payload:", Array.from(selected));
+    if (selectedKeys.some((k) => typeof k !== "string")) {
+      console.warn("Invalid permission payload:", selectedKeys);
       setError("Internal selection error. Please reopen the dialog and try again.");
       return;
     }
     const known = new Set(catalog.map((p) => p.key));
-    for (const k of selected) {
+    for (const k of selectedKeys) {
       if (!known.has(k)) {
         setError(`Unknown permission key: ${k}`);
         return;
@@ -69,7 +68,7 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
       name: toSlug(form.name),
       displayName: form.displayName.trim(),
       description: form.description.trim() || undefined,
-      permissions: Array.from(selected),
+      permissions: selectedKeys,
     };
     try {
       setLoading(true);
@@ -77,7 +76,7 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
       onCreated?.();
       onClose();
       setForm({ name: "", displayName: "", description: "" });
-      setSelected(new Set());
+      setPermMap({});
     } catch (e: any) {
       setError(e?.message || "Failed to create role");
     } finally {
@@ -125,8 +124,7 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
                 <label key={p.key} className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
-                    value={p.key}
-                    checked={selected.has(p.key)}
+                    checked={!!permMap[p.key]}
                     onChange={() => toggle(p.key)}
                   />
                   <span>{p.label || p.key}</span>

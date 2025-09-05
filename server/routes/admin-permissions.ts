@@ -8,6 +8,7 @@ const router = Router();
 router.use(isAuthenticated, requireAdmin("role_manage"));
 
 router.get("/", async (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
   const list = await db
     .select()
     .from(permissions)

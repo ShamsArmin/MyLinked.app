@@ -34,24 +34,43 @@ const CreateRoleZ = z.object({
     }),
   displayName: z.string().min(3),
   description: z.string().optional(),
-  permissions: z.array(z.union([z.string(), z.number()])).default([]),
+  permissions: z.array(z.string()).default([]),
 });
 
 const UpdateRoleZ = CreateRoleZ.partial().extend({
-  permissions: z.array(z.union([z.string(), z.number()])).optional(),
+  permissions: z.array(z.string()).optional(),
 });
 
-async function normalizePermissionKeys(keys: (string | number)[]) {
-  if (!keys?.length) return [] as string[];
+function coercePermissions(raw: any): string[] {
+  if (!raw) return [];
+  let arr: any[] = [];
+  if (!Array.isArray(raw) && typeof raw === "object") {
+    arr = Object.entries(raw)
+      .filter(([, v]) => v === true)
+      .map(([k]) => k);
+  } else if (Array.isArray(raw)) {
+    arr = raw;
+  } else {
+    arr = [raw];
+  }
+  return arr.map((v) => {
+    if (typeof v === "string") return v;
+    if (typeof v === "number") return `__IDX:${v}`;
+    return String(v);
+  });
+}
+
+async function normalizeToRealKeys(keys: string[]) {
+  if (!keys.length) return [] as string[];
   const all = await db
     .select()
     .from(permissions)
     .orderBy(permissions.group, permissions.key);
   const byIndex = (i: number) => all[i]?.key;
   const normalized = keys.map((k) => {
-    if (typeof k === "string") return k;
-    if (typeof k === "number") return byIndex(k) ?? "__INVALID__";
-    return "__INVALID__";
+    const m = k.match(/^__IDX:(\d+)$/);
+    if (m) return byIndex(parseInt(m[1], 10)) ?? "__INVALID__";
+    return k;
   });
   const uniq = Array.from(new Set(normalized));
   const found = await db
@@ -61,9 +80,7 @@ async function normalizePermissionKeys(keys: (string | number)[]) {
   const foundSet = new Set(found.map((r) => r.key));
   const unknown = uniq.filter((k) => !foundSet.has(k));
   if (unknown.length) {
-    const err: any = new Error(
-      `Unknown permission key(s): ${unknown.join(", ")}`
-    );
+    const err: any = new Error(`Unknown permission key(s): ${unknown.join(", ")}`);
     err.status = 422;
     err.code = "INVALID_PERMISSION";
     throw err;
@@ -88,21 +105,15 @@ router.get("/roles", async (_req, res) => {
 router.post("/roles", async (req, res) => {
   const raw = req.body || {};
   if (typeof raw.name === "string") raw.name = toSlug(raw.name);
-  // Accept permission objects and convert them to key arrays
-  if (raw.permissions && !Array.isArray(raw.permissions)) {
-    raw.permissions = Object.entries(raw.permissions)
-      .filter(([, v]) => v)
-      .map(([k]) => k);
-  }
-  if (!raw.permissions) raw.permissions = [];
-  const parsed = CreateRoleZ.safeParse(raw);
+  const coerced = coercePermissions(raw.permissions);
+  const parsed = CreateRoleZ.safeParse({ ...raw, permissions: coerced });
   if (!parsed.success) {
     const msg = parsed.error.issues.map((i) => i.message).join(", ");
     return res.status(422).json({ message: msg, issues: parsed.error.issues });
   }
   const body = parsed.data;
   try {
-    const permKeys = await normalizePermissionKeys(body.permissions);
+    const permKeys = await normalizeToRealKeys(body.permissions);
     const result = await db.transaction(async (tx) => {
       const [r] = await tx
         .insert(roles)
@@ -124,7 +135,7 @@ router.post("/roles", async (req, res) => {
     const full = await loadRoleWithPermissions(result.id);
     return res.status(201).json(full);
   } catch (err: any) {
-    console.error("[CreateRole] payload=", req.body, err);
+    console.error("[CreateRole] bad payload →", req.body, err);
     if (err.status === 422)
       return res.status(422).json({ message: err.message, code: err.code });
     if (err.code === "23505") {
@@ -140,12 +151,14 @@ router.patch("/roles/:id", async (req, res) => {
   const id = Number(req.params.id);
   const raw = req.body || {};
   if (typeof raw.name === "string") raw.name = toSlug(raw.name);
-  if (raw.permissions && !Array.isArray(raw.permissions)) {
-    raw.permissions = Object.entries(raw.permissions)
-      .filter(([, v]) => v)
-      .map(([k]) => k);
+  let coerced: string[] | undefined;
+  if (raw.permissions !== undefined) {
+    coerced = coercePermissions(raw.permissions);
   }
-  const parsed = UpdateRoleZ.safeParse(raw);
+  const parsed = UpdateRoleZ.safeParse({
+    ...raw,
+    ...(coerced !== undefined ? { permissions: coerced } : {}),
+  });
   if (!parsed.success) {
     const msg = parsed.error.issues.map((i) => i.message).join(", ");
     return res.status(422).json({ message: msg, issues: parsed.error.issues });
@@ -158,7 +171,7 @@ router.patch("/roles/:id", async (req, res) => {
       return res.status(403).json({ message: "Cannot rename a system role" });
     }
     const permKeys = body.permissions
-      ? await normalizePermissionKeys(body.permissions)
+      ? await normalizeToRealKeys(body.permissions)
       : undefined;
     const updated = await db.transaction(async (tx) => {
       if (
