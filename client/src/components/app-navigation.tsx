@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'wouter';
-import { User, LogOut, BarChart3, TrendingUp, Link2, Home, Settings, Sparkles } from 'lucide-react';
+import { User, LogOut, BarChart3, TrendingUp, Link2, Home, Settings, Sparkles, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
 // Feature flag for AI Branding
@@ -60,14 +60,18 @@ export function AppNavigation({ activeItem = 'dashboard' }: AppNavigationProps) 
           <div className="flex items-center gap-4">
             {user && (
               <>
-                <div className="hidden md:flex items-center gap-2">
+                <button className="notifications-icon text-gray-700 hover:text-gray-900">
+                  <Bell className="h-5 w-5" />
+                </button>
+
+                <div className="hidden md:flex items-center gap-2 profile-menu">
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                     <User className="h-4 w-4 text-blue-700" />
                   </div>
                   <span className="font-medium">{user.name || user.username}</span>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={handleLogout}
                   className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
                   disabled={logoutMutation.isPending}
