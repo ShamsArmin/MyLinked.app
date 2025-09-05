@@ -24,12 +24,8 @@ import type {
   ProfileStats,
   CollaborativeProfile
 } from "../shared/schema";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
 import { IStorage } from "./storage";
-
-// Set up scrypt for password hashing
-const scryptAsync = promisify(scrypt);
+import { hashPassword as hashPw, verifyPassword } from "../src/auth/password";
 
 export class DatabaseStorage implements IStorage {
   sessionStore: any;
@@ -45,16 +41,11 @@ export class DatabaseStorage implements IStorage {
 
   // Password methods
   async hashPassword(password: string): Promise<string> {
-    const salt = randomBytes(16).toString('hex');
-    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-    return `${buf.toString('hex')}.${salt}`;
+    return hashPw(password);
   }
 
   async comparePasswords(supplied: string, stored: string): Promise<boolean> {
-    const [hashed, salt] = stored.split('.');
-    const hashedBuf = Buffer.from(hashed, 'hex');
-    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-    return timingSafeEqual(hashedBuf, suppliedBuf);
+    return verifyPassword(supplied, stored);
   }
 
   // User methods
@@ -64,16 +55,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    const uname = username.toLowerCase();
+    const result = await db
+      .select()
+      .from(users)
+      .where(sql`lower(${users.username}) = ${uname}`)
+      .limit(1);
+    return result[0];
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const e = email.toLowerCase();
+    const result = await db
+      .select()
+      .from(users)
+      .where(sql`lower(${users.email}) = ${e}`)
+      .limit(1);
     return result[0];
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     // Hash the password before storing
     const hashedPassword = await this.hashPassword(insertUser.password);
-    
+
     const [user] = await db.insert(users).values({
       ...insertUser,
+      usernameLower: insertUser.username.toLowerCase(),
       password: hashedPassword
     }).returning();
     
@@ -84,6 +91,9 @@ export class DatabaseStorage implements IStorage {
     // If updating password, hash it first
     if (updates.password) {
       updates.password = await this.hashPassword(updates.password);
+    }
+    if ((updates as any).username) {
+      (updates as any).usernameLower = (updates as any).username.toLowerCase();
     }
     
     const [updatedUser] = await db.update(users)
