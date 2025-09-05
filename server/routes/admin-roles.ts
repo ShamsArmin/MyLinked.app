@@ -94,6 +94,17 @@ async function loadRoleDTO(id: number) {
   };
 }
 
+// Validate if a role name is available (not reserved or duplicate)
+router.get("/roles/validate-name", async (req, res) => {
+  const name = String(req.query.name ?? "").toLowerCase();
+  if (!name) return res.status(400).json({ ok: false, reason: "empty" });
+  if (RESERVED.has(name)) return res.json({ ok: false, reason: "reserved" });
+  const [{ exists }] = (await db.execute(
+    sql`SELECT EXISTS(SELECT 1 FROM roles WHERE LOWER(name)=LOWER(${name})) AS exists`
+  )).rows as any[];
+  return res.json({ ok: !exists, reason: exists ? "duplicate" : null });
+});
+
 router.get("/roles", async (_req, res) => {
   const rows = await db.select().from(roles);
   const result = await Promise.all(rows.map((r) => loadRoleDTO(r.id)));
