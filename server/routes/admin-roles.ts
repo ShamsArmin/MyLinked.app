@@ -30,6 +30,29 @@ const RoleUpsertZ = z.object({
 
 const RESERVED = new Set(["super_admin", "admin", "moderator", "employee", "developer"]);
 
+const slugify = (s:string) =>
+  String(s || "").toLowerCase().trim().replace(/[^a-z0-9_]+/g,"_").replace(/^_+|_+$/g,"");
+
+async function uniqueName(preferred: string) {
+  let base = slugify(preferred || "role");
+  if (!base) base = "role";
+  if (RESERVED.has(base)) base = `${base}_role`;
+
+  const existsCI = async (n: string) => {
+    const [{ exists }] = (await db.execute(
+      sql`SELECT EXISTS(SELECT 1 FROM roles WHERE LOWER(name)=LOWER(${n})) AS exists`
+    )).rows as any[];
+    return !!exists;
+  };
+
+  if (!(await existsCI(base))) return base;
+  for (let i = 2; i < 1000; i++) {
+    const cand = `${base}_${i}`;
+    if (!(await existsCI(cand))) return cand;
+  }
+  throw new Error("Could not generate unique role name");
+}
+
 // Normalize any incoming permission payloads to an array of strings
 function coercePermissionInput(raw: unknown): string[] {
   if (!raw) return [];
@@ -124,7 +147,12 @@ router.post("/roles", async (req, res) => {
     const permissions = await validatePermissionKeys(
       coercePermissionInput((req.body || {}).permissions)
     );
-    body = RoleUpsertZ.parse({ ...req.body, permissions });
+    // parse to get displayName/description; we override name with a safe one below
+    body = RoleUpsertZ.parse({
+      ...req.body,
+      permissions,
+      name: slugify(req.body?.name || req.body?.displayName || "role"),
+    });
   } catch (e: any) {
     if (e.status === 422) {
       return res
@@ -133,42 +161,26 @@ router.post("/roles", async (req, res) => {
     }
     return res.status(422).json({ message: "Invalid payload" });
   }
-  try {
-    if (RESERVED.has(body.name)) {
-      return res
-        .status(409)
-        .json({ message: "Cannot override a system role name", code: "RESERVED_ROLE" });
-    }
 
-    const [{ exists }] = (await db.execute(
-      sql`SELECT EXISTS(SELECT 1 FROM roles WHERE LOWER(name)=LOWER(${body.name})) AS exists`
-    )).rows as any[];
-    if (exists) {
-      return res
-        .status(409)
-        .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
-    }
+  try {
+    const safeName = await uniqueName(body.name); // <<— ALWAYS safe
 
     const id = await db.transaction(async (tx) => {
       const [r0] = await tx
         .insert(roles)
         .values({
-          name: body.name,
+          name: safeName, // <<— use safe name here
           displayName: body.displayName,
           description: body.description ?? null,
           isSystem: false,
         })
         .returning();
+
       if (body.permissions.length) {
         await tx.insert(rolePermissions).values(
           body.permissions.map((k) => ({ roleId: r0.id, permissionKey: k }))
         );
       }
-      const [{ c }] = (await tx.execute(
-        "select count(*)::int as c from role_permissions where role_id = $1",
-        [r0.id]
-      )).rows as any[];
-      console.log(`[roles:create] role_id=${r0.id} perms_written=${c}`);
       return r0.id;
     });
 
@@ -177,16 +189,6 @@ router.post("/roles", async (req, res) => {
     return res.status(201).json(dto);
   } catch (e: any) {
     console.error("[roles:create] failed:", e);
-    if (e.code === "23505") {
-      return res
-        .status(409)
-        .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
-    }
-    if (e.status === 422) {
-      return res
-        .status(422)
-        .json({ message: e.message, code: e.code ?? "INVALID_PERMISSION" });
-    }
     return res.status(500).json({ message: "Failed to create role" });
   }
 });

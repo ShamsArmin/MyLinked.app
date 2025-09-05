@@ -18,6 +18,32 @@ function toSlug(input: string) {
   return input.toLowerCase().trim().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "");
 }
 
+function machine(s: string) {
+  return s?.trim() ? toSlug(s) : "";
+}
+
+function buildSafeSlug(
+  rawName: string,
+  displayName: string,
+  existing: RoleSummary[] | undefined,
+  reserved: Set<string>
+) {
+  const taken = new Set((existing ?? []).map(r => r.name.toLowerCase()));
+  const base0 = machine(rawName) || machine(displayName) || "role";
+  let base = base0 || "role";
+
+  const isTaken = (n: string) => reserved.has(n) || taken.has(n);
+  if (!isTaken(base)) return base;
+
+  // try base_role, then base_role_2, base_role_3, ...
+  let candidate = `${base}_role`;
+  let i = 2;
+  while (isTaken(candidate)) {
+    candidate = `${base}_role_${i++}`;
+  }
+  return candidate;
+}
+
 export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
   const [catalog, setCatalog] = useState<PermissionDef[]>([]);
   const [permMap, setPermMap] = useState<Record<string, boolean>>({});
@@ -57,13 +83,19 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
     .filter(([, v]) => v)
     .map(([k]) => k);
 
+  const machineName = buildSafeSlug(form.name, form.displayName, existingRoles, RESERVED);
+
   const handleSubmit = async () => {
     setError(null);
+
+    // sanity check: payload must be string[]
     if (selectedKeys.some((k) => typeof k !== "string")) {
       console.warn("Invalid permission payload:", selectedKeys);
       setError("Internal selection error. Please reopen the dialog and try again.");
       return;
     }
+
+    // validate against catalog
     const known = new Set(catalog.map((p) => p.key));
     for (const k of selectedKeys) {
       if (!known.has(k)) {
@@ -71,21 +103,19 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
         return;
       }
     }
-    const slug = toSlug(form.name);
-    if (slug.length < 3) {
+
+    if (machineName.length < 3) {
       setError("Role name must be at least 3 characters");
       return;
     }
-    if (RESERVED.has(slug) || (existingRoles || []).some(r => r.name.toLowerCase() === slug)) {
-      setError("Role name is reserved or already exists");
-      return;
-    }
+
     const payload: CreateRolePayload = {
-      name: slug,
-      displayName: form.displayName.trim(),
+      name: machineName,
+      displayName: form.displayName.trim() || form.name.trim() || "Role",
       description: form.description.trim() || undefined,
-      permissions: selectedKeys,
+      permissions: selectedKeys, // string[]
     };
+
     try {
       setLoading(true);
       await apiRequest("POST", "/api/admin/roles", payload);
@@ -102,7 +132,7 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Create New Role</DialogTitle>
@@ -117,6 +147,9 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="e.g. content_manager"
             />
+            <div className="text-xs text-muted-foreground">
+              Machine name: <code>{machineName}</code>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="display-name">Display Name</Label>
@@ -138,7 +171,12 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
             <Label>Permissions</Label>
             {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
             {permsError && (
-              <p className="text-sm text-muted-foreground">No permissions available yet</p>
+              <div className="text-sm text-amber-600">
+                Failed to load permissions.&nbsp;
+                <Button size="sm" variant="outline" onClick={() => mutateGlobal("/api/admin/permissions")}>
+                  Retry
+                </Button>
+              </div>
             )}
             {!isLoading && !permsError && (
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border p-2 rounded">
