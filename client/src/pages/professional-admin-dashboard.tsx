@@ -13,6 +13,8 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import RoleCard from "@/components/admin/role-card";
+import type { RoleSummary as Role, PermissionDef, CreateRolePayload } from "@/types/roles";
 import {
   Crown, Users, Activity, Settings, Shield, AlertTriangle,
   TrendingUp, Database, Globe, Link, Eye, BarChart, 
@@ -36,22 +38,6 @@ import { SegmentActionsMenu } from "@/components/admin/segment-actions-menu";
 import AdminFunnelsPage from "./admin/conversion/funnels";
 
 // Role and Permission types
-interface Role {
-  id: number;
-  name: string;
-  displayName: string;
-  description: string | null;
-  permissions: string[];
-  isSystem: boolean;
-  members: number;
-}
-
-interface PermissionDef {
-  key: string;
-  group: string;
-  description: string | null;
-  label?: string;
-}
 
 interface RoleFormData {
   name: string;
@@ -59,16 +45,7 @@ interface RoleFormData {
   description: string;
 }
 
-interface CreateRolePayload {
-  name: string;
-  displayName: string;
-  description?: string;
-  permissions: string[];
-}
-
-interface UpdateRolePayload extends Partial<CreateRolePayload> {
-  id: number;
-}
+type UpdateRolePayload = Partial<CreateRolePayload> & { id: number };
 
 interface Employee {
   id: number;
@@ -131,7 +108,6 @@ export default function ProfessionalAdminDashboard() {
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
   const [isEditRoleDialogOpen, setIsEditRoleDialogOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<any>(null);
-  const [expandedRoles, setExpandedRoles] = useState<Set<number>>(new Set());
   const [inviteFormData, setInviteFormData] = useState({
     email: "",
     recipientName: "",
@@ -1642,91 +1618,28 @@ export default function ProfessionalAdminDashboard() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {roles.map((role: Role) => (
-                    <Card key={role.id}>
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-lg">{role.displayName}</CardTitle>
-                            <CardDescription>{role.description}</CardDescription>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">{role.members} users</Badge>
-                            {role.isSystem && (
-                              <Badge variant="secondary">System</Badge>
-                            )}
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-sm font-medium">Permissions:</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {(expandedRoles.has(role.id) ? role.permissions : role.permissions.slice(0, 3)).map((perm, index) => (
-                                <Badge key={index} variant="outline" className="text-xs">
-                                  {perm}
-                                </Badge>
-                              ))}
-                              {role.permissions.length > 3 && (
-                                <Badge 
-                                  variant="outline" 
-                                  className="text-xs cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                                  onClick={() => {
-                                    const newExpanded = new Set(expandedRoles);
-                                    if (expandedRoles.has(role.id)) {
-                                      newExpanded.delete(role.id);
-                                    } else {
-                                      newExpanded.add(role.id);
-                                    }
-                                    setExpandedRoles(newExpanded);
-                                  }}
-                                >
-                                  {expandedRoles.has(role.id) 
-                                    ? "Show less" 
-                                    : `+${role.permissions.length - 3} more`
-                                  }
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          {!role.isSystem && (
-                            <div className="flex gap-2 pt-2 border-t">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedRole(role);
-                                  setRoleFormData({
-                                    name: role.name,
-                                    displayName: role.displayName,
-                                    description: role.description ?? "",
-                                  });
-                                  setSelectedPermissions(new Set(role.permissions));
-                                  setIsEditRoleDialogOpen(true);
-                                }}
-                                className="flex-1"
-                              >
-                                <Edit className="h-3 w-3 mr-1" />
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  if (confirm(`Are you sure you want to delete the role "${role.displayName}"?`)) {
-                                    deleteRoleMutation.mutate(role.id);
-                                  }
-                                }}
-                                className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <X className="h-3 w-3 mr-1" />
-                                Delete
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <RoleCard
+                      key={role.id}
+                      role={role}
+                      onEdit={() => {
+                        setSelectedRole(role);
+                        setRoleFormData({
+                          name: role.name,
+                          displayName: role.displayName,
+                          description: role.description ?? "",
+                        });
+                        setSelectedPermissions(new Set(role.permissions));
+                        setIsEditRoleDialogOpen(true);
+                      }}
+                      onDelete={() => {
+                        if (
+                          !role.isSystem &&
+                          confirm(`Are you sure you want to delete the role "${role.displayName}"?`)
+                        ) {
+                          deleteRoleMutation.mutate(role.id);
+                        }
+                      }}
+                    />
                   ))}
                 </div>
               </CardContent>

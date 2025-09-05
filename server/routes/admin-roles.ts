@@ -98,8 +98,8 @@ router.use((_req, res, next) => {
 });
 router.get("/roles", async (_req, res) => {
   const rs = await db.select().from(roles);
-  const full = await Promise.all(rs.map((r) => loadRoleWithPermissions(r.id)));
-  res.json(full);
+  const full = await Promise.all(rs.map((r) => serializeRole(r.id)));
+  res.json(full.filter(Boolean));
 });
 
 router.post("/roles", async (req, res) => {
@@ -132,7 +132,7 @@ router.post("/roles", async (req, res) => {
       return r;
     });
     await logAction((req.user as any).id, "role_create", { roleId: result.id });
-    const full = await loadRoleWithPermissions(result.id);
+    const full = await serializeRole(result.id);
     return res.status(201).json(full);
   } catch (err: any) {
     console.error("[CreateRole] bad payload →", req.body, err);
@@ -199,7 +199,7 @@ router.patch("/roles/:id", async (req, res) => {
           );
         }
       }
-      return await loadRoleWithPermissions(id, tx);
+      return await serializeRole(id, tx);
     });
     await logAction((req.user as any).id, "role_update", { roleId: id });
     return res.json(updated);
@@ -267,8 +267,9 @@ router.get("/roles/:id/members", async (req, res) => {
   res.json(members);
 });
 
-async function loadRoleWithPermissions(id: number, tx = db) {
+async function serializeRole(id: number, tx = db) {
   const [r] = await tx.select().from(roles).where(eq(roles.id, id));
+  if (!r) return null;
   const perms = await tx
     .select({ key: rolePermissions.permissionKey })
     .from(rolePermissions)
@@ -285,6 +286,8 @@ async function loadRoleWithPermissions(id: number, tx = db) {
     isSystem: r.isSystem,
     permissions: perms.map((p) => p.key),
     members: Number(members[0]?.count ?? 0),
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
   };
 }
 
