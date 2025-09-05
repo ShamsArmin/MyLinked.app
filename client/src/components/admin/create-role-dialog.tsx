@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/queryClient";
-import { PermissionDef, CreateRolePayload } from "@/types/roles";
+import { PermissionDef, CreateRolePayload, RoleSummary } from "@/types/roles";
 
 interface Props {
   open: boolean;
@@ -34,6 +34,13 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
       errorRetryInterval: 1500,
     }
   );
+
+  const { data: existingRoles } = useSWR<RoleSummary[]>(
+    open ? "/api/admin/roles" : null,
+    (url) => apiRequest("GET", url)
+  );
+
+  const RESERVED = new Set(["super_admin", "admin", "moderator", "employee", "developer"]);
 
   useEffect(() => {
     if (perms) {
@@ -64,8 +71,17 @@ export function CreateRoleDialog({ open, onClose, onCreated }: Props) {
         return;
       }
     }
+    const slug = toSlug(form.name);
+    if (slug.length < 3) {
+      setError("Role name must be at least 3 characters");
+      return;
+    }
+    if (RESERVED.has(slug) || (existingRoles || []).some(r => r.name.toLowerCase() === slug)) {
+      setError("Role name is reserved or already exists");
+      return;
+    }
     const payload: CreateRolePayload = {
-      name: toSlug(form.name),
+      name: slug,
       displayName: form.displayName.trim(),
       description: form.description.trim() || undefined,
       permissions: selectedKeys,

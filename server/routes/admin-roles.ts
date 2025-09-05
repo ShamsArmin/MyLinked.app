@@ -7,7 +7,7 @@ import {
   rolePermissions,
   userRoles,
 } from "../../shared/schema";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { isAuthenticated } from "../auth";
 import { requireAdmin } from "../require-admin";
 
@@ -28,15 +28,29 @@ const RoleUpsertZ = z.object({
   permissions: z.array(z.string()).default([]),
 });
 
+const RESERVED = new Set(["super_admin", "admin", "moderator", "employee", "developer"]);
+
 // Normalize any incoming permission payloads to an array of strings
 function coercePermissionInput(raw: unknown): string[] {
-  if (Array.isArray(raw)) return raw.map((v) => String(v));
-  if (raw && typeof raw === "object") {
-    return Object.entries(raw as Record<string, unknown>)
-      .filter(([, v]) => v === true)
-      .map(([k]) => k);
+  if (!raw) return [];
+
+  if (Array.isArray(raw)) return raw.map((v) => String(v).trim()).filter(Boolean);
+
+  if (typeof raw === "object") {
+    const entries = Object.entries(raw as Record<string, unknown>);
+    if (entries.every(([, v]) => typeof v === "string")) {
+      return entries.map(([, v]) => String(v));
+    }
+    if (entries.every(([, v]) => v === true)) {
+      return entries.map(([k]) => k);
+    }
   }
-  return raw ? [String(raw)] : [];
+
+  if (typeof raw === "string") {
+    return raw.split(",").map((s) => s.trim()).filter(Boolean);
+  }
+
+  return [];
 }
 
 async function validatePermissionKeys(keys: string[]) {
@@ -109,6 +123,21 @@ router.post("/roles", async (req, res) => {
     return res.status(422).json({ message: "Invalid payload" });
   }
   try {
+    if (RESERVED.has(body.name)) {
+      return res
+        .status(409)
+        .json({ message: "Cannot override a system role name", code: "RESERVED_ROLE" });
+    }
+
+    const [{ exists }] = (await db.execute(
+      sql`SELECT EXISTS(SELECT 1 FROM roles WHERE LOWER(name)=LOWER(${body.name})) AS exists`
+    )).rows as any[];
+    if (exists) {
+      return res
+        .status(409)
+        .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
+    }
+
     const id = await db.transaction(async (tx) => {
       const [r0] = await tx
         .insert(roles)
@@ -171,6 +200,22 @@ router.patch("/roles/:id", async (req, res) => {
     return res.status(422).json({ message: "Invalid payload" });
   }
   try {
+    if (body.name) {
+      if (RESERVED.has(body.name)) {
+        return res
+          .status(409)
+          .json({ message: "Cannot override a system role name", code: "RESERVED_ROLE" });
+      }
+      const [{ exists }] = (await db.execute(
+        sql`SELECT EXISTS(SELECT 1 FROM roles WHERE LOWER(name)=LOWER(${body.name}) AND id<>${id}) AS exists`
+      )).rows as any[];
+      if (exists) {
+        return res
+          .status(409)
+          .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
+      }
+    }
+
     await db.transaction(async (tx) => {
       if (body.name || body.displayName || body.description !== undefined) {
         await tx
