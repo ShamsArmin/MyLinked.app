@@ -4,21 +4,19 @@ import { QueryClient, QueryFunctionContext } from "@tanstack/react-query";
 export async function apiRequest(method: string, url: string, data?: any) {
   const res = await fetch(url, {
     method,
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
-    credentials: "include", // ✅ send session cookie
-    body: data ? JSON.stringify(data) : undefined,
+    body: data !== undefined ? JSON.stringify(data) : undefined,
   });
-
+  const text = await res.text().catch(() => "");
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Request failed: ${res.status} ${res.statusText} ${text}`);
+    try {
+      throw new Error(JSON.parse(text)?.message || text || `HTTP ${res.status}`);
+    } catch {
+      throw new Error(text || `HTTP ${res.status}`);
+    }
   }
-
-  if (method === "DELETE" || res.status === 204) return null;
-
-  const text = await res.text();
-  if (!text) return null;
-  return JSON.parse(text);
+  return text ? JSON.parse(text) : null;
 }
 
 // Default query function that uses the first element of the query key as the URL

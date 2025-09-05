@@ -110,8 +110,7 @@ async function loadRoleDTO(id: number) {
     .from(rolePermissions)
     .where(eq(rolePermissions.roleId, id));
   const [{ count }] = (await db.execute(
-    "select count(*)::int as count from user_roles where role_id = $1",
-    [id]
+    sql`select count(*)::int as count from user_roles where role_id = ${id}`
   )).rows as any[];
   return {
     id: r0.id,
@@ -213,8 +212,7 @@ router.post("/roles", async (req, res) => {
 
       // sanity check how many perms written
       const [{ c }] = (await tx.execute(
-        "select count(*)::int as c from role_permissions where role_id = $1",
-        [roleId]
+        sql`select count(*)::int as c from role_permissions where role_id = ${roleId}`
       )).rows as any[];
       console.log(`[roles:create] role_id=${roleId} perms_written=${c}`);
 
@@ -318,8 +316,7 @@ router.patch("/roles/:id", async (req, res) => {
           );
         }
         const [{ c }] = (await tx.execute(
-          "select count(*)::int as c from role_permissions where role_id = $1",
-          [id]
+          sql`select count(*)::int as c from role_permissions where role_id = ${id}`
         )).rows as any[];
         console.log(`[roles:update] role_id=${id} perms_written=${c}`);
       }
