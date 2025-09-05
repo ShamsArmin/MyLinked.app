@@ -972,44 +972,55 @@ export default function ProfessionalAdminPanel() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {roles.map((role) => (
-                    <Card key={role.id} className="border-2 hover:border-blue-200 transition-colors">
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg capitalize">{role.displayName}</CardTitle>
-                          <Badge variant="outline">{role.members} users</Badge>
-                        </div>
-                        <CardDescription>{role.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <h5 className="font-medium text-sm">Permissions:</h5>
-                          <div className="space-y-1">
-                            {role.permissions.map((permission) => (
-                              <div key={permission} className="flex items-center space-x-2">
-                                <CheckCircle className="h-3 w-3 text-green-500" />
-                                <span className="text-sm">{permission}</span>
-                              </div>
-                            ))}
+                  {roles.map((role) => {
+                    const perms = role.permissions ?? (role as any).permissionKeys ?? [];
+                    return (
+                      <Card key={role.id} className="border-2 hover:border-blue-200 transition-colors">
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg capitalize">{role.displayName}</CardTitle>
+                            <Badge variant="outline">{role.members} users</Badge>
                           </div>
-                        </div>
-                        <div className="mt-4 flex space-x-2">
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Users className="h-4 w-4 mr-1" />
-                            Users
-                          </Button>
-                          <Button variant="destructive" size="sm" onClick={() => handleDeleteRole(role)} disabled={role.isSystem}>
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          <CardDescription>{role.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <h5 className="font-medium text-sm">Permissions:</h5>
+                            <div className="space-y-1">
+                              {perms.map((permission) => (
+                                <div key={permission} className="flex items-center space-x-2">
+                                  <CheckCircle className="h-3 w-3 text-green-500" />
+                                  <span className="text-sm">{permission}</span>
+                                </div>
+                              ))}
+                              {perms.length === 0 && (
+                                <span className="text-sm text-muted-foreground">—</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-4 flex space-x-2">
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Users className="h-4 w-4 mr-1" />
+                              Users
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteRole(role)}
+                              disabled={role.isSystem}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

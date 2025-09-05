@@ -3,119 +3,92 @@ import { z } from "zod";
 import { db } from "../db";
 import {
   roles,
-  permissions,
+  permissions as permsTbl,
   rolePermissions,
   userRoles,
-  auditLogs,
-  users,
 } from "../../shared/schema";
-import { eq, sql, inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { isAuthenticated } from "../auth";
 import { requireAdmin } from "../require-admin";
 
-async function logAction(actorId: string, action: string, payload?: any) {
-  await db.insert(auditLogs).values({ actorId, action, payload });
-}
+const router = Router();
+router.use(isAuthenticated, requireAdmin("role_manage"));
 
-function toSlug(input: string) {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9_]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-}
+// Disable caching so edits reflect immediately
+router.use((_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.removeHeader("ETag");
+  next();
+});
 
-const CreateRoleZ = z.object({
-  name: z
-    .string()
-    .min(3)
-    .regex(/^[a-z0-9_]+$/, {
-      message: "Name must use lowercase letters, numbers, or underscores",
-    }),
-  displayName: z.string().min(3),
+const RoleUpsertZ = z.object({
+  name: z.string().regex(/^[a-z0-9_]+$/).min(3),
+  displayName: z.string().min(2),
   description: z.string().optional(),
   permissions: z.array(z.string()).default([]),
 });
 
-const UpdateRoleZ = CreateRoleZ.partial().extend({
-  permissions: z.array(z.string()).optional(),
-});
-
-function coercePermissions(raw: any): string[] {
-  if (!raw) return [];
-  let arr: any[] = [];
-  if (!Array.isArray(raw) && typeof raw === "object") {
-    arr = Object.entries(raw)
-      .filter(([, v]) => v === true)
-      .map(([k]) => k);
-  } else if (Array.isArray(raw)) {
-    arr = raw;
-  } else {
-    arr = [raw];
-  }
-  return arr.map((v) => {
-    if (typeof v === "string") return v;
-    if (typeof v === "number") return `__IDX:${v}`;
-    return String(v);
-  });
+async function loadRoleDTO(id: number) {
+  const [r0] = await db.select().from(roles).where(eq(roles.id, id));
+  if (!r0) return null;
+  const permRows = await db
+    .select({ key: rolePermissions.permissionKey })
+    .from(rolePermissions)
+    .where(eq(rolePermissions.roleId, id));
+  const [{ count }] = (await db.execute(
+    "select count(*)::int as count from user_roles where role_id = $1",
+    [id]
+  )).rows as any[];
+  return {
+    id: r0.id,
+    name: r0.name,
+    displayName: r0.displayName,
+    description: r0.description,
+    isSystem: r0.isSystem,
+    permissions: permRows.map((p) => p.key),
+    members: Number(count ?? 0),
+    createdAt: r0.createdAt,
+    updatedAt: r0.updatedAt,
+  };
 }
 
-async function normalizeToRealKeys(keys: string[]) {
-  if (!keys.length) return [] as string[];
-  const all = await db
-    .select()
-    .from(permissions)
-    .orderBy(permissions.group, permissions.key);
-  const byIndex = (i: number) => all[i]?.key;
-  const normalized = keys.map((k) => {
-    const m = k.match(/^__IDX:(\d+)$/);
-    if (m) return byIndex(parseInt(m[1], 10)) ?? "__INVALID__";
-    return k;
-  });
-  const uniq = Array.from(new Set(normalized));
-  const found = await db
-    .select({ key: permissions.key })
-    .from(permissions)
-    .where(inArray(permissions.key, uniq));
-  const foundSet = new Set(found.map((r) => r.key));
-  const unknown = uniq.filter((k) => !foundSet.has(k));
-  if (unknown.length) {
-    const err: any = new Error(`Unknown permission key(s): ${unknown.join(", ")}`);
-    err.status = 422;
-    err.code = "INVALID_PERMISSION";
-    throw err;
-  }
-  return normalized;
-}
-
-const router = Router();
-
-router.use(isAuthenticated, requireAdmin("role_manage"));
-
-router.use((_req, res, next) => {
-  res.set("Cache-Control", "no-store");
-  next();
-});
 router.get("/roles", async (_req, res) => {
-  const rs = await db.select().from(roles);
-  const full = await Promise.all(rs.map((r) => serializeRole(r.id)));
-  res.json(full.filter(Boolean));
+  const rows = await db.select().from(roles);
+  const result = await Promise.all(rows.map((r) => loadRoleDTO(r.id)));
+  res.json(result.filter(Boolean));
+});
+
+router.get("/roles/:id", async (req, res) => {
+  const dto = await loadRoleDTO(Number(req.params.id));
+  if (!dto) return res.status(404).json({ message: "Role not found" });
+  res.json(dto);
 });
 
 router.post("/roles", async (req, res) => {
-  const raw = req.body || {};
-  if (typeof raw.name === "string") raw.name = toSlug(raw.name);
-  const coerced = coercePermissions(raw.permissions);
-  const parsed = CreateRoleZ.safeParse({ ...raw, permissions: coerced });
-  if (!parsed.success) {
-    const msg = parsed.error.issues.map((i) => i.message).join(", ");
-    return res.status(422).json({ message: msg, issues: parsed.error.issues });
-  }
-  const body = parsed.data;
+  let body: z.infer<typeof RoleUpsertZ>;
   try {
-    const permKeys = await normalizeToRealKeys(body.permissions);
-    const result = await db.transaction(async (tx) => {
-      const [r] = await tx
+    body = RoleUpsertZ.parse(req.body);
+  } catch {
+    return res.status(422).json({ message: "Invalid payload" });
+  }
+  try {
+    if (body.permissions.length) {
+      const known = await db
+        .select({ key: permsTbl.key })
+        .from(permsTbl)
+        .where(inArray(permsTbl.key, body.permissions));
+      const knownSet = new Set(known.map((k) => k.key));
+      const unknown = body.permissions.filter((k) => !knownSet.has(k));
+      if (unknown.length) {
+        return res.status(422).json({
+          message: `Unknown permission key(s): ${unknown.join(", ")}`,
+          code: "INVALID_PERMISSION",
+        });
+      }
+    }
+
+    const id = await db.transaction(async (tx) => {
+      const [r0] = await tx
         .insert(roles)
         .values({
           name: body.name,
@@ -124,24 +97,32 @@ router.post("/roles", async (req, res) => {
           isSystem: false,
         })
         .returning();
-      if (permKeys.length) {
+      if (body.permissions.length) {
         await tx.insert(rolePermissions).values(
-          permKeys.map((p) => ({ roleId: r.id, permissionKey: p }))
+          body.permissions.map((k) => ({ roleId: r0.id, permissionKey: k }))
         );
       }
-      return r;
+      const [{ c }] = (await tx.execute(
+        "select count(*)::int as c from role_permissions where role_id = $1",
+        [r0.id]
+      )).rows as any[];
+      console.log(`[roles:create] role_id=${r0.id} perms_written=${c}`);
+      return r0.id;
     });
-    await logAction((req.user as any).id, "role_create", { roleId: result.id });
-    const full = await serializeRole(result.id);
-    return res.status(201).json(full);
-  } catch (err: any) {
-    console.error("[CreateRole] bad payload →", req.body, err);
-    if (err.status === 422)
-      return res.status(422).json({ message: err.message, code: err.code });
-    if (err.code === "23505") {
+
+    const dto = await loadRoleDTO(id);
+    return res.status(201).json(dto);
+  } catch (e: any) {
+    console.error("[roles:create] payload=", req.body, "error=", e);
+    if (e.code === "23505") {
       return res
         .status(409)
         .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
+    }
+    if (e.code === "23503") {
+      return res
+        .status(422)
+        .json({ message: "Unknown permission key", code: "INVALID_PERMISSION" });
     }
     return res.status(500).json({ message: "Failed to create role" });
   }
@@ -149,36 +130,15 @@ router.post("/roles", async (req, res) => {
 
 router.patch("/roles/:id", async (req, res) => {
   const id = Number(req.params.id);
-  const raw = req.body || {};
-  if (typeof raw.name === "string") raw.name = toSlug(raw.name);
-  let coerced: string[] | undefined;
-  if (raw.permissions !== undefined) {
-    coerced = coercePermissions(raw.permissions);
-  }
-  const parsed = UpdateRoleZ.safeParse({
-    ...raw,
-    ...(coerced !== undefined ? { permissions: coerced } : {}),
-  });
-  if (!parsed.success) {
-    const msg = parsed.error.issues.map((i) => i.message).join(", ");
-    return res.status(422).json({ message: msg, issues: parsed.error.issues });
-  }
-  const body = parsed.data;
+  let body: Partial<z.infer<typeof RoleUpsertZ>>;
   try {
-    const exists = await db.select().from(roles).where(eq(roles.id, id));
-    if (!exists.length) return res.status(404).json({ message: "Role not found" });
-    if (exists[0].isSystem && body.name) {
-      return res.status(403).json({ message: "Cannot rename a system role" });
-    }
-    const permKeys = body.permissions
-      ? await normalizeToRealKeys(body.permissions)
-      : undefined;
-    const updated = await db.transaction(async (tx) => {
-      if (
-        body.name ||
-        body.displayName ||
-        body.description !== undefined
-      ) {
+    body = RoleUpsertZ.partial().parse(req.body);
+  } catch {
+    return res.status(422).json({ message: "Invalid payload" });
+  }
+  try {
+    await db.transaction(async (tx) => {
+      if (body.name || body.displayName || body.description !== undefined) {
         await tx
           .update(roles)
           .set({
@@ -191,26 +151,42 @@ router.patch("/roles/:id", async (req, res) => {
           })
           .where(eq(roles.id, id));
       }
-      if (permKeys !== undefined) {
+      if (body.permissions) {
+        if (body.permissions.length) {
+          const known = await tx
+            .select({ key: permsTbl.key })
+            .from(permsTbl)
+            .where(inArray(permsTbl.key, body.permissions));
+          const knownSet = new Set(known.map((k) => k.key));
+          const unknown = body.permissions.filter((k) => !knownSet.has(k));
+          if (unknown.length) {
+            const msg = `Unknown permission key(s): ${unknown.join(", ")}`;
+            throw Object.assign(new Error(msg), { status: 422 });
+          }
+        }
         await tx.delete(rolePermissions).where(eq(rolePermissions.roleId, id));
-        if (permKeys.length) {
+        if (body.permissions.length) {
           await tx.insert(rolePermissions).values(
-            permKeys.map((p) => ({ roleId: id, permissionKey: p }))
+            body.permissions.map((k) => ({ roleId: id, permissionKey: k }))
           );
         }
+        const [{ c }] = (await tx.execute(
+          "select count(*)::int as c from role_permissions where role_id = $1",
+          [id]
+        )).rows as any[];
+        console.log(`[roles:update] role_id=${id} perms_written=${c}`);
       }
-      return await serializeRole(id, tx);
     });
-    await logAction((req.user as any).id, "role_update", { roleId: id });
-    return res.json(updated);
-  } catch (err: any) {
-    if (err.status === 422)
-      return res.status(422).json({ message: err.message, code: err.code });
-    if (err.code === "23505")
+    const dto = await loadRoleDTO(id);
+    return res.json(dto);
+  } catch (e: any) {
+    console.error("[roles:update] payload=", req.body, "error=", e);
+    if (e.status === 422)
+      return res.status(422).json({ message: e.message });
+    if (e.code === "23505")
       return res
         .status(409)
         .json({ message: "Role name already exists", code: "DUPLICATE_ROLE" });
-    console.error("Update role failed:", err);
     return res.status(500).json({ message: "Failed to update role" });
   }
 });
@@ -245,51 +221,11 @@ router.delete("/roles/:id", async (req, res) => {
       }
       await tx.delete(roles).where(eq(roles.id, id));
     });
-    await logAction((req.user as any).id, "role_delete", { roleId: id });
     return res.json({ ok: true });
-  } catch (err: any) {
-    console.error("Delete role failed:", err);
+  } catch (e) {
+    console.error("[roles:delete] error=", e);
     return res.status(500).json({ message: "Failed to delete role" });
   }
 });
 
-router.get("/roles/:id/members", async (req, res) => {
-  const id = Number(req.params.id);
-  const limit = Number((req.query.limit as string) || 20);
-  const offset = Number((req.query.offset as string) || 0);
-  const members = await db
-    .select({ id: users.id, name: users.name, email: users.email })
-    .from(userRoles)
-    .innerJoin(users, eq(userRoles.userId, users.id))
-    .where(eq(userRoles.roleId, id))
-    .limit(limit)
-    .offset(offset);
-  res.json(members);
-});
-
-async function serializeRole(id: number, tx = db) {
-  const [r] = await tx.select().from(roles).where(eq(roles.id, id));
-  if (!r) return null;
-  const perms = await tx
-    .select({ key: rolePermissions.permissionKey })
-    .from(rolePermissions)
-    .where(eq(rolePermissions.roleId, id));
-  const members = await tx
-    .select({ count: sql<number>`count(*)` })
-    .from(userRoles)
-    .where(eq(userRoles.roleId, id));
-  return {
-    id: r.id,
-    name: r.name,
-    displayName: r.displayName,
-    description: r.description,
-    isSystem: r.isSystem,
-    permissions: perms.map((p) => p.key),
-    members: Number(members[0]?.count ?? 0),
-    createdAt: r.createdAt,
-    updatedAt: r.updatedAt,
-  };
-}
-
 export default router;
-
