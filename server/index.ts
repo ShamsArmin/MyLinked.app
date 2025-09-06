@@ -26,14 +26,21 @@ import referralRequestsRouter from "./routes/referral-requests";
 const app = express();
 app.set("trust proxy", 1);
 
+// Force all www traffic to apex so cookies and redirects stay consistent
+app.use((req, res, next) => {
+  if (req.hostname === "www.mylinked.app") {
+    const to = `https://mylinked.app${req.originalUrl}`;
+    return res.redirect(301, to);
+  }
+  next();
+});
+
 // Body parsers MUST be before any routes/passport
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 const PgSession = connectPgSimple(session);
 const isProd = process.env.NODE_ENV === "production";
-const cookieDomain =
-  process.env.COOKIE_DOMAIN && isProd ? process.env.COOKIE_DOMAIN : undefined;
 
 // Security middleware (early)
 app.use(securityMiddleware.securityHeaders);
@@ -44,8 +51,7 @@ app.use(securityMiddleware.xssProtection);
 app.use(securityMiddleware.inputValidation);
 
 // CORS
-const allowedOrigins =
-  isProd ? ["https://mylinked.app", "https://www.mylinked.app"] : true;
+const allowedOrigins = isProd ? ["https://mylinked.app"] : true;
 app.use(
   cors({
     origin: allowedOrigins,
@@ -93,7 +99,7 @@ app.use(
       httpOnly: true,
       sameSite: "lax",
       secure: true,
-      domain: cookieDomain,
+      domain: isProd ? ".mylinked.app" : undefined,
       path: "/",
       maxAge: 1000 * 60 * 60 * 24 * 7,
     },

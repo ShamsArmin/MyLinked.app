@@ -62,6 +62,7 @@ import emailRouter from "./email-routes";
 import supportRouter from "./support-routes";
 import { setupTikTokOAuth } from "./tiktok-oauth";
 import { sendPasswordResetEmail } from "./email-service";
+import { GOOGLE_CALLBACK_URL } from "./config/publicUrl";
 
 // Error handling middleware
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
@@ -240,10 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const clientId = process.env.GOOGLE_CLIENT_ID;
-      const baseUrl = (
-        process.env.BASE_URL || `${req.protocol}://${req.get("host")}`
-      ).replace(/\/$/, "");
-      const redirectUri = `${baseUrl}/api/auth/google/callback`;
+      const redirectUri = GOOGLE_CALLBACK_URL;
       const scope = "openid email profile";
 
       if (!clientId) {
@@ -256,7 +254,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `redirect_uri=${encodeURIComponent(redirectUri)}&` +
         `scope=${encodeURIComponent(scope)}&` +
         `response_type=code&` +
-        `access_type=offline`;
+        `access_type=offline&` +
+        `prompt=select_account`;
 
       res.redirect(authUrl);
     }),
@@ -273,10 +272,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Exchange code for access token
-      const baseUrl = (
-        process.env.BASE_URL || `${req.protocol}://${req.get("host")}`
-      ).replace(/\/$/, "");
-
       const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -285,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           client_secret: process.env.GOOGLE_CLIENT_SECRET,
           code,
           grant_type: "authorization_code",
-          redirect_uri: `${baseUrl}/api/auth/google/callback`,
+          redirect_uri: GOOGLE_CALLBACK_URL,
         }),
       });
 
@@ -320,14 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const target =
-        typeof req.session.returnTo === "string" &&
-        req.session.returnTo.startsWith("/") &&
-        !req.session.returnTo.startsWith("//")
-          ? req.session.returnTo
-          : "/dashboard";
-      delete req.session.returnTo;
-
+      const returnTo = req.session.returnTo;
       await new Promise<void>((resolve, reject) =>
         req.session.regenerate((err) => (err ? reject(err) : resolve()))
       );
@@ -336,11 +324,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.login(user, (err: any) => (err ? reject(err) : resolve()))
       );
 
-      req.session.userId = (req.user as any)?.id || user.id;
+      if (req.user) (req.session as any).uid = (req.user as any).id;
+
+      const relative =
+        typeof returnTo === "string" &&
+        returnTo.startsWith("/") &&
+        !returnTo.startsWith("//")
+          ? returnTo
+          : "/dashboard";
+
+      delete req.session.returnTo;
+
+      const target = new URL(relative, "https://mylinked.app").toString();
 
       console.log("DEBUG callback before save:", {
         user: (req.user as any)?.id,
-        returnTo: target,
+        returnTo: relative,
       });
 
       await new Promise<void>((resolve, reject) =>
