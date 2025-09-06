@@ -159,7 +159,11 @@ export default function AuthPage() {
 
   const handleSocialLogin = (provider: string) => {
     setErrorMessage(null);
-    window.location.href = `/api/auth/${provider}`;
+    const url =
+      provider === "google"
+        ? "/api/auth/google?next=/dashboard"
+        : `/api/auth/${provider}`;
+    window.location.href = url;
   };
 
   const handleTikTokLogin = () => {
