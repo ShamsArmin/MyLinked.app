@@ -229,91 +229,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =============================================================================
 
   // Google OAuth
-  app.get("/api/auth/google", asyncHandler(async (req: any, res: any) => {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const baseUrl = (
-      process.env.BASE_URL || `${req.protocol}://${req.get("host")}`
-    ).replace(/\/$/, "");
-    const redirectUri = `${baseUrl}/api/auth/google/callback`;
-    const scope = "openid email profile";
-
-    if (!clientId) {
-      return res.status(400).json({ error: "Google OAuth not configured" });
-    }
-
-    const authUrl =
-      `https://accounts.google.com/o/oauth2/v2/auth?` +
-      `client_id=${clientId}&` +
-      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-      `scope=${encodeURIComponent(scope)}&` +
-      `response_type=code&` +
-      `access_type=offline`;
-
-    res.redirect(authUrl);
-  }));
-
-  app.get("/api/auth/google/callback", asyncHandler(async (req: any, res: any) => {
-    const { code } = req.query;
-
-    if (!code) {
-      return res.redirect("/?error=google_auth_failed");
-    }
-
-    // Exchange code for access token
-    const baseUrl = (
-      process.env.BASE_URL || `${req.protocol}://${req.get("host")}`
-    ).replace(/\/$/, "");
-
-    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        code,
-        grant_type: "authorization_code",
-        redirect_uri: `${baseUrl}/api/auth/google/callback`,
-      }),
-    });
-
-    const tokenData = await tokenResponse.json();
-
-    if (!tokenData.access_token) {
-      return res.redirect("/?error=google_token_failed");
-    }
-
-    // Get user profile
-    const profileResponse = await fetch(
-      `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${tokenData.access_token}`,
-    );
-    const profile = await profileResponse.json();
-
-    // Check if user exists or create new user
-    let user = await storage.getUserByEmail(profile.email);
-
-    if (!user) {
-      // Create new user
-      const hashedPassword = await hashPassword(Math.random().toString(36));
-      user = await storage.createUser({
-        username:
-          profile.email.split("@")[0] +
-          "_" +
-          Math.random().toString(36).substr(2, 5),
-        password: hashedPassword,
-        name: profile.name || profile.email,
-        email: profile.email,
-        profileImage: profile.picture,
-      });
-    }
-
-    // Log the user in
-    req.login(user, (err: any) => {
-      if (err) {
-        return res.redirect("/?error=login_failed");
+  app.get(
+    "/api/auth/google",
+    asyncHandler(async (req: any, res: any) => {
+      const nextUrl = typeof req.query.next === "string" ? req.query.next : "";
+      if (nextUrl && nextUrl.startsWith("/") && !nextUrl.startsWith("//")) {
+        req.session.returnTo = nextUrl;
+      } else {
+        delete req.session.returnTo;
       }
-      res.redirect("/");
-    });
-  }));
+
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const baseUrl = (
+        process.env.BASE_URL || `${req.protocol}://${req.get("host")}`
+      ).replace(/\/$/, "");
+      const redirectUri = `${baseUrl}/api/auth/google/callback`;
+      const scope = "openid email profile";
+
+      if (!clientId) {
+        return res.status(400).json({ error: "Google OAuth not configured" });
+      }
+
+      const authUrl =
+        `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${clientId}&` +
+        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+        `scope=${encodeURIComponent(scope)}&` +
+        `response_type=code&` +
+        `access_type=offline`;
+
+      res.redirect(authUrl);
+    }),
+  );
+
+  app.get(
+    "/api/auth/google/callback",
+    asyncHandler(async (req: any, res: any) => {
+      const { code } = req.query;
+
+      if (!code) {
+        return res.redirect("/login?error=google");
+      }
+
+      // Exchange code for access token
+      const baseUrl = (
+        process.env.BASE_URL || `${req.protocol}://${req.get("host")}`
+      ).replace(/\/$/, "");
+
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          client_secret: process.env.GOOGLE_CLIENT_SECRET,
+          code,
+          grant_type: "authorization_code",
+          redirect_uri: `${baseUrl}/api/auth/google/callback`,
+        }),
+      });
+
+      const tokenData = await tokenResponse.json();
+
+      if (!tokenData.access_token) {
+        return res.redirect("/login?error=google");
+      }
+
+      // Get user profile
+      const profileResponse = await fetch(
+        `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${tokenData.access_token}`,
+      );
+      const profile = await profileResponse.json();
+
+      // Check if user exists or create new user
+      let user = await storage.getUserByEmail(profile.email);
+
+      if (!user) {
+        // Create new user
+        const hashedPassword = await hashPassword(Math.random().toString(36));
+        user = await storage.createUser({
+          username:
+            profile.email.split("@")[0] +
+            "_" +
+            Math.random().toString(36).substr(2, 5),
+          password: hashedPassword,
+          name: profile.name || profile.email,
+          email: profile.email,
+          profileImage: profile.picture,
+        });
+      }
+
+      // Log the user in
+      req.login(user, (err: any) => {
+        if (err) {
+          return res.redirect("/login?error=google");
+        }
+        const target = req.session.returnTo || "/dashboard";
+        delete req.session.returnTo;
+        res.redirect(target);
+      });
+    }),
+  );
 
   // Facebook OAuth - Consolidated Implementation
   app.get("/api/auth/facebook", asyncHandler(async (req: any, res: any) => {

@@ -83,13 +83,15 @@ app.use(
           createTableIfMissing: true,
         })
       : undefined,
+    name: "mylinked.sid",
     secret: process.env.SESSION_SECRET || "change-me-in-env",
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      sameSite: isProd ? "none" : "lax",
+      sameSite: "lax",
       secure: isProd,
+      domain: process.env.COOKIE_DOMAIN || undefined,
       maxAge: 30 * 24 * 60 * 60 * 1000,
     },
   })
