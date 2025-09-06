@@ -30,8 +30,10 @@ app.set("trust proxy", 1);
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-const PgStore = connectPgSimple(session);
+const PgSession = connectPgSimple(session);
 const isProd = process.env.NODE_ENV === "production";
+const cookieDomain =
+  process.env.COOKIE_DOMAIN && isProd ? process.env.COOKIE_DOMAIN : undefined;
 
 // Security middleware (early)
 app.use(securityMiddleware.securityHeaders);
@@ -42,9 +44,11 @@ app.use(securityMiddleware.xssProtection);
 app.use(securityMiddleware.inputValidation);
 
 // CORS
+const allowedOrigins =
+  isProd ? ["https://mylinked.app", "https://www.mylinked.app"] : true;
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || true, // set exact URL if cross-origin
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -73,24 +77,25 @@ app.use((req, res, next) => {
   next();
 });
 
-// Sessions (PG store in prod; MemoryStore in dev)
+// Sessions
 app.use(
   session({
-    store: isProd
-      ? new PgStore({
-          pool,
-          tableName: "sessions",
-          createTableIfMissing: true,
-        })
-      : undefined,
+    store: new PgSession({
+      pool,
+      tableName: "sessions",
+      createTableIfMissing: true,
+    }),
+    name: "mylinked.sid",
     secret: process.env.SESSION_SECRET || "change-me-in-env",
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      sameSite: isProd ? "none" : "lax",
-      secure: isProd,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+      secure: true,
+      domain: cookieDomain,
+      path: "/",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
     },
   })
 );
@@ -98,6 +103,18 @@ app.use(
 // Passport
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use((req, _res, next) => {
+  if (req.path.startsWith("/api/auth/google")) {
+    console.log("DEBUG auth:", {
+      path: req.path,
+      cookies: req.headers.cookie,
+      sid: (req.session as any)?.id,
+      user: (req.user as any)?.id,
+    });
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   if (req.path.startsWith("/api/admin/")) {
